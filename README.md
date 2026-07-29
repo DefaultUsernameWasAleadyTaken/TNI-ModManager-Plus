@@ -10,7 +10,9 @@
 
 ### Требования
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- Для разработки: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)  
+  (`ModManager.bat` / `ModManager.sh` **поставят SDK автоматически**, если его нет и нет готового `publish/…` бинарника)
+- Для игроков: self-contained zip из Releases — .NET не нужен
 
 ### Запуск
 
@@ -18,6 +20,11 @@
 |----|---------|
 | Windows | `ModManager.bat` |
 | Linux / Steam Deck | `./ModManager.sh` |
+
+Переменные окружения:
+
+- `TNI_MM_PREFER_BUNDLE=1` — сразу published binary
+- `TNI_MM_AUTO_INSTALL_DOTNET=0` — не ставить SDK автоматически
 
 Или из каталога решения:
 
@@ -61,4 +68,13 @@ BSD 3-Clause — [`LICENSE`](LICENSE).
 
 ## English
 
-Cross-platform Mod Manager (.NET 8 + Avalonia) for Windows and Linux. Branches: **`beta`** (dev), **`main`** (release). Launch: `ModManager.bat` / `./ModManager.sh`. See [docs/releasing.md](docs/releasing.md).
+### Requirements
+
+- Dev: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) — launchers **auto-install** it when missing (unless a `publish/…` binary exists)
+- End users: self-contained Release zips need no .NET install
+
+### Launch
+
+`ModManager.bat` / `./ModManager.sh`. Env: `TNI_MM_PREFER_BUNDLE=1` (use published binary), `TNI_MM_AUTO_INSTALL_DOTNET=0` (disable SDK auto-install).
+
+Branches: **`beta`** (dev), **`main`** (release). See [docs/releasing.md](docs/releasing.md).

@@ -20,7 +20,7 @@ public partial class AliasListItemViewModel : ObservableObject
         RefreshLocalizedLabels();
     }
 
-    public AliasKind Kind => AliasAnalyzer.Analyze(Command);
+    public AliasKind Kind => AliasAnalyzer.Analyze(Command).Kind;
 
     partial void OnCommandChanged(string value)
     {

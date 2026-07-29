@@ -9,6 +9,7 @@
     <Product>TNI-ModManager-Plus</Product>
     <RootNamespace>TniModManager</RootNamespace>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

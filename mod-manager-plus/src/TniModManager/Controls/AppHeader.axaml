@@ -21,43 +21,68 @@
 
     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
                 VerticalAlignment="Top">
-      <Button Classes="ghost" Command="{Binding ToggleThemeCommand}"
-              ToolTip.Tip="{Binding ThemeToggleTooltip}" Padding="10">
-        <Panel Width="18" Height="18">
-          <PathIcon IsVisible="{Binding IsDarkTheme}"
-                    Data="M12,18a6,6 0 1,0 0,-12a6,6 0 0,0 0,12M12,2V0M12,24v-2M4.22,4.22L2.81,2.81M21.19,21.19l-1.41,-1.41M2,12H0M24,12h-2M4.22,19.78l-1.41,1.41M21.19,2.81l-1.41,1.41"/>
-          <PathIcon IsVisible="{Binding !IsDarkTheme}"
-                    Data="M20.5,15.5A8.5,8.5 0 0,1 8.5,3.5A9,9 0 1,0 20.5,15.5Z"/>
+      <!-- Тема: PNG с прозрачным фоном — солнце в тёмной, луна в светлой -->
+      <Button Classes="header" Command="{Binding ToggleThemeCommand}"
+              ToolTip.Tip="{Binding ThemeToggleTooltip}" Padding="12,10" MinWidth="40" MinHeight="40">
+        <Panel Width="22" Height="22" Background="Transparent">
+          <Image Width="22" Height="22" Stretch="Uniform"
+                 IsVisible="{Binding IsDarkTheme}"
+                 Source="avares://TNI-ModManager-Plus/Assets/Icons/theme-sun-on-dark.png"/>
+          <Image Width="22" Height="22" Stretch="Uniform"
+                 IsVisible="{Binding !IsDarkTheme}"
+                 Source="avares://TNI-ModManager-Plus/Assets/Icons/theme-moon-on-light.png"/>
         </Panel>
       </Button>
 
-      <Button Classes="ghost" ToolTip.Tip="{DynamicResource L.Language}" Padding="10">
+      <Button Classes="header" ToolTip.Tip="{DynamicResource L.Language}"
+              Padding="14,10" MinHeight="40">
         <Button.Flyout>
-          <MenuFlyout Placement="BottomEdgeAlignedRight">
-            <MenuItem Header="{DynamicResource L.English}" Command="{Binding SelectLanguageCommand}"
-                      CommandParameter="en"/>
-            <MenuItem Header="{DynamicResource L.Russian}" Command="{Binding SelectLanguageCommand}"
-                      CommandParameter="ru"/>
+          <!-- Left: меню под кнопкой языка, не уезжает под тему -->
+          <MenuFlyout Placement="BottomEdgeAlignedLeft">
+            <MenuItem Command="{Binding SelectLanguageCommand}" CommandParameter="en">
+              <MenuItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                  <Image Width="20" Height="20" Stretch="Uniform"
+                         VerticalAlignment="Center"
+                         Source="avares://TNI-ModManager-Plus/Assets/Icons/flag-en.png"/>
+                  <TextBlock Text="{DynamicResource L.English}" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
+            <MenuItem Command="{Binding SelectLanguageCommand}" CommandParameter="ru">
+              <MenuItem.Header>
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                  <Image Width="20" Height="20" Stretch="Uniform"
+                         VerticalAlignment="Center"
+                         Source="avares://TNI-ModManager-Plus/Assets/Icons/flag-ru.png"/>
+                  <TextBlock Text="{DynamicResource L.Russian}" VerticalAlignment="Center" FontSize="13"/>
+                </StackPanel>
+              </MenuItem.Header>
+            </MenuItem>
           </MenuFlyout>
         </Button.Flyout>
-        <StackPanel Orientation="Horizontal" Spacing="6">
-          <PathIcon Width="18" Height="18"
-                    Data="M12,2A10,10 0 1,0 12,22A10,10 0 0,0 12,2M4.2,9H7.1C7.4,6.8 8.1,4.9 9,3.7A8.1,8.1 0 0,0 4.2,9M4.2,15A8.1,8.1 0 0,0 9,20.3C8.1,19.1 7.4,17.2 7.1,15M9.1,9H14.9C14.5,6.2 13.3,4 12,4S9.5,6.2 9.1,9M9.1,15C9.5,17.8 10.7,20 12,20S14.5,17.8 14.9,15M16.9,9H19.8A8.1,8.1 0 0,0 15,3.7C15.9,4.9 16.6,6.8 16.9,9M16.9,15C16.6,17.2 15.9,19.1 15,20.3A8.1,8.1 0 0,0 19.8,15M3.9,11V13H20.1V11Z"/>
-          <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center"/>
-        </StackPanel>
+        <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" FontSize="13"/>
       </Button>
 
       <Button Classes="warn" IsVisible="{Binding ShowAppUpdate}"
               Command="{Binding UpdateAppCommand}"
-              ToolTip.Tip="{Binding AppUpdateVersion}" Padding="10">
-        <PathIcon Width="18" Height="18"
-                  Data="M12,3V15M7,10L12,15L17,10M4,19H20"/>
+              ToolTip.Tip="{Binding AppUpdateButtonLabel}"
+              Padding="14,10" MinHeight="40">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Width="18" Height="18" Foreground="{DynamicResource OnAccentBrush}"
+                    Data="M12,2V11M8.5,7.5L12,11L15.5,7.5M5,13H19V21H5V13M5,13L12,16.5L19,13"/>
+          <TextBlock Text="{Binding AppUpdateButtonLabel}" VerticalAlignment="Center"
+                     Foreground="{DynamicResource OnAccentBrush}" FontSize="13"/>
+        </StackPanel>
       </Button>
 
-      <Button Classes="success" Command="{Binding LaunchGameCommand}">
-        <StackPanel Orientation="Horizontal" Spacing="7">
-          <PathIcon Width="16" Height="16" Data="M8,5V19L19,12Z"/>
-          <TextBlock Text="{DynamicResource L.LaunchGame}"/>
+      <Button Classes="success" Command="{Binding LaunchGameCommand}"
+              Padding="14,10" MinHeight="40">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Width="18" Height="18" Foreground="{DynamicResource OnSuccessBrush}"
+                    Data="M8,5V19L19,12Z"/>
+          <TextBlock Text="{DynamicResource L.LaunchGame}" VerticalAlignment="Center"
+                     Foreground="{DynamicResource OnSuccessBrush}" FontSize="13"/>
         </StackPanel>
       </Button>
     </StackPanel>

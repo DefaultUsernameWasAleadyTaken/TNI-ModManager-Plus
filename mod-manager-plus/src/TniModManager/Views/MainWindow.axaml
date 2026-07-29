@@ -12,6 +12,7 @@
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource BgBrush}"
+        Icon="/Assets/app.ico"
         Title="{Binding WindowTitle}">
 
   <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14">

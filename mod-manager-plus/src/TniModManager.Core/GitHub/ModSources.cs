@@ -5,7 +5,7 @@ namespace TniModManager.Core.GitHub;
 
 /// <summary>
 /// Список GitHub-репозиториев с релизами модов.
-/// Файл: mod-sources.json (рядом с приложением или embedded).
+/// Источник: embedded mod-sources.json (опционально override файлом рядом с exe).
 /// </summary>
 public static class ModSources
 {

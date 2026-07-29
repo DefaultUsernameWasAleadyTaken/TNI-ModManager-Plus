@@ -64,6 +64,8 @@
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
@@ -80,7 +82,7 @@
 
     <Style Selector="Button.success">
       <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
-      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource OnSuccessBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="Button.success:pointerover /template/ ContentPresenter">
@@ -88,18 +90,30 @@
     </Style>
 
     <Style Selector="Button.danger">
-      <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource DangerHoverBgBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBrush}"/>
     </Style>
 
     <Style Selector="Button.warn">
       <Setter Property="Background" Value="{DynamicResource WarnBrush}"/>
       <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.warn:pointerover /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.92"/>
+    </Style>
+
+    <!-- Компактные действия мода: высота как у бейджей -->
+    <Style Selector="Button.mod-action">
+      <Setter Property="Padding" Value="10,4"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="MinHeight" Value="28"/>
+      <Setter Property="CornerRadius" Value="6"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style Selector="Button.ghost">
@@ -111,6 +125,21 @@
     <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
+    </Style>
+
+    <!-- Кнопки шапки: заметный фон/рамка в тёмной теме -->
+    <Style Selector="Button.header">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="12,10"/>
+      <Setter Property="MinHeight" Value="40"/>
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+    <Style Selector="Button.header:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
     <Style Selector="TextBox">
@@ -126,11 +155,17 @@
     <Style Selector="ListBox">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0,0,10,0"/>
     </Style>
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0"/>
       <Setter Property="Margin" Value="0,0,0,4"/>
       <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <!-- Список алиасов: чуть просторнее строки -->
+    <Style Selector="ListBox.alias-list ListBoxItem">
+      <Setter Property="Margin" Value="0,0,0,4"/>
       <Setter Property="CornerRadius" Value="8"/>
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
@@ -158,9 +193,10 @@
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
     </Style>
 
+    <!-- Компактные «чипы» фильтра: маленький radio; ширина задаётся сеткой панели -->
     <Style Selector="RadioButton.filter">
-      <Setter Property="Padding" Value="12,6"/>
-      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Margin" Value="0"/>
       <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
       <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
@@ -168,11 +204,57 @@
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="MinHeight" Value="0"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}"
+                  HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal" Spacing="7"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="Center">
+              <!-- Точка: равный Margin со всех сторон = геометрический центр без Stroke-сдвига -->
+              <Grid Width="12" Height="12" VerticalAlignment="Center"
+                    UseLayoutRounding="False">
+                <Ellipse x:Name="Outer"
+                         Stroke="{DynamicResource MutedBrush}"
+                         StrokeThickness="1.5"
+                         Fill="Transparent"/>
+                <Ellipse x:Name="Inner"
+                         Margin="3.5"
+                         Fill="{DynamicResource AccentBrush}"
+                         IsVisible="False"/>
+              </Grid>
+              <TextBlock Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                         TextWrapping="NoWrap"
+                         Foreground="{TemplateBinding Foreground}"
+                         FontSize="{TemplateBinding FontSize}"
+                         FontWeight="{TemplateBinding FontWeight}"
+                         VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.filter:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
     </Style>
     <Style Selector="RadioButton.filter:checked">
       <Setter Property="Background" Value="{DynamicResource ListSelectedBrush}"/>
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="RadioButton.filter:checked /template/ Ellipse#Outer">
+      <Setter Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="RadioButton.filter:checked /template/ Ellipse#Inner">
+      <Setter Property="IsVisible" Value="True"/>
     </Style>
 
     <Style Selector="ProgressBar">
@@ -184,6 +266,18 @@
 
     <Style Selector="ScrollViewer">
       <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="AllowAutoHide" Value="False"/>
+    </Style>
+    <Style Selector="ScrollBar">
+      <Setter Property="Margin" Value="4,6,2,6"/>
+    </Style>
+    <Style Selector="ScrollBar:vertical">
+      <Setter Property="Width" Value="6"/>
+      <Setter Property="MinWidth" Value="6"/>
+    </Style>
+    <Style Selector="ScrollBar:horizontal">
+      <Setter Property="Height" Value="6"/>
+      <Setter Property="MinHeight" Value="6"/>
     </Style>
 
     <Style Selector="Expander">

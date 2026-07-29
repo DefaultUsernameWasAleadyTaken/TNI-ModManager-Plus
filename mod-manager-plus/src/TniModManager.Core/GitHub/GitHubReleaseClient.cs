@@ -67,6 +67,18 @@ public sealed class GitHubReleaseClient
         {
             var uri = $"https://api.github.com/repos/{repo}/releases?per_page={perPage}&page={page}";
             using var response = await _http.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+            if ((int)response.StatusCode == 403 || (int)response.StatusCode == 429)
+            {
+                var remaining = response.Headers.TryGetValues("X-RateLimit-Remaining", out var rem)
+                    ? string.Join(",", rem)
+                    : "?";
+                var reset = response.Headers.TryGetValues("X-RateLimit-Reset", out var rst)
+                    ? string.Join(",", rst)
+                    : "?";
+                throw new HttpRequestException(
+                    $"GitHub API rate limit ({(int)response.StatusCode}). Remaining={remaining}, Reset={reset}");
+            }
+
             response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);

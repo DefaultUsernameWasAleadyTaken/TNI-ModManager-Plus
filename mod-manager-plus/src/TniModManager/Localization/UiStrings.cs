@@ -20,6 +20,9 @@ public static class UiStrings
     public static string StartupError(string message) =>
         Ru ? $"Ошибка запуска: {message}" : $"Startup error: {message}";
 
+    public static string AppUpdateButton(string version) =>
+        Ru ? $"Обновление {version}" : $"Update {version}";
+
     public static string DownloadingAppUpdate(string version) =>
         Ru ? $"Скачивание обновления {version}…" : $"Downloading app update {version}...";
 
@@ -72,13 +75,65 @@ public static class UiStrings
         Ru ? $"Ошибка загрузки: {message}" : $"Download failed: {message}";
     public static string LoadedReleases(int count) =>
         Ru ? $"Загружено релизов с GitHub: {count}." : $"Loaded {count} GitHub releases.";
+
+    public static string LoadedCachedReleases(int count, DateTimeOffset? savedAt)
+    {
+        if (savedAt is null)
+        {
+            return Ru
+                ? $"Каталог из кэша: {count} мод. (Обновить — с GitHub)"
+                : $"Cached catalog: {count} mods. (Refresh fetches GitHub)";
+        }
+
+        var local = savedAt.Value.ToLocalTime().ToString("g");
+        return Ru
+            ? $"Каталог из кэша: {count} мод. (сохранён {local}; Обновить — с GitHub)"
+            : $"Cached catalog: {count} mods (saved {local}; Refresh fetches GitHub)";
+    }
+
+    public static string CatalogCacheEmpty =>
+        Ru
+            ? "Кэш каталога пуст. Нажмите «Обновить», чтобы загрузить моды с GitHub."
+            : "Catalog cache is empty. Press Refresh to load mods from GitHub.";
+
     public static string GitHubUnavailable(string message) =>
         Ru
             ? $"GitHub недоступен: {message} (показаны локальные моды)"
             : $"GitHub unavailable: {message} (showing local mods)";
 
+    public static string GitHubUnavailableCached(string message, int count) =>
+        Ru
+            ? $"GitHub недоступен: {message} (показан сохранённый каталог, {count} мод.)"
+            : $"GitHub unavailable: {message} (showing cached catalog, {count} mods)";
+
     public static string AliasesSaved => Ru ? "Алиасы сохранены." : "Aliases saved.";
     public static string EmptyPreview => Ru ? "(пусто)" : "(empty)";
+    public static string AliasPreviewPlaceholder =>
+        Ru ? "Введите команду выше…" : "Enter a command above...";
+    public static string AliasNameRequired =>
+        Ru ? "Укажите имя алиаса." : "Please enter an alias name.";
+    public static string AliasApplied(string name) =>
+        Ru ? $"Алиас «{name}» применён." : $"Alias '{name}' applied.";
+
+    public static string AliasArgsRequired(int count, string variables) =>
+        Ru
+            ? $"Этому алиасу нужно аргументов: {count} — {variables}"
+            : $"This alias requires {count} argument(s): {variables}";
+
+    public static string AliasDeviceNotice(bool needOn, bool needUsing)
+    {
+        var parts = new List<string>();
+        if (needOn)
+            parts.Add(Ru ? "'on <адрес устройства>'" : "'on <device address>'");
+        if (needUsing)
+            parts.Add(Ru ? "'using <адрес отладчика>'" : "'using <debugger address>'");
+
+        var joined = string.Join(Ru ? " и/или " : " and/or ", parts);
+        return Ru
+            ? $"Командам нужен суффикс {joined}, если игрок не задал 'always on' / 'always using'."
+            : $"Commands require {joined} suffix unless 'always on' or 'always using' is set by the player.";
+    }
+
     public static string UpdateAvailablePrefix => Ru ? "Доступно обновление · " : "Update available · ";
 
     public static string FormatModSource(ModSource source) => source switch

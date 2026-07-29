@@ -1,3 +1,4 @@
+using TniModManager.Core.Aliases;
 using TniModManager.Core.Config;
 using TniModManager.Core.GitHub;
 using TniModManager.Core.Mods;
@@ -111,5 +112,44 @@ public class ZipExtractTests
         var target = Path.Combine(root, "out", "demo-mod");
         ModInstallService.ExtractModZip(zip, "demo-mod", target);
         Assert.True(File.Exists(Path.Combine(target, "entry.lua")));
+    }
+}
+
+public class AliasAnalyzerTests
+{
+    [Fact]
+    public void Analyze_VariableAndSuffixes()
+    {
+        var info = AliasAnalyzer.Analyze("scan $1 $2 on $1 using $2");
+        Assert.Equal(AliasKind.Variable, info.Kind);
+        Assert.Equal(new[] { 1, 2 }, info.Variables);
+        Assert.Equal(2, info.MaxVariable);
+        Assert.True(info.HasOn);
+        Assert.True(info.HasUsing);
+    }
+
+    [Fact]
+    public void Analyze_Complex()
+    {
+        var info = AliasAnalyzer.Analyze("try a on $1 then b; c else d");
+        Assert.Equal(AliasKind.Complex, info.Kind);
+        Assert.True(info.IsCompound);
+        Assert.True(info.HasTryThen);
+    }
+
+    [Fact]
+    public void Preview_FullUsage_AddsMissingSuffixes()
+    {
+        var info = AliasAnalyzer.Analyze("ping $1");
+        var usage = AliasPreviewBuilder.BuildFullUsage("probe", info);
+        Assert.Equal("probe 192.168.1.1 on 192.168.1.100 using 192.168.1.50", usage);
+    }
+
+    [Fact]
+    public void Preview_Invocation_Shape()
+    {
+        var info = AliasAnalyzer.Analyze("scan $1 $2");
+        Assert.Equal("> probe <arg1> <arg2> {on <device>} {using <debugger>}",
+            AliasPreviewBuilder.BuildInvocation("probe", info));
     }
 }
