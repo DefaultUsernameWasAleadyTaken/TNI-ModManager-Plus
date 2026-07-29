@@ -107,13 +107,25 @@
       <Setter Property="Opacity" Value="0.92"/>
     </Style>
 
-    <!-- Компактные действия мода: высота как у бейджей -->
+    <!-- Компактные действия мода: высота как у бейджей, одинаковая ширина ряда -->
     <Style Selector="Button.mod-action">
       <Setter Property="Padding" Value="10,4"/>
       <Setter Property="FontSize" Value="11"/>
       <Setter Property="MinHeight" Value="28"/>
+      <Setter Property="MinWidth" Value="88"/>
       <Setter Property="CornerRadius" Value="6"/>
       <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.secondary">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.secondary:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
     <Style Selector="Button.ghost">

@@ -16,6 +16,7 @@
   <sys:String x:Key="L.NothingSelected">Nothing selected</sys:String>
   <sys:String x:Key="L.PickMod">Pick a mod from the library to see details and actions.</sys:String>
   <sys:String x:Key="L.Download">Download</sys:String>
+  <sys:String x:Key="L.GitHub">GitHub</sys:String>
   <sys:String x:Key="L.Update">Update</sys:String>
   <sys:String x:Key="L.Remove">Remove</sys:String>
   <sys:String x:Key="L.Author">Author</sys:String>

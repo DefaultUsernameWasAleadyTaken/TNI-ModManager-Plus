@@ -47,6 +47,7 @@ public sealed class ModDiscovery
                 mod.RemoteNotes = rel.ReleaseNotes;
                 mod.ReleaseTag = rel.TagName;
                 mod.ZipUrl = rel.DownloadUrl;
+                mod.HtmlUrl = FirstUrl(rel.HtmlUrl, ReleasePageFromDownloadUrl(rel.DownloadUrl));
                 if (mod.Source == ModSource.Downloaded && SemVer.IsNewer(rel.Version, mod.Version))
                     mod.HasUpdate = true;
             }
@@ -67,10 +68,38 @@ public sealed class ModDiscovery
                 RemoteNotes = rel.ReleaseNotes,
                 ReleaseTag = rel.TagName,
                 ZipUrl = rel.DownloadUrl,
+                HtmlUrl = FirstUrl(rel.HtmlUrl, ReleasePageFromDownloadUrl(rel.DownloadUrl)),
             });
         }
 
         return list.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    private static string? FirstUrl(params string?[] candidates) =>
+        candidates.FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+
+    /// <summary>
+    /// https://github.com/owner/repo/releases/download/tag/file.zip
+    /// → https://github.com/owner/repo/releases/tag/tag
+    /// </summary>
+    private static string? ReleasePageFromDownloadUrl(string? downloadUrl)
+    {
+        if (string.IsNullOrWhiteSpace(downloadUrl))
+            return null;
+
+        const string marker = "/releases/download/";
+        var idx = downloadUrl.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (idx < 0)
+            return null;
+
+        var after = downloadUrl[(idx + marker.Length)..];
+        var slash = after.IndexOf('/');
+        if (slash <= 0)
+            return null;
+
+        var tag = after[..slash];
+        var repoRoot = downloadUrl[..idx];
+        return $"{repoRoot}/releases/tag/{tag}";
     }
 
     private void ScanDirectory(string root, List<ModInfo> mods)
