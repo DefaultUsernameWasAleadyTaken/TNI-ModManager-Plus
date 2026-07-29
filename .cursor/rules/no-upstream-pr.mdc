@@ -1,0 +1,11 @@
+---
+description: Запрет PR в upstream CJFWeatherhead/TNI-Mods без явной просьбы
+alwaysApply: true
+---
+
+# No upstream PR
+
+- **Не создавать** pull request в `CJFWeatherhead/TNI-Mods` (upstream).
+- **Не вызывать** `gh pr create --repo CJFWeatherhead/TNI-Mods` (и аналоги) без явной просьбы пользователя.
+- Push в `upstream` и force-push — только по явной просьбе.
+- PR в собственный fork (`origin` / `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`) — только если пользователь попросил.

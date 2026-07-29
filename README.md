@@ -1,5 +1,7 @@
 # Tower Networking Inc. Modding Kit
 
+> **Fork note:** working branch is **`alpha`** (full kit baseline). The former `beta`/`main` Python Mod Manager experiment is abandoned — see [docs/decisions.md](docs/decisions.md) (ADR-001).
+
 This repository is a modding kit that can be used to create mods for the game [Tower Networking Inc](https://store.steampowered.com/app/2939600/Tower_Networking_Inc/). Modding support for the game is implemented with [Godot Sandbox](https://github.com/libriscv/godot-sandbox) using [libriscv](https://libriscv.no/).
 
 Mods are created in C/C++, however this repository also contains the official LuaJIT support mod. Lua mods are preferred as they are easier to develop and are naturally source-available.
