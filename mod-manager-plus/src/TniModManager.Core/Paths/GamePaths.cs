@@ -35,6 +35,7 @@ public sealed class GamePaths
     public string ModsDirectory { get; }
     public string SettingsPath { get; }
     public string ModCachePath { get; }
+    public string ReleaseCachePath { get; }
     public string UiSettingsPath { get; }
 
     public GamePaths(string gameDataPath, string modsDirectory)
@@ -43,6 +44,7 @@ public sealed class GamePaths
         ModsDirectory = modsDirectory;
         SettingsPath = Path.Combine(gameDataPath, "settings.json");
         ModCachePath = Path.Combine(gameDataPath, "mod_cache.json");
+        ReleaseCachePath = Path.Combine(gameDataPath, "release_cache.json");
         UiSettingsPath = Path.Combine(gameDataPath, "mm_plus_ui.json");
     }
 

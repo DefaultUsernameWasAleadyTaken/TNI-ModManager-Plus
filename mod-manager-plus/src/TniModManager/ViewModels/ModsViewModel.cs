@@ -16,6 +16,7 @@ public partial class ModsViewModel : ViewModelBase
 {
     private readonly GamePaths _paths;
     private readonly ModCacheStore _cache;
+    private readonly ReleaseCatalogCache _releaseCache;
     private readonly GitHubReleaseClient _github;
     private readonly ModDiscovery _discovery;
     private readonly ModInstallService _install;
@@ -33,6 +34,7 @@ public partial class ModsViewModel : ViewModelBase
     {
         _paths = paths;
         _cache = cache;
+        _releaseCache = new ReleaseCatalogCache(paths);
         _github = github;
         _discovery = discovery;
         _install = install;
@@ -215,15 +217,25 @@ public partial class ModsViewModel : ViewModelBase
     {
         _cache.Load();
         var installed = _discovery.GetInstalledMods();
+
+        // Подтянуть прошлый каталог с диска, если в памяти ещё пусто (cold start / rate limit).
+        if (_releases.Count == 0)
+            _releases = _releaseCache.Load();
+
         try
         {
             _releases = await _github.GetLatestModReleasesAsync().ConfigureAwait(true);
+            _releaseCache.Save(_releases);
             _shell.SetStatus(UiStrings.LoadedReleases(_releases.Count));
         }
         catch (Exception ex)
         {
-            _shell.SetStatus(UiStrings.GitHubUnavailable(ex.Message));
-            _releases = new Dictionary<string, ModReleaseInfo>(StringComparer.OrdinalIgnoreCase);
+            if (_releases.Count == 0)
+                _releases = _releaseCache.Load();
+
+            _shell.SetStatus(_releases.Count > 0
+                ? UiStrings.GitHubUnavailableCached(ex.Message, _releases.Count)
+                : UiStrings.GitHubUnavailable(ex.Message));
         }
 
         _allMods = _discovery.MergeWithReleases(installed, _releases);

@@ -75,10 +75,16 @@ public static class UiStrings
         Ru ? $"Ошибка загрузки: {message}" : $"Download failed: {message}";
     public static string LoadedReleases(int count) =>
         Ru ? $"Загружено релизов с GitHub: {count}." : $"Loaded {count} GitHub releases.";
+
     public static string GitHubUnavailable(string message) =>
         Ru
             ? $"GitHub недоступен: {message} (показаны локальные моды)"
             : $"GitHub unavailable: {message} (showing local mods)";
+
+    public static string GitHubUnavailableCached(string message, int count) =>
+        Ru
+            ? $"GitHub недоступен: {message} (показан сохранённый каталог, {count} мод.)"
+            : $"GitHub unavailable: {message} (showing cached catalog, {count} mods)";
 
     public static string AliasesSaved => Ru ? "Алиасы сохранены." : "Aliases saved.";
     public static string EmptyPreview => Ru ? "(пусто)" : "(empty)";
