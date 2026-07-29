@@ -4,7 +4,6 @@
              x:Class="TniModManager.Views.AliasesView"
              x:DataType="vm:AliasesViewModel">
 
-  <!-- Auto: панель расширяется, если подписи кнопок (или строк списка) шире -->
   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
     <Border Grid.Column="0" Classes="panel" MinWidth="260">
       <Grid RowDefinitions="Auto,*,Auto" Margin="14">
@@ -13,7 +12,6 @@
                  SelectedItem="{Binding SelectedAlias}" Classes="alias-list">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:AliasListItemViewModel">
-              <!-- Полоска Kind слева; крупнее шрифт/отступы для читаемости -->
               <Border BorderBrush="{Binding KindBrush}" BorderThickness="4,0,0,0"
                       Padding="10,8" Background="Transparent" MinHeight="36">
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
@@ -31,7 +29,6 @@
           </ListBox.ItemTemplate>
         </ListBox>
         <StackPanel Grid.Row="2" Spacing="8" Margin="0,10,0,0">
-          <!-- Равные колонки: ширина = 2×самая длинная подпись (язык не важен) -->
           <UniformGrid Columns="2">
             <Button Content="{DynamicResource L.NewAlias}" Classes="success"
                     Margin="0,0,8,0" HorizontalAlignment="Stretch"
@@ -56,7 +53,6 @@
           <TextBlock Text="{DynamicResource L.PickAlias}" Classes="muted"/>
         </StackPanel>
 
-        <!-- Grid+Margin вместо DockPanel: иначе дети меряются с ∞ шириной и текст липнет к правому краю -->
         <Grid IsVisible="{Binding AliasEditorVisible}"
               Margin="20"
               RowDefinitions="*,Auto"
@@ -75,22 +71,28 @@
                              FontSize="11" FontWeight="SemiBold"/>
                 </Border>
               </Grid>
+
               <StackPanel Spacing="6">
                 <TextBlock Text="{DynamicResource L.Name}" Classes="muted"/>
                 <TextBox Text="{Binding AliasName}"/>
               </StackPanel>
-              <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
-                <Button Content="$n" Command="{Binding InsertAliasSnippetCommand}"
-                        CommandParameter=" $1"/>
-                <Button Content=";" Command="{Binding InsertAliasSnippetCommand}"
-                        CommandParameter="; "/>
-                <Button Content="try/then/else" Command="{Binding InsertAliasSnippetCommand}"
-                        CommandParameter=" try  then  else "/>
-                <Button Content="on $n" Command="{Binding InsertAliasSnippetCommand}"
-                        CommandParameter=" on $1"/>
-                <Button Content="using $n" Command="{Binding InsertAliasSnippetCommand}"
-                        CommandParameter=" using $1"/>
-              </WrapPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="{DynamicResource L.QuickInsert}" Classes="muted"/>
+                <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+                  <Button Content="$n" Command="{Binding InsertAliasSnippetCommand}"
+                          CommandParameter="$n"/>
+                  <Button Content=";" Command="{Binding InsertAliasSnippetCommand}"
+                          CommandParameter="; "/>
+                  <Button Content="try/then/else" Command="{Binding InsertAliasSnippetCommand}"
+                          CommandParameter=" try  then  else "/>
+                  <Button Content="on $n" Command="{Binding InsertAliasSnippetCommand}"
+                          CommandParameter="on $n"/>
+                  <Button Content="using $n" Command="{Binding InsertAliasSnippetCommand}"
+                          CommandParameter="using $n"/>
+                </WrapPanel>
+              </StackPanel>
+
               <StackPanel Spacing="6">
                 <TextBlock Text="{DynamicResource L.Command}" Classes="muted"/>
                 <TextBox Text="{Binding AliasCommand}" AcceptsReturn="True"
@@ -101,19 +103,64 @@
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                          FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
               </StackPanel>
-              <Border Background="{DynamicResource CodeSurfaceBrush}"
-                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                      CornerRadius="8" Padding="12,10" ClipToBounds="True">
-                <TextBlock Text="{Binding AliasPreview}"
-                           Foreground="{DynamicResource AccentBrush}"
-                           FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
-                           TextWrapping="Wrap"/>
+
+              <Border IsVisible="{Binding ShowAliasArgsSummary}"
+                      Background="{DynamicResource WarnSurfaceBrush}"
+                      BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
+                      CornerRadius="8" Padding="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{DynamicResource L.ArgsRequired}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource WarnBrush}"/>
+                  <TextBlock Text="{Binding AliasArgsSummaryText}" TextWrapping="Wrap"
+                             Foreground="{DynamicResource WarnMutedBrush}" FontSize="12"/>
+                </StackPanel>
+              </Border>
+
+              <Border IsVisible="{Binding ShowAliasDeviceNotice}"
+                      Background="{DynamicResource WarnSurfaceBrush}"
+                      BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
+                      CornerRadius="8" Padding="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{DynamicResource L.DeviceTargetNotice}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource WarnBrush}"/>
+                  <TextBlock Text="{Binding AliasDeviceNoticeText}" TextWrapping="Wrap"
+                             Foreground="{DynamicResource WarnMutedBrush}" FontSize="12"/>
+                </StackPanel>
+              </Border>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="{DynamicResource L.LivePreview}" Classes="muted"/>
+                <TextBlock Text="{Binding AliasInvocationText}" Classes="muted" FontSize="12"
+                           TextWrapping="Wrap" FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
+                <Border Background="{DynamicResource CodeSurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" Padding="12,10" ClipToBounds="True">
+                  <TextBlock x:Name="LivePreviewText" TextWrapping="Wrap"
+                             FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
+                </Border>
+              </StackPanel>
+
+              <Border Background="{DynamicResource UpdateBadgeBgBrush}"
+                      BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
+                      CornerRadius="8" Padding="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{DynamicResource L.FullUsage}" FontWeight="SemiBold"
+                             Foreground="{DynamicResource WarnBrush}"/>
+                  <TextBlock Text="{Binding AliasFullUsageText}" TextWrapping="Wrap"
+                             FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                             FontSize="12"/>
+                </StackPanel>
               </Border>
             </StackPanel>
           </ScrollViewer>
-          <Button Grid.Row="1" Content="{DynamicResource L.Apply}" Classes="primary"
-                  Command="{Binding ApplyAliasEditsCommand}"
-                  HorizontalAlignment="Right"/>
+
+          <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8"
+                      HorizontalAlignment="Right">
+            <Button Content="{DynamicResource L.Cancel}" Classes="header"
+                    Command="{Binding CancelAliasEditsCommand}"/>
+            <Button Content="{DynamicResource L.Apply}" Classes="primary"
+                    Command="{Binding ApplyAliasEditsCommand}"/>
+          </StackPanel>
         </Grid>
       </Grid>
     </Border>

@@ -88,6 +88,32 @@ public static class UiStrings
 
     public static string AliasesSaved => Ru ? "Алиасы сохранены." : "Aliases saved.";
     public static string EmptyPreview => Ru ? "(пусто)" : "(empty)";
+    public static string AliasPreviewPlaceholder =>
+        Ru ? "Введите команду выше…" : "Enter a command above...";
+    public static string AliasNameRequired =>
+        Ru ? "Укажите имя алиаса." : "Please enter an alias name.";
+    public static string AliasApplied(string name) =>
+        Ru ? $"Алиас «{name}» применён." : $"Alias '{name}' applied.";
+
+    public static string AliasArgsRequired(int count, string variables) =>
+        Ru
+            ? $"Этому алиасу нужно аргументов: {count} — {variables}"
+            : $"This alias requires {count} argument(s): {variables}";
+
+    public static string AliasDeviceNotice(bool needOn, bool needUsing)
+    {
+        var parts = new List<string>();
+        if (needOn)
+            parts.Add(Ru ? "'on <адрес устройства>'" : "'on <device address>'");
+        if (needUsing)
+            parts.Add(Ru ? "'using <адрес отладчика>'" : "'using <debugger address>'");
+
+        var joined = string.Join(Ru ? " и/или " : " and/or ", parts);
+        return Ru
+            ? $"Командам нужен суффикс {joined}, если игрок не задал 'always on' / 'always using'."
+            : $"Commands require {joined} suffix unless 'always on' or 'always using' is set by the player.";
+    }
+
     public static string UpdateAvailablePrefix => Ru ? "Доступно обновление · " : "Update available · ";
 
     public static string FormatModSource(ModSource source) => source switch

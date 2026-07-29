@@ -34,6 +34,12 @@
   <sys:String x:Key="L.PickAlias">Выберите алиас, чтобы изменить команду.</sys:String>
   <sys:String x:Key="L.Editor">Редактор</sys:String>
   <sys:String x:Key="L.Name">Имя</sys:String>
+  <sys:String x:Key="L.QuickInsert">Быстрая вставка</sys:String>
   <sys:String x:Key="L.Command">Команда</sys:String>
+  <sys:String x:Key="L.ArgsRequired">Нужны аргументы</sys:String>
+  <sys:String x:Key="L.DeviceTargetNotice">Цель устройства</sys:String>
+  <sys:String x:Key="L.LivePreview">Живой просмотр</sys:String>
+  <sys:String x:Key="L.FullUsage">Полный вызов</sys:String>
+  <sys:String x:Key="L.Cancel">Отмена</sys:String>
   <sys:String x:Key="L.Apply">Применить</sys:String>
 </ResourceDictionary>
