@@ -158,9 +158,10 @@
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
     </Style>
 
+    <!-- Компактные «чипы» фильтра: маленький radio; ширина задаётся сеткой панели -->
     <Style Selector="RadioButton.filter">
-      <Setter Property="Padding" Value="12,6"/>
-      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Margin" Value="0"/>
       <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
       <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
@@ -168,11 +169,58 @@
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="MinHeight" Value="0"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Padding="{TemplateBinding Padding}"
+                  HorizontalAlignment="Stretch">
+            <StackPanel Orientation="Horizontal" Spacing="7"
+                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalAlignment="Center">
+              <Panel Width="12" Height="12" VerticalAlignment="Center">
+                <Ellipse x:Name="Outer"
+                         Width="12" Height="12"
+                         Stroke="{DynamicResource MutedBrush}"
+                         StrokeThickness="1.5"
+                         Fill="Transparent"/>
+                <Ellipse x:Name="Inner"
+                         Width="5" Height="5"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Fill="{DynamicResource AccentBrush}"
+                         IsVisible="False"/>
+              </Panel>
+              <TextBlock Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                         TextWrapping="NoWrap"
+                         Foreground="{TemplateBinding Foreground}"
+                         FontSize="{TemplateBinding FontSize}"
+                         FontWeight="{TemplateBinding FontWeight}"
+                         VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+    </Style>
+    <Style Selector="RadioButton.filter:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
     </Style>
     <Style Selector="RadioButton.filter:checked">
       <Setter Property="Background" Value="{DynamicResource ListSelectedBrush}"/>
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="RadioButton.filter:checked /template/ Ellipse#Outer">
+      <Setter Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+    <Style Selector="RadioButton.filter:checked /template/ Ellipse#Inner">
+      <Setter Property="IsVisible" Value="True"/>
     </Style>
 
     <Style Selector="ProgressBar">

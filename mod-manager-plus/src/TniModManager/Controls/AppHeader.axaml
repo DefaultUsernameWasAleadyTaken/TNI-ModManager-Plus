@@ -49,9 +49,13 @@
 
       <Button Classes="warn" IsVisible="{Binding ShowAppUpdate}"
               Command="{Binding UpdateAppCommand}"
-              ToolTip.Tip="{Binding AppUpdateVersion}" Padding="10">
-        <PathIcon Width="18" Height="18"
-                  Data="M12,3V15M7,10L12,15L17,10M4,19H20"/>
+              ToolTip.Tip="{Binding AppUpdateButtonLabel}">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <!-- Коробка/пакет со стрелкой вниз -->
+          <PathIcon Width="16" Height="16"
+                    Data="M12,2V11M8.5,7.5L12,11L15.5,7.5M5,13H19V21H5V13M5,13L12,16.5L19,13"/>
+          <TextBlock Text="{Binding AppUpdateButtonLabel}" VerticalAlignment="Center"/>
+        </StackPanel>
       </Button>
 
       <Button Classes="success" Command="{Binding LaunchGameCommand}">

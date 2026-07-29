@@ -4,8 +4,9 @@
              x:Class="TniModManager.Views.ModsView"
              x:DataType="vm:ModsViewModel">
 
-  <Grid ColumnDefinitions="340,*" ColumnSpacing="12" Margin="0,8,0,0">
-    <Border Grid.Column="0" Classes="panel">
+  <!-- Auto: панель списка расширяется под самые длинные подписи фильтров (без переноса слов) -->
+  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+    <Border Grid.Column="0" Classes="panel" MinWidth="320">
       <Grid RowDefinitions="Auto,Auto,*" Margin="14">
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
           <TextBlock Text="{DynamicResource L.Library}" Classes="section" VerticalAlignment="Center"/>
@@ -13,17 +14,20 @@
                   Command="{Binding RefreshModsCommand}" Padding="9,5"/>
         </Grid>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+        <!-- Равные колонки; ширина = 3×самая длинная подпись (язык не важен) -->
+        <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,10">
           <RadioButton Content="{DynamicResource L.FilterAll}" Classes="filter" GroupName="Filter"
+                       Margin="0,0,6,0"
                        IsChecked="{Binding IsFilterAll, Mode=OneWay}"
                        Command="{Binding SetFilterCommand}" CommandParameter="All"/>
           <RadioButton Content="{DynamicResource L.FilterInstalled}" Classes="filter" GroupName="Filter"
+                       Margin="0,0,6,0"
                        IsChecked="{Binding IsFilterInstalled, Mode=OneWay}"
                        Command="{Binding SetFilterCommand}" CommandParameter="Installed"/>
           <RadioButton Content="{DynamicResource L.FilterAvailable}" Classes="filter" GroupName="Filter"
                        IsChecked="{Binding IsFilterAvailable, Mode=OneWay}"
                        Command="{Binding SetFilterCommand}" CommandParameter="Available"/>
-        </StackPanel>
+        </UniformGrid>
 
         <ListBox Grid.Row="2" ItemsSource="{Binding VisibleMods}"
                  SelectedItem="{Binding SelectedModItem}">

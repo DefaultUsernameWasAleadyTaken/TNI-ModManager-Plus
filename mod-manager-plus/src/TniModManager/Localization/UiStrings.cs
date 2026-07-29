@@ -20,6 +20,9 @@ public static class UiStrings
     public static string StartupError(string message) =>
         Ru ? $"Ошибка запуска: {message}" : $"Startup error: {message}";
 
+    public static string AppUpdateButton(string version) =>
+        Ru ? $"Обновление {version}" : $"Update {version}";
+
     public static string DownloadingAppUpdate(string version) =>
         Ru ? $"Скачивание обновления {version}…" : $"Downloading app update {version}...";
 

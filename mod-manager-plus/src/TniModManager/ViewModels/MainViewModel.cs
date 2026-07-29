@@ -53,6 +53,8 @@ public partial class MainViewModel : ViewModelBase, IAppShell
     public AliasesViewModel Aliases { get; }
     public string AppVersionBadgeText => $"v{GamePaths.ModManagerVersion}";
     public string ThemeToggleTooltip => IsDarkTheme ? UiStrings.ThemeToLight : UiStrings.ThemeToDark;
+    public string AppUpdateButtonLabel =>
+        string.IsNullOrWhiteSpace(AppUpdateVersion) ? "" : UiStrings.AppUpdateButton(AppUpdateVersion);
 
     [ObservableProperty] private string _windowTitle = "";
     [ObservableProperty] private string _statusText = "";
@@ -83,6 +85,8 @@ public partial class MainViewModel : ViewModelBase, IAppShell
     }
 
     partial void OnIsDarkThemeChanged(bool value) => OnPropertyChanged(nameof(ThemeToggleTooltip));
+
+    partial void OnAppUpdateVersionChanged(string value) => OnPropertyChanged(nameof(AppUpdateButtonLabel));
 
     [RelayCommand]
     private void ToggleTheme()
@@ -217,6 +221,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         {
             LanguageLabel = LocalizationManager.DisplayName(LocalizationManager.Current);
             OnPropertyChanged(nameof(ThemeToggleTooltip));
+            OnPropertyChanged(nameof(AppUpdateButtonLabel));
             Mods.RefreshLocalizedLabels();
             Aliases.RefreshLocalizedLabels();
         });
