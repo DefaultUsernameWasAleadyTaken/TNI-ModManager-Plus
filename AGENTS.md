@@ -4,12 +4,12 @@
 
 - **Рабочая ветка:** только `alpha`.
 - **Не трогать как продуктовую базу:** `beta`, `main` (устаревший Python MM).
-- **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — каталог `mod-manager-plus/`, корневой `ModManager.bat`, `docs/`. Не возвращать `mods/`, kit, Hugo без нового ADR.
-- **Стек:** PowerShell + WPF (`mod-manager-plus/ModManagerGUI.ps1`).
+- **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — `mod-manager-plus/`, лаунчеры, `docs/`.
+- **Стек ([ADR-003](docs/decisions.md)):** .NET 8 + Avalonia 11; Core в `src/TniModManager.Core/`; legacy PS1 — эталон.
 - **Язык с пользователем:** русский.
-- **Git publish** (commit / push / PR): только по явной просьбе. PR в upstream — тоже только по явной просьбе.
+- **Git publish:** только по явной просьбе. PR в upstream — тоже только по явной просьбе.
 - Правила Cursor: `.cursor/rules/`.
 
 ## English
 
-- Working branch: `alpha` only. Scope: Mod Manager only in `mod-manager-plus/` (PowerShell + WPF). See [ADR-002](docs/decisions.md).
+- Working branch: `alpha` only. Stack: .NET 8 + Avalonia ([ADR-003](docs/decisions.md)). Scope: Mod Manager only.

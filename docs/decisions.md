@@ -34,23 +34,49 @@
 
 В репозитории **только** приложение Mod Manager:
 
-- каталог `mod-manager-plus/` (`ModManagerGUI.ps1`, `ModManager-README.md`, опционально `mod-metadata-schema.yaml`)
-- корневой лаунчер `ModManager.bat`
+- каталог `mod-manager-plus/` (Avalonia/.NET: `src/`, `scripts/`, `legacy/`)
+- корневые лаунчеры `ModManager.bat` / `ModManager.sh`
 - `docs/` (architecture, ADR), `.cursor/`, `AGENTS.md`
 
-**Не** держать in-tree: `mods/`, `programs/`, `ext/`, `include/`, `cmake/`, `lua-typing/`, Hugo-витрину, kit/release CI / copy-mods / CMake-сборку / ps2exe-релиз MM без нового ADR.
+Self-contained артефакт: **`TNI-ModManager-Plus`** / `.exe` (имя без версии; версия в assembly / title).
 
-Игроки ставят моды из **релизов GitHub** upstream (`CJFWeatherhead/TNI-Mods`). Исходники модов — там же.
+**Не** держать in-tree: `mods/`, `programs/`, kit, Hugo, kit/release CI без нового ADR.
 
-Стек MM на `alpha`: **PowerShell + WPF** (не Python).
-
-### Почему
-
-Нужен фокус на менеджере для игроков; кит и каталог модов дублируют upstream и мешают.
+Игроки ставят моды из **релизов GitHub** upstream (`CJFWeatherhead/TNI-Mods`).
 
 ### Связанные документы
 
 - [`architecture.md`](architecture.md) · [`ModManager-README.md`](../mod-manager-plus/ModManager-README.md) · [`README.md`](../README.md)
+
+---
+
+## ADR-003: Стек = .NET 8 + Avalonia 11 (Windows + Linux)
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Принято |
+| **Дата** | 2026-07-29 |
+| **Ветка** | `alpha` |
+
+### Решение
+
+Кроссплатформенный GUI: **.NET 8 + Avalonia 11** (MVVM) в `mod-manager-plus/src/`.
+
+- Целевые ОС: **Windows** и **Linux** (Steam Deck).
+- UI визуально повторяет legacy WPF (`mod-manager-plus/legacy/ModManagerGUI.ps1`) до отдельного редизайна.
+- Ядро без UI: `TniModManager.Core` (paths, GitHub, mods, config, aliases).
+- `ui-config.ps1` **не исполняется**; Parameters — из `metadata.yaml` / `mod.jsonc`.
+- Userdata: Windows `Mods` / `Mods_Disabled`; Linux `mods` / `mods_disabled`.
+
+Legacy PowerShell+WPF — только эталон в `legacy/` до явного cutover.
+
+### Почему
+
+WPF не работает на Linux. Avalonia ближе к WPF/XAML и даёт один UI на Win+Linux.
+
+### Связанные документы
+
+- [`architecture.md`](architecture.md) · [`README.md`](../README.md)
 
 ---
 
@@ -62,4 +88,8 @@ Accepted 2026-07-29. Only `alpha` is the working branch; the Python/PySide6 `bet
 
 ## ADR-002: Scope = Mod Manager only
 
-Accepted 2026-07-29. Keep PowerShell + WPF Mod Manager in `mod-manager-plus/` (plus root `ModManager.bat`) and project docs. Do not keep the modding kit, in-tree mods, Hugo site, or release/kit CI. Mod sources remain upstream.
+Accepted 2026-07-29. Keep Mod Manager app and project docs. Kit/mods/Hugo/CI stay out of tree.
+
+## ADR-003: Stack = .NET 8 + Avalonia 11 (Windows + Linux)
+
+Accepted 2026-07-29. Cross-platform GUI via Avalonia; Core library for paths/GitHub/mods; legacy PS1 kept as reference only. Do not execute `ui-config.ps1`.

@@ -1,0 +1,79 @@
+using TniModManager.Core.Config;
+using TniModManager.Core.Mods;
+using TniModManager.Core.Paths;
+using TniModManager.Core.Util;
+
+namespace TniModManager.Core.Tests;
+
+public class SemVerTests
+{
+    [Theory]
+    [InlineData("1.0.0", "1.0.0", 0)]
+    [InlineData("1.0.1", "1.0.0", 1)]
+    [InlineData("1.0.0", "1.0.1", -1)]
+    [InlineData("2.0", "1.9.9", 1)]
+    public void Compare_Works(string a, string b, int expected) =>
+        Assert.Equal(expected, SemVer.Compare(a, b));
+}
+
+public class EntryLuaConfigTests
+{
+    [Fact]
+    public void RoundTrip_ConfigBlock()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "tni-mm-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, "entry.lua");
+        File.WriteAllText(path, """
+            -- ===== MOD CONFIGURATION START =====
+            local config = {
+                money_amount = 100,
+                debug_logging = false,
+            }
+            -- ===== MOD CONFIGURATION END =====
+            print("ok")
+            """);
+
+        var read = EntryLuaConfig.Read(path);
+        Assert.Equal(100, Convert.ToInt32(read["money_amount"]));
+        Assert.Equal(false, read["debug_logging"]);
+
+        read["money_amount"] = 250;
+        read["debug_logging"] = true;
+        Assert.True(EntryLuaConfig.Write(path, read));
+
+        var again = EntryLuaConfig.Read(path);
+        Assert.Equal(250, Convert.ToInt32(again["money_amount"]));
+        Assert.Equal(true, again["debug_logging"]);
+    }
+}
+
+public class GamePathsTests
+{
+    [Fact]
+    public void Create_HasExpectedLeafNames()
+    {
+        var paths = GamePaths.Create();
+        Assert.False(string.IsNullOrWhiteSpace(paths.GameDataPath));
+        Assert.True(paths.ModsDirectory.EndsWith("mods", StringComparison.OrdinalIgnoreCase)
+                    || paths.ModsDirectory.EndsWith("Mods"));
+    }
+}
+
+public class ZipExtractTests
+{
+    [Fact]
+    public void Extract_DirectFolderLayout()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "tni-zip-" + Guid.NewGuid().ToString("N"));
+        var staging = Path.Combine(root, "staging", "demo-mod");
+        Directory.CreateDirectory(staging);
+        File.WriteAllText(Path.Combine(staging, "entry.lua"), "-- hi");
+        var zip = Path.Combine(root, "demo.zip");
+        System.IO.Compression.ZipFile.CreateFromDirectory(Path.Combine(root, "staging"), zip);
+
+        var target = Path.Combine(root, "out", "demo-mod");
+        ModInstallService.ExtractModZip(zip, "demo-mod", target);
+        Assert.True(File.Exists(Path.Combine(target, "entry.lua")));
+    }
+}

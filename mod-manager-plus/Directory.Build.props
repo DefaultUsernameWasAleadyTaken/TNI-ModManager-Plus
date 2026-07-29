@@ -1,0 +1,6 @@
+<Project>
+  <!-- Avoid Avalonia BuildServices writing outside the repo (sandbox / CI). -->
+  <PropertyGroup>
+    <AvaloniaSkipTelemetry>true</AvaloniaSkipTelemetry>
+  </PropertyGroup>
+</Project>

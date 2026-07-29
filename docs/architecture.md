@@ -1,6 +1,6 @@
 # Architecture — TNI-ModManager-Plus (`alpha`)
 
-**Ветка / Branch:** `alpha` · **Стек / Stack:** PowerShell + WPF · **Scope:** [ADR-002](decisions.md) (Mod Manager only)
+**Ветка / Branch:** `alpha` · **Стек / Stack:** .NET 8 + Avalonia 11 · **Scope:** [ADR-002](decisions.md) · **UI:** [ADR-003](decisions.md)
 
 ---
 
@@ -10,24 +10,26 @@
 
 | Область | Путь | Роль |
 |---------|------|------|
-| Приложение | `mod-manager-plus/` | PowerShell + WPF MM |
-| GUI | `mod-manager-plus/ModManagerGUI.ps1` | основной скрипт |
-| Лаунчер | `ModManager.bat` → `mod-manager-plus/ModManagerGUI.ps1` | Windows |
-| Конфиг модов | маркеры в `entry.lua` (см. `mod-manager-plus/ModManager-README.md`) | Parameters |
-| Схема | `mod-manager-plus/mod-metadata-schema.yaml` | контракт `metadata.yaml` (справочно) |
+| Solution | `mod-manager-plus/TniModManager.sln` | .NET solution |
+| GUI | `mod-manager-plus/src/TniModManager/` | Avalonia desktop |
+| Core | `mod-manager-plus/src/TniModManager.Core/` | paths, GitHub, mods, config, aliases |
+| Tests | `mod-manager-plus/tests/` | xUnit |
+| Legacy | `mod-manager-plus/legacy/ModManagerGUI.ps1` | эталон WPF (не runtime) |
+| Лаунчеры | `ModManager.bat`, `ModManager.sh` | Win / Linux |
 | Docs | `docs/*.md` | архитектура, ADR |
 
-**Userdata игры (Windows):**
-
 ```text
-%APPDATA%\Godot\app_userdata\Tower Networking Inc\
-├── Mods\
-├── Mods_Disabled\
-├── mod_cache.json
-└── settings.json
+ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 ```
 
-Каталог релизов по умолчанию: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
+**Userdata:**
+
+| ОС | Mods | Disabled |
+|----|------|----------|
+| Windows | `…\Tower Networking Inc\Mods` | `Mods_Disabled` |
+| Linux | `…/Tower Networking Inc/mods` | `mods_disabled` |
+
+Каталог релизов: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
 
 ### Связанные документы
 
@@ -37,4 +39,4 @@
 
 ## English
 
-Fork scope is **Mod Manager only** ([ADR-002](decisions.md)): PowerShell + WPF in `mod-manager-plus/`. Kit and mod sources live upstream. See [decisions.md](decisions.md).
+Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core library ([ADR-003](decisions.md)). Legacy PowerShell GUI is reference-only under `legacy/`.

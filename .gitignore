@@ -16,6 +16,10 @@ changes.diff
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# Build / packaging leftovers (if any)
+# .NET
+**/bin/
+**/obj/
+mod-manager-plus/publish/
+*.user
 *.exe
 *.zip
