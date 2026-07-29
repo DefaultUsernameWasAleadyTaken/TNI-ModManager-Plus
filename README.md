@@ -2,7 +2,7 @@
 
 Кроссплатформенный **Mod Manager** (.NET 8 + Avalonia) для [Tower Networking Inc](https://store.steampowered.com/app/2939600/Tower_Networking_Inc/).
 
-Форк [`CJFWeatherhead/TNI-Mods`](https://github.com/CJFWeatherhead/TNI-Mods), суженный до **только Mod Manager** ([ADR-002](docs/decisions.md)). Стек: [ADR-003](docs/decisions.md). Ветка: **`beta`**.
+Форк [`CJFWeatherhead/TNI-Mods`](https://github.com/CJFWeatherhead/TNI-Mods), суженный до **только Mod Manager** ([ADR-002](docs/decisions.md)). Стек: [ADR-003](docs/decisions.md). Ветки: **`beta`** (разработка), **`main`** (релиз) — [ADR-006](docs/decisions.md), [docs/releasing.md](docs/releasing.md).
 
 ---
 
@@ -44,8 +44,9 @@ mod-manager-plus/
   src/TniModManager.Core/      # логика без UI
   tests/
   scripts/publish.sh|.cmd      # self-contained publish
+  Version.props                # версия приложения
 ModManager.bat / ModManager.sh
-docs/
+docs/                          # в т.ч. releasing.md
 ```
 
 ### Self-contained бинарник
@@ -60,4 +61,4 @@ BSD 3-Clause — [`LICENSE`](LICENSE).
 
 ## English
 
-Cross-platform Mod Manager (.NET 8 + Avalonia) for Windows and Linux. Working branch: **`beta`**. Launch: `ModManager.bat` / `./ModManager.sh`. See [docs/decisions.md](docs/decisions.md) (ADR-003).
+Cross-platform Mod Manager (.NET 8 + Avalonia) for Windows and Linux. Branches: **`beta`** (dev), **`main`** (release). Launch: `ModManager.bat` / `./ModManager.sh`. See [docs/releasing.md](docs/releasing.md).

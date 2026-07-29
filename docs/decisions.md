@@ -144,3 +144,35 @@ Accepted 2026-07-29. Drop in-tree legacy PS1; Avalonia app is the sole product.
 ## ADR-005: Working base = `beta`; delete `alpha`
 
 Accepted 2026-07-29. `beta` holds the Avalonia Mod Manager tip; `alpha` removed from origin. Do not use `main` as product base.
+
+**Статус (обновление 2026-07-29):** частично заменён [ADR-006](#adr-006-релизы-приложения-и-роли-веток-betamain): `main` снова релизная линия; `beta` — разработка. Удаление `alpha` остаётся в силе.
+
+---
+
+## ADR-006: Релизы приложения и роли веток beta/main
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Принято |
+| **Дата** | 2026-07-29 |
+| **Ветки** | `beta` (разработка), `main` (релиз) |
+
+### Решение
+
+- Релизы **приложения** Mod Manager Plus — только GitHub Releases репозитория форка `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`.
+- **Моды** из этого репо не публикуются; каталог модов — upstream `CJFWeatherhead/TNI-Mods`.
+- Единый источник версии: [`mod-manager-plus/Version.props`](../mod-manager-plus/Version.props); рантайм читает InformationalVersion сборки.
+- Канонические ассеты: `TNI-ModManager-Plus-linux-x64.zip`, `TNI-ModManager-Plus-win-x64.zip`.
+- Push в **`main`**: Actions сравнивает `Version.props` с Latest; если версия **новее** (или релизов ещё нет) — publish + tag `vX.Y.Z` + Release. Если версия **та же** — skip.
+- Запасной hard-skip: `[skip release]` в сообщении коммита.
+- Гайд: [`docs/releasing.md`](releasing.md).
+
+### Почему
+
+Один понятный путь для self-update без ручной загрузки zip; bump версии = явное намерение выложить релиз.
+
+### English
+
+## ADR-006: App releases and beta/main roles
+
+Accepted 2026-07-29. App releases on the fork only; Version.props is the single version source; push to `main` auto-releases when the version is newer than Latest. Mods are never released from this repo.

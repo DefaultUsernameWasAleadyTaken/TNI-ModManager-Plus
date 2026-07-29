@@ -20,6 +20,7 @@ changes.diff
 **/bin/
 **/obj/
 mod-manager-plus/publish/
+mod-manager-plus/dist/
 *.user
 *.exe
 *.zip

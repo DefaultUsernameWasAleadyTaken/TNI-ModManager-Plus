@@ -1,0 +1,157 @@
+name: Release Mod Manager Plus
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.decide.outputs.should_release }}
+      version: ${{ steps.decide.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to release
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          MSG="${{ github.event.head_commit.message }}"
+          if printf '%s' "$MSG" | grep -qF '[skip release]'; then
+            echo "Commit requests [skip release]"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          VERSION="$(grep -oP '(?<=<Version>)[^<]+' mod-manager-plus/Version.props | head -1)"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid Version.props: '$VERSION'"
+            exit 1
+          fi
+          echo "Version.props=$VERSION"
+
+          LATEST_JSON="$(gh api "repos/${{ github.repository }}/releases/latest" 2>/dev/null || true)"
+          LATEST_TAG=""
+          if [[ -n "$LATEST_JSON" ]] && echo "$LATEST_JSON" | jq -e '.tag_name' >/dev/null 2>&1; then
+            LATEST_TAG="$(echo "$LATEST_JSON" | jq -r '.tag_name')"
+          fi
+          LATEST_VER="$(printf '%s' "$LATEST_TAG" | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1 || true)"
+          echo "Latest release tag=${LATEST_TAG:-<none>} ver=${LATEST_VER:-<none>}"
+
+          if git rev-parse "refs/tags/v${VERSION}" >/dev/null 2>&1 \
+             || git ls-remote --tags origin "refs/tags/v${VERSION}" | grep -q .; then
+            echo "Tag v${VERSION} already exists — skip"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$LATEST_VER" ]]; then
+            echo "No prior release — will publish v${VERSION}"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NEWEST="$(printf '%s\n%s\n' "$LATEST_VER" "$VERSION" | sort -V | tail -1)"
+          if [[ "$VERSION" == "$LATEST_VER" ]]; then
+            echo "Version unchanged ($VERSION) — skip release"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [[ "$NEWEST" != "$VERSION" ]]; then
+            echo "Version.props ($VERSION) is not newer than latest ($LATEST_VER) — skip"
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Will release v${VERSION}"
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish linux-x64
+        run: |
+          set -euo pipefail
+          chmod +x mod-manager-plus/scripts/publish.sh
+          ./mod-manager-plus/scripts/publish.sh linux-x64
+          mkdir -p dist
+          (cd mod-manager-plus/publish/linux-x64 && zip -qr "$GITHUB_WORKSPACE/dist/TNI-ModManager-Plus-linux-x64.zip" .)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64-zip
+          path: dist/TNI-ModManager-Plus-linux-x64.zip
+
+  build-windows:
+    needs: prepare
+    if: needs.prepare.outputs.should_release == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish win-x64
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          & .\mod-manager-plus\scripts\publish.cmd win-x64
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $src = "mod-manager-plus\publish\win-x64"
+          Compress-Archive -Path "$src\*" -DestinationPath "dist\TNI-ModManager-Plus-win-x64.zip" -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-x64-zip
+          path: dist/TNI-ModManager-Plus-win-x64.zip
+
+  release:
+    needs: [prepare, build-linux, build-windows]
+    if: needs.prepare.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          name: Mod Manager Plus ${{ needs.prepare.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: |
+            dist/TNI-ModManager-Plus-linux-x64.zip
+            dist/TNI-ModManager-Plus-win-x64.zip

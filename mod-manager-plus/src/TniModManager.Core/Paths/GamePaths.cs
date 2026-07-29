@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace TniModManager.Core.Paths;
@@ -7,10 +8,28 @@ public sealed class GamePaths
     public const string ConfigFileName = "entry.lua";
     public const string ManagedMarkerFileName = "mod.managed";
     public const int SteamAppId = 2939600;
-    public const string ModManagerVersion = "1.0.0";
     public const string AppDisplayName = "Mod Manager Plus";
     public const string GitHubRepo = "CJFWeatherhead/TNI-Mods";
     public const string AppGitHubRepo = "DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus";
+
+    /// <summary>Версия приложения из Version.props (InformationalVersion сборки Core).</summary>
+    public static string ModManagerVersion
+    {
+        get
+        {
+            var info = typeof(GamePaths).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+                ?.InformationalVersion;
+            if (!string.IsNullOrWhiteSpace(info))
+            {
+                var plus = info.IndexOf('+');
+                return plus >= 0 ? info[..plus] : info;
+            }
+
+            var v = typeof(GamePaths).Assembly.GetName().Version;
+            return v is null ? "0.0.0" : $"{v.Major}.{v.Minor}.{v.Build}";
+        }
+    }
 
     public string GameDataPath { get; }
     public string ModsDirectory { get; }
