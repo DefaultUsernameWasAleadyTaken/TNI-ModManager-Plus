@@ -39,3 +39,14 @@ chmod +x mod-manager-plus/scripts/publish.sh
 - Launch game via Steam (`2939600`)
 - Light / dark theme (persisted in `mm_plus_ui.json`)
 - Self-update check against the fork’s latest GitHub release
+
+## Version & releases
+
+Single source: [`Version.props`](Version.props). Bump it on `beta`, merge to `main` → GitHub Actions publishes both platform zips. See [`docs/releasing.md`](../docs/releasing.md).
+
+Local smoke (no GitHub upload):
+
+```bash
+./mod-manager-plus/scripts/make-release.sh
+# → mod-manager-plus/dist/TNI-ModManager-Plus-*-x64.zip
+```

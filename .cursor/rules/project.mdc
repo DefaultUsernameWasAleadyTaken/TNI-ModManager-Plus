@@ -1,18 +1,19 @@
 ---
-description: TNI-ModManager-Plus — ветка beta, Avalonia Mod Manager
+description: TNI-ModManager-Plus — beta/main, Avalonia Mod Manager
 alwaysApply: true
 ---
 
 # TNI-ModManager-Plus — project rules
 
 - **Проект:** fork `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus` ← `CJFWeatherhead/TNI-Mods`. Remote: `origin` = fork.
-- **Единственная рабочая ветка:** `beta`. Ветку `main` **не использовать** как продуктовую базу.
+- **Ветки ([ADR-006](docs/decisions.md)):** `beta` — разработка; `main` — релиз (Actions при новой версии в `Version.props`). `alpha` не использовать.
 - **Язык с пользователем:** русский.
 - **Авто-режим:** не спрашивать подтверждения на рутину. Commit/push/upstream PR — только по **явной** просьбе.
 - **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — `mod-manager-plus/`, `ModManager.bat` / `ModManager.sh`, `docs/`. **Не** возвращать kit/mods/Hugo без нового ADR.
 - **Стек ([ADR-003](docs/decisions.md)):** .NET 8 + Avalonia 11 (`src/TniModManager/`, `src/TniModManager.Core/`).
+- **Версия:** только `mod-manager-plus/Version.props`. Релизы приложения — на форке; моды — не из этого репо. См. `docs/releasing.md`.
 - **Userdata:** Windows `…\Mods\`; Linux `…/mods/` (lowercase).
 - **Каталог модов:** релизы GitHub `CJFWeatherhead/TNI-Mods`.
-- **Docs:** `docs/architecture.md`, `docs/decisions.md`, `AGENTS.md`, `mod-manager-plus/ModManager-README.md`.
+- **Docs:** `docs/architecture.md`, `docs/decisions.md`, `docs/releasing.md`, `AGENTS.md`, `mod-manager-plus/ModManager-README.md`.
 - **Субагенты:** дели, делегируй, проверяй.
 - **Upstream PR:** не создавать без явной просьбы.

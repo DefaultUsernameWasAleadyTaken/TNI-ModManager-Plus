@@ -1,6 +1,9 @@
 <Project>
+  <Import Project="Version.props" />
   <!-- Avoid Avalonia BuildServices writing outside the repo (sandbox / CI). -->
   <PropertyGroup>
     <AvaloniaSkipTelemetry>true</AvaloniaSkipTelemetry>
+    <!-- Версия = Version.props без суффикса +gitsha -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 </Project>

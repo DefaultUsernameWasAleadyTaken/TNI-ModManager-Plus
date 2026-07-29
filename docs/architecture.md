@@ -1,6 +1,6 @@
-# Architecture — TNI-ModManager-Plus (`beta`)
+# Architecture — TNI-ModManager-Plus
 
-**Ветка / Branch:** `beta` · **Стек / Stack:** .NET 8 + Avalonia 11 · **Scope:** [ADR-002](decisions.md) · **UI:** [ADR-003](decisions.md)
+**Ветки / Branches:** `beta` (разработка) · `main` (релиз) · **Стек / Stack:** .NET 8 + Avalonia 11 · **Scope:** [ADR-002](decisions.md) · **Релизы:** [ADR-006](decisions.md), [releasing.md](releasing.md)
 
 ---
 
@@ -14,8 +14,9 @@
 | GUI | `mod-manager-plus/src/TniModManager/` | Avalonia desktop |
 | Core | `mod-manager-plus/src/TniModManager.Core/` | paths, GitHub, mods, config, aliases |
 | Tests | `mod-manager-plus/tests/` | xUnit |
+| Версия | `mod-manager-plus/Version.props` | единственный источник версии приложения |
 | Лаунчеры | `ModManager.bat`, `ModManager.sh` | Win / Linux |
-| Docs | `docs/*.md` | архитектура, ADR |
+| Docs | `docs/*.md` | архитектура, ADR, releasing |
 
 ```text
 ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
@@ -28,7 +29,7 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 | Windows | `…\Tower Networking Inc\Mods` |
 | Linux | `…/Tower Networking Inc/mods` |
 
-Каталог релизов: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
+Каталог модов: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
 
 ### UI shell
 
@@ -42,12 +43,16 @@ enabled/disabled каталогами. Self-update проверяет latest rel
 `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`; при невозможности автозамены
 открывается страница релиза.
 
+### Релизы приложения
+
+Версия — `Version.props`. Push в `main` с **новой** версией запускает [`.github/workflows/release.yml`](../.github/workflows/release.yml) (два zip + GitHub Release). Подробности: [releasing.md](releasing.md).
+
 ### Связанные документы
 
-- [decisions.md](decisions.md) · [ModManager-README.md](../mod-manager-plus/ModManager-README.md) · [README.md](../README.md)
+- [decisions.md](decisions.md) · [releasing.md](releasing.md) · [ModManager-README.md](../mod-manager-plus/ModManager-README.md) · [README.md](../README.md)
 
 ---
 
 ## English
 
-Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core library ([ADR-003](decisions.md)).
+Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core ([ADR-003](decisions.md)). App releases on push to `main` when `Version.props` is newer ([ADR-006](decisions.md)).
