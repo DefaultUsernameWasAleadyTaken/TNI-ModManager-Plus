@@ -37,7 +37,7 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 (заголовок, статус, тема / язык / update / launch), прогресс загрузки и `TabControl` с
 `Views/ModsView.axaml` и `Views/AliasesView.axaml`. `MainViewModel` служит shell,
 а `ModsViewModel` и `AliasesViewModel` содержат логику вкладок. Цвета — Light/Dark `ThemeDictionaries`
-через динамические ресурсы; тема и задел языка (`en`) в `mm_plus_ui.json`. Менеджер
+через динамические ресурсы; тема и язык (`en` / `ru`) в `mm_plus_ui.json`. Менеджер
 устанавливает, обновляет и удаляет управляемые моды, но не переносит их между
 enabled/disabled каталогами. Self-update проверяет latest release форка
 `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`; при невозможности автозамены

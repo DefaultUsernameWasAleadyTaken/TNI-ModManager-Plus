@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TniModManager.Core.Aliases;
 using TniModManager.Core.Settings;
+using TniModManager.Localization;
 
 namespace TniModManager.ViewModels;
 
@@ -21,7 +22,7 @@ public partial class AliasesViewModel : ViewModelBase
     [ObservableProperty] private AliasListItemViewModel? _selectedAlias;
     [ObservableProperty] private string _aliasName = "";
     [ObservableProperty] private string _aliasCommand = "";
-    [ObservableProperty] private string _aliasKindText = "Plain";
+    [ObservableProperty] private string _aliasKindText = "";
     [ObservableProperty] private IBrush _aliasKindBrush = Brushes.Gray;
     [ObservableProperty] private string _aliasPreview = "";
     [ObservableProperty] private bool _aliasEditorVisible;
@@ -83,7 +84,7 @@ public partial class AliasesViewModel : ViewModelBase
             .Where(alias => !string.IsNullOrWhiteSpace(alias.Name))
             .ToDictionary(alias => alias.Name.Trim(), alias => alias.Command, StringComparer.Ordinal);
         _settings.SaveAliases(aliases);
-        _shell.SetStatus("Aliases saved.");
+        _shell.SetStatus(UiStrings.AliasesSaved);
         ReloadAliases();
     }
 
@@ -112,6 +113,13 @@ public partial class AliasesViewModel : ViewModelBase
         AliasKindBrush = ThemeBrushResolver.GetAlias(AliasAnalyzer.Analyze(AliasCommand));
     }
 
+    public void RefreshLocalizedLabels()
+    {
+        foreach (var alias in Aliases)
+            alias.RefreshLocalizedLabels();
+        UpdateAliasPreview();
+    }
+
     private void ReloadAliases()
     {
         Aliases.Clear();
@@ -122,8 +130,9 @@ public partial class AliasesViewModel : ViewModelBase
     private void UpdateAliasPreview()
     {
         var kind = AliasAnalyzer.Analyze(AliasCommand);
-        AliasKindText = kind.ToString();
+        AliasKindText = UiStrings.FormatAliasKind(kind);
         AliasKindBrush = ThemeBrushResolver.GetAlias(kind);
-        AliasPreview = string.IsNullOrWhiteSpace(AliasCommand) ? "(empty)" : AliasCommand;
+        AliasPreview = string.IsNullOrWhiteSpace(AliasCommand) ? UiStrings.EmptyPreview : AliasCommand;
+        SelectedAlias?.RefreshLocalizedLabels();
     }
 }
