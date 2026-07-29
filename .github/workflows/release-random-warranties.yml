@@ -1,0 +1,30 @@
+name: Release random-warranties
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mods/random-warranties/**'
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+concurrency:
+  group: mod-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: ./.github/workflows/mod-release-reusable.yml
+    with:
+      mod_name: 'random-warranties'
+      bump_type: ${{ inputs.bump_type || 'patch' }}

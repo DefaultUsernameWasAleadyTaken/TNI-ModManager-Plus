@@ -1,0 +1,48 @@
+# Build outputs
+**/.build/
+**/.zig/
+*.o
+*.a
+*.so
+*.elf
+*.exe
+*.out
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Temporary files
+changes.diff
+*~
+*.swp
+*.swo
+*.tmp
+*.bak
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Mod build outputs
+mods/**/*.elf
+
+# Exceptions
+!programs/luajit-support/libluajit.a
+!programs/luajit-support/zig-libluajit.a
+
+# Project specific
+.vscode/settings.json
+TNI-Mods.code-workspace
+STEAM-COMMUNITY-GUIDE.md
