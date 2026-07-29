@@ -13,7 +13,7 @@ alwaysApply: true
 - **Стек ([ADR-003](docs/decisions.md)):** .NET 8 + Avalonia 11 (`src/TniModManager/`, `src/TniModManager.Core/`).
 - **Версия:** только `mod-manager-plus/Version.props`. Релизы приложения — на форке; моды — не из этого репо. См. `docs/releasing.md`.
 - **Userdata:** Windows `…\Mods\`; Linux `…/mods/` (lowercase).
-- **Каталог модов:** релизы GitHub `CJFWeatherhead/TNI-Mods`.
+- **Каталог модов:** репозитории из `mod-manager-plus/mod-sources.json` (не путать с релизами самого MM).
 - **Docs:** `docs/architecture.md`, `docs/decisions.md`, `docs/releasing.md`, `AGENTS.md`, `mod-manager-plus/ModManager-README.md`.
 - **Субагенты:** дели, делегируй, проверяй.
 - **Upstream PR:** не создавать без явной просьбы.

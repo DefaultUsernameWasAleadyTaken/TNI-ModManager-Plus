@@ -28,7 +28,7 @@ dotnet run --project src/TniModManager/TniModManager.csproj
 
 ### Возможности
 
-- каталог и установка модов из GitHub Releases (`CJFWeatherhead/TNI-Mods`);
+- каталог и установка модов из GitHub Releases ([`mod-sources.json`](mod-manager-plus/mod-sources.json));
 - обновление / удаление / вкл-выкл;
 - параметры через маркеры в `entry.lua`;
 - алиасы в `settings.json` игры;
