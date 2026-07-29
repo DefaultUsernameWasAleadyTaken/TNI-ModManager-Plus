@@ -1,45 +1,40 @@
 # Architecture — TNI-ModManager-Plus (`alpha`)
 
-**Ветка / Branch:** `alpha` · **База / Base:** полный TNI-Mods kit · **Решение / Decision:** [ADR-001](decisions.md)
+**Ветка / Branch:** `alpha` · **Стек / Stack:** PowerShell + WPF · **Scope:** [ADR-002](decisions.md) (Mod Manager only)
 
 ---
 
 ## Русский
 
-Форк работает от **полного baseline** на `alpha` (не от узкого Python MM на `beta`/`main`).
+Форк — **только Mod Manager** для игроков. Моддинг-кит и исходники модов — upstream [`CJFWeatherhead/TNI-Mods`](https://github.com/CJFWeatherhead/TNI-Mods).
 
 | Область | Путь | Роль |
 |---------|------|------|
-| Моды (Lua/C++) | `mods/` | Исходники модов (`entry.lua`, `metadata.yaml`, …) |
-| C++ / LuaJIT | `programs/`, `ext/`, `include/tni/`, `cmake/` | Сборка sandbox-модов |
-| Mod Manager | `ModManagerGUI.ps1`, `ModManager.bat` | PowerShell + WPF GUI для игроков |
-| Конфиг модов | `CONFIG-SYSTEM.md`, маркеры в `entry.lua` | Параметры через MM |
-| Сайт | `docs/` (Hugo + `content/`) | Витрина модов |
-| CI / релизы | `.github/` | Релизы модов, сборки, ps2exe MM |
-| Типизация Lua | `lua-typing/` | Stubs для IDE |
+| Приложение | `mod-manager-plus/` | PowerShell + WPF MM |
+| GUI | `mod-manager-plus/ModManagerGUI.ps1` | основной скрипт |
+| Лаунчер | `ModManager.bat` → `mod-manager-plus/ModManagerGUI.ps1` | Windows |
+| Конфиг модов | маркеры в `entry.lua` (см. `mod-manager-plus/ModManager-README.md`) | Parameters |
+| Схема | `mod-manager-plus/mod-metadata-schema.yaml` | контракт `metadata.yaml` (справочно) |
+| Docs | `docs/*.md` | архитектура, ADR |
 
-**Запуск MM (Windows):** `ModManager.bat` → `ModManagerGUI.ps1`.  
-**Копирование модов в userdata:** `copy-mods.sh` / `copy-mods.cmd`.  
-**Сборка C++:** `build-gnu.sh` / `build-zig.cmd`.
+**Userdata игры (Windows):**
 
-Слои Python `mod-manager/` / PySide6 **не являются** частью текущей архитектуры.
+```text
+%APPDATA%\Godot\app_userdata\Tower Networking Inc\
+├── Mods\
+├── Mods_Disabled\
+├── mod_cache.json
+└── settings.json
+```
+
+Каталог релизов по умолчанию: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
 
 ### Связанные документы
 
-- [decisions.md](decisions.md) · [ModManager-README.md](../ModManager-README.md) · [CONFIG-SYSTEM.md](../CONFIG-SYSTEM.md) · [README.md](../README.md) · [AGENTS.md](../AGENTS.md)
+- [decisions.md](decisions.md) · [ModManager-README.md](../mod-manager-plus/ModManager-README.md) · [README.md](../README.md)
 
 ---
 
 ## English
 
-This fork’s working architecture is the **full kit baseline on `alpha`**. The Python/PySide6 `mod-manager/` experiment on `beta`/`main` is out of scope ([ADR-001](decisions.md)).
-
-| Area | Path | Role |
-|------|------|------|
-| Mods | `mods/` | Mod sources |
-| Native / LuaJIT | `programs/`, `ext/`, `include/tni/` | Sandbox builds |
-| Mod Manager | `ModManagerGUI.ps1`, `ModManager.bat` | PowerShell + WPF |
-| Website | `docs/` (Hugo) | Mod showcase |
-| CI | `.github/` | Releases / packaging |
-
-See also: [decisions.md](decisions.md), [ModManager-README.md](../ModManager-README.md).
+Fork scope is **Mod Manager only** ([ADR-002](decisions.md)): PowerShell + WPF in `mod-manager-plus/`. Kit and mod sources live upstream. See [decisions.md](decisions.md).

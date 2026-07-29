@@ -1,18 +1,18 @@
 ---
-description: TNI-ModManager-Plus — ветка alpha, scope кита, docs, git
+description: TNI-ModManager-Plus — ветка alpha, scope только Mod Manager
 alwaysApply: true
 ---
 
 # TNI-ModManager-Plus — project rules
 
-- **Проект:** fork `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus` ← `CJFWeatherhead/TNI-Mods`. Remote: `origin` = fork. `upstream` опционален.
-- **Единственная рабочая ветка:** `alpha`. Ветки `beta` и `main` **не использовать** — устаревший эксперимент (Python/PySide6 MM); не править, не продолжать, не опираться на их docs/ADR.
+- **Проект:** fork `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus` ← `CJFWeatherhead/TNI-Mods`. Remote: `origin` = fork.
+- **Единственная рабочая ветка:** `alpha`. Ветки `beta` и `main` **не использовать** (устаревший Python/PySide6 эксперимент).
 - **Язык с пользователем:** русский.
-- **Авто-режим:** не спрашивать подтверждения на рутину (правки, команды, субагенты, проверка). Спрашивать только если без ответа нельзя (секрет, разрушительное без просьбы, выбор стратегий без дефолта). Commit/push/upstream PR — только по **явной** просьбе.
-- **Scope ([ADR-001](docs/decisions.md)):** baseline **полного TNI-Mods kit** на `alpha` — моды (`mods/`), C++/LuaJIT (`programs/`, `ext/`, `include/`), Hugo (`docs/`), PowerShell Mod Manager (`ModManagerGUI.ps1` + `ModManager.bat`), kit CI. Разработка **с нуля от этого дерева**, не от Python `mod-manager/`.
-- **Mod Manager (текущий):** Windows — `ModManager.bat` → `ModManagerGUI.ps1` (PowerShell + WPF). Документация: `ModManager-README.md`, `CONFIG-SYSTEM.md`.
-- **Userdata игры (моды):** Windows `%APPDATA%\Godot\app_userdata\Tower Networking Inc\Mods\`; Linux `~/.local/share/godot/app_userdata/Tower Networking Inc/mods/` (lowercase).
-- **Docs:** решения и агент-контекст — `docs/decisions.md`, `docs/architecture.md`, `AGENTS.md`, корневые README / ModManager-*. Hugo-витрина — `docs/content/` (отдельно от ADR). После архитектурных решений обновляй файлы в репо, не только чат.
-- **Субагенты:** дели, делегируй, проверяй; при сбоях — resume/interrupt.
-- **Git:** commit/push только по явной просьбе; без force push без запроса.
-- **Upstream PR:** не создавать PR в `CJFWeatherhead/TNI-Mods` без явной просьбы.
+- **Авто-режим:** не спрашивать подтверждения на рутину. Commit/push/upstream PR — только по **явной** просьбе.
+- **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — `mod-manager-plus/`, корневой `ModManager.bat`, `docs/`. **Не** возвращать `mods/`, kit, Hugo, release/ps2exe CI без нового ADR.
+- **Приложение:** `ModManager.bat` → `mod-manager-plus/ModManagerGUI.ps1` (PowerShell + WPF).
+- **Userdata (Windows):** `%APPDATA%\Godot\app_userdata\Tower Networking Inc\Mods\`. Linux (если понадобится): `~/.local/share/godot/app_userdata/Tower Networking Inc/mods/`.
+- **Каталог модов:** релизы GitHub upstream `CJFWeatherhead/TNI-Mods` (не in-tree).
+- **Docs:** `docs/architecture.md`, `docs/decisions.md`, `AGENTS.md`, `mod-manager-plus/ModManager-README.md`. После решений обновляй файлы в репо.
+- **Субагенты:** дели, делегируй, проверяй.
+- **Upstream PR:** не создавать без явной просьбы.

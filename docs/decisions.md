@@ -14,24 +14,43 @@
 
 ### Решение
 
-Единственная рабочая ветка форка — **`alpha`** (полный pre-fork baseline TNI-Mods: моды, кит, Hugo, PowerShell Mod Manager).
-
-Линия **`beta` / `main`** (Python 3 + PySide6, scope «только Mod Manager», ADR/архитектура того эксперимента) **закрыта**: не развивать, не мержить в `alpha`, не использовать как источник правды для агентов и документации.
-
-Новая разработка ведётся **с нуля от дерева `alpha`**.
-
-### Почему
-
-Эксперимент на `beta`/`main` ушёл не в том направлении. Нужен возврат к исходному киту и понятной базе без наслоения Python MM.
-
-### Следствия
-
-- Cursor rules / `AGENTS.md` / эта страница описывают только `alpha`.
-- Удаление remote-веток `beta`/`main` — только по явной просьбе владельца репо (не делается этим ADR автоматически).
+Единственная рабочая ветка форка — **`alpha`**. Линия **`beta` / `main`** (эксперимент Python/PySide6) **закрыта**.
 
 ### Связанные документы
 
-- [`architecture.md`](architecture.md) · [`AGENTS.md`](../AGENTS.md) · [`ModManager-README.md`](../ModManager-README.md)
+- [`architecture.md`](architecture.md) · [`AGENTS.md`](../AGENTS.md)
+
+---
+
+## ADR-002: Scope форка = только Mod Manager
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Принято |
+| **Дата** | 2026-07-29 |
+| **Ветка** | `alpha` |
+
+### Решение
+
+В репозитории **только** приложение Mod Manager:
+
+- каталог `mod-manager-plus/` (`ModManagerGUI.ps1`, `ModManager-README.md`, опционально `mod-metadata-schema.yaml`)
+- корневой лаунчер `ModManager.bat`
+- `docs/` (architecture, ADR), `.cursor/`, `AGENTS.md`
+
+**Не** держать in-tree: `mods/`, `programs/`, `ext/`, `include/`, `cmake/`, `lua-typing/`, Hugo-витрину, kit/release CI / copy-mods / CMake-сборку / ps2exe-релиз MM без нового ADR.
+
+Игроки ставят моды из **релизов GitHub** upstream (`CJFWeatherhead/TNI-Mods`). Исходники модов — там же.
+
+Стек MM на `alpha`: **PowerShell + WPF** (не Python).
+
+### Почему
+
+Нужен фокус на менеджере для игроков; кит и каталог модов дублируют upstream и мешают.
+
+### Связанные документы
+
+- [`architecture.md`](architecture.md) · [`ModManager-README.md`](../mod-manager-plus/ModManager-README.md) · [`README.md`](../README.md)
 
 ---
 
@@ -39,20 +58,8 @@
 
 ## ADR-001: Working base = `alpha`; abandon `beta`/`main`
 
-| Field | Value |
-|-------|--------|
-| **Status** | Accepted |
-| **Date** | 2026-07-29 |
-| **Branch** | `alpha` |
+Accepted 2026-07-29. Only `alpha` is the working branch; the Python/PySide6 `beta`/`main` experiment is closed.
 
-### Decision
+## ADR-002: Scope = Mod Manager only
 
-The only working branch is **`alpha`** (full pre-fork TNI-Mods baseline). The **`beta`/`main`** Python/PySide6 Mod-Manager-only experiment is **closed** — do not continue or merge it into `alpha`. New work starts from the `alpha` tree.
-
-### Why
-
-That experiment went the wrong direction; reset to the original kit baseline.
-
-### Related
-
-- [`architecture.md`](architecture.md) · [`AGENTS.md`](../AGENTS.md)
+Accepted 2026-07-29. Keep PowerShell + WPF Mod Manager in `mod-manager-plus/` (plus root `ModManager.bat`) and project docs. Do not keep the modding kit, in-tree mods, Hugo site, or release/kit CI. Mod sources remain upstream.

@@ -3,16 +3,13 @@
 ## Русский
 
 - **Рабочая ветка:** только `alpha`.
-- **Не трогать как продуктовую базу:** `beta`, `main` (устаревший Python/PySide6 MM).
-- **Scope:** полный kit на `alpha` — см. [docs/architecture.md](docs/architecture.md), [docs/decisions.md](docs/decisions.md) (ADR-001).
-- **Mod Manager:** `ModManager.bat` → `ModManagerGUI.ps1` (PowerShell + WPF).
+- **Не трогать как продуктовую базу:** `beta`, `main` (устаревший Python MM).
+- **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — каталог `mod-manager-plus/`, корневой `ModManager.bat`, `docs/`. Не возвращать `mods/`, kit, Hugo без нового ADR.
+- **Стек:** PowerShell + WPF (`mod-manager-plus/ModManagerGUI.ps1`).
 - **Язык с пользователем:** русский.
-- **Git publish** (commit / push / PR): только по явной просьбе. PR в upstream `CJFWeatherhead/TNI-Mods` — тоже только по явной просьбе.
+- **Git publish** (commit / push / PR): только по явной просьбе. PR в upstream — тоже только по явной просьбе.
 - Правила Cursor: `.cursor/rules/`.
 
 ## English
 
-- **Working branch:** `alpha` only. Ignore `beta`/`main` as product base.
-- **Scope:** full TNI-Mods kit baseline — [docs/architecture.md](docs/architecture.md), [ADR-001](docs/decisions.md).
-- **Mod Manager:** PowerShell WPF via `ModManagerGUI.ps1`.
-- Commit/push/upstream PR only when explicitly requested.
+- Working branch: `alpha` only. Scope: Mod Manager only in `mod-manager-plus/` (PowerShell + WPF). See [ADR-002](docs/decisions.md).

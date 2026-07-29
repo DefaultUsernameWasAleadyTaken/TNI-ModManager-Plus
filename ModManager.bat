@@ -1,19 +1,16 @@
 @echo off
 REM Tower Networking Inc - Mod Manager Launcher
-REM This batch file launches the PowerShell mod manager with proper execution policy
+REM Launches PowerShell Mod Manager from mod-manager-plus\
 
 SET SCRIPT_DIR=%~dp0
-cd /d "%SCRIPT_DIR%"
+SET MM_DIR=%SCRIPT_DIR%mod-manager-plus
+cd /d "%MM_DIR%"
 
-REM Launch with WPF GUI
-REM Using -ExecutionPolicy Bypass to avoid script execution errors
 where pwsh >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
-    REM PowerShell Core is available
-    pwsh -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%ModManagerGUI.ps1"
+    pwsh -NoProfile -ExecutionPolicy Bypass -File "%MM_DIR%\ModManagerGUI.ps1"
 ) else (
-    REM Fall back to Windows PowerShell
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%ModManagerGUI.ps1"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%MM_DIR%\ModManagerGUI.ps1"
 )
 
 if %ERRORLEVEL% NEQ 0 (
