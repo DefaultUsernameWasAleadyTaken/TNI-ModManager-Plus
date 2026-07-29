@@ -15,7 +15,7 @@
 | Core | `mod-manager-plus/src/TniModManager.Core/` | paths, GitHub, mods, config, aliases |
 | Tests | `mod-manager-plus/tests/` | xUnit |
 | Версия | `mod-manager-plus/Version.props` | единственный источник версии приложения |
-| Лаунчеры | `ModManager.bat`, `ModManager.sh` | Win / Linux |
+| Лаунчеры | `ModManager.bat`, `ModManager.sh` | Win / Linux: `dotnet run` при SDK 8, иначе `publish/…`, иначе автоустановка SDK 8 (user-local) |
 | Docs | `docs/*.md` | архитектура, ADR, releasing |
 
 ```text

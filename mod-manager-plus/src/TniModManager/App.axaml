@@ -88,18 +88,21 @@
     </Style>
 
     <Style Selector="Button.danger">
-      <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
     </Style>
     <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource DangerHoverBgBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBrush}"/>
     </Style>
 
     <Style Selector="Button.warn">
       <Setter Property="Background" Value="{DynamicResource WarnBrush}"/>
       <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
       <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    <Style Selector="Button.warn:pointerover /template/ ContentPresenter">
+      <Setter Property="Opacity" Value="0.92"/>
     </Style>
 
     <Style Selector="Button.ghost">
@@ -132,6 +135,11 @@
       <Setter Property="Margin" Value="0,0,0,4"/>
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="CornerRadius" Value="8"/>
+    </Style>
+    <!-- Компактнее зазоры в списке алиасов -->
+    <Style Selector="ListBox.alias-list ListBoxItem">
+      <Setter Property="Margin" Value="0,0,0,2"/>
+      <Setter Property="CornerRadius" Value="6"/>
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>

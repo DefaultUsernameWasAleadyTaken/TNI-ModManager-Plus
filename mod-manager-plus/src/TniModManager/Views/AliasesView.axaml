@@ -4,34 +4,43 @@
              x:Class="TniModManager.Views.AliasesView"
              x:DataType="vm:AliasesViewModel">
 
-  <Grid ColumnDefinitions="300,*" ColumnSpacing="12" Margin="0,8,0,0">
+  <Grid ColumnDefinitions="240,*" ColumnSpacing="12" Margin="0,8,0,0">
     <Border Grid.Column="0" Classes="panel">
-      <Grid RowDefinitions="Auto,*,Auto" Margin="14">
-        <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,12"/>
+      <Grid RowDefinitions="Auto,*,Auto" Margin="12">
+        <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,10"/>
         <ListBox Grid.Row="1" ItemsSource="{Binding Aliases}"
-                 SelectedItem="{Binding SelectedAlias}">
+                 SelectedItem="{Binding SelectedAlias}" Classes="alias-list">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:AliasListItemViewModel">
-              <Border Padding="12,10">
-                <StackPanel Spacing="6">
-                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                  <Border Background="{Binding KindBrush}" CornerRadius="6" Padding="8,3"
-                          HorizontalAlignment="Left">
-                    <TextBlock Text="{Binding KindLabel}" FontSize="10"
+              <!-- Вариант 3: узкая полоска Kind слева, компактная однострочная строка -->
+              <Border BorderBrush="{Binding KindBrush}" BorderThickness="3,0,0,0"
+                      Padding="8,5" Background="Transparent">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"
+                             TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                  <Border Grid.Column="1" Background="{Binding KindBrush}"
+                          CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding KindLabel}" FontSize="9"
                                Foreground="{DynamicResource OnAccentBrush}"
                                FontWeight="SemiBold"/>
                   </Border>
-                </StackPanel>
+                </Grid>
               </Border>
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
-          <Button Content="{DynamicResource L.NewAlias}" Classes="success"
-                  Command="{Binding AddAliasCommand}"/>
-          <Button Content="{DynamicResource L.Delete}" Classes="danger"
-                  Command="{Binding DeleteAliasCommand}"/>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,10,0,0">
+          <!-- Вариант 2: Новый | Удалить поровну, Сохранить на всю ширину -->
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Button Content="{DynamicResource L.NewAlias}" Classes="success"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding AddAliasCommand}"/>
+            <Button Grid.Column="1" Content="{DynamicResource L.Delete}" Classes="danger"
+                    HorizontalAlignment="Stretch"
+                    Command="{Binding DeleteAliasCommand}"/>
+          </Grid>
           <Button Content="{DynamicResource L.SaveAliases}" Classes="primary"
+                  HorizontalAlignment="Stretch"
                   Command="{Binding SaveAliasesCommand}"/>
         </StackPanel>
       </Grid>
