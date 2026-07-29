@@ -6,22 +6,22 @@
 
   <!-- Auto: панель расширяется, если подписи кнопок (или строк списка) шире -->
   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
-    <Border Grid.Column="0" Classes="panel" MinWidth="200">
-      <Grid RowDefinitions="Auto,*,Auto" Margin="12">
-        <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,10"/>
+    <Border Grid.Column="0" Classes="panel" MinWidth="260">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="14">
+        <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,12"/>
         <ListBox Grid.Row="1" ItemsSource="{Binding Aliases}"
                  SelectedItem="{Binding SelectedAlias}" Classes="alias-list">
           <ListBox.ItemTemplate>
             <DataTemplate x:DataType="vm:AliasListItemViewModel">
-              <!-- Вариант 3: узкая полоска Kind слева, компактная однострочная строка -->
-              <Border BorderBrush="{Binding KindBrush}" BorderThickness="3,0,0,0"
-                      Padding="8,5" Background="Transparent">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="12"
+              <!-- Полоска Kind слева; крупнее шрифт/отступы для читаемости -->
+              <Border BorderBrush="{Binding KindBrush}" BorderThickness="4,0,0,0"
+                      Padding="10,8" Background="Transparent" MinHeight="36">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14"
                              TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                   <Border Grid.Column="1" Background="{Binding KindBrush}"
-                          CornerRadius="4" Padding="5,1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding KindLabel}" FontSize="9"
+                          CornerRadius="5" Padding="8,3" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding KindLabel}" FontSize="11"
                                Foreground="{DynamicResource OnAccentBrush}"
                                FontWeight="SemiBold"/>
                   </Border>

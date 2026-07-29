@@ -112,8 +112,7 @@
               <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8"
                       Padding="12" MaxHeight="200" Margin="0,8,0,0">
                 <ScrollViewer>
-                  <TextBlock Text="{Binding ModDescriptionText}" TextWrapping="Wrap"
-                             Classes="muted"/>
+                  <TextBlock Text="{Binding ModDescriptionText}" TextWrapping="Wrap"/>
                 </ScrollViewer>
               </Border>
             </Expander>
