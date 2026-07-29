@@ -48,6 +48,11 @@ public static class UiStrings
             ? "Обновление установлено. Перезапустите приложение."
             : "Update installed. Restart the app to use the new version.";
 
+    public static string UpdateRestarting =>
+        Ru
+            ? "Обновление установлено. Перезапуск…"
+            : "Update installed. Restarting...";
+
     public static string NoCompatibleAsset =>
         Ru ? "Не найден подходящий файл релиза." : "No compatible release asset was found.";
 

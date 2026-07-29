@@ -260,29 +260,41 @@ public partial class MainViewModel : ViewModelBase, IAppShell
     {
         var targetPath = Environment.ProcessPath
             ?? throw new InvalidOperationException(UiStrings.CannotLocateExecutable);
+        var workDir = Path.GetDirectoryName(targetPath) ?? Environment.CurrentDirectory;
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             var stagedPath = targetPath + ".update";
             File.Copy(payloadPath, stagedPath, true);
             var scriptPath = Path.Combine(Path.GetTempPath(), $"tni-mm-update-{Guid.NewGuid():N}.cmd");
+            var pid = Environment.ProcessId;
+            // Wait-Process + start /B: updater не умирает вместе с приложением.
             File.WriteAllText(scriptPath, $"""
                 @echo off
-                :wait
-                tasklist /FI "PID eq {Environment.ProcessId}" | find "{Environment.ProcessId}" >nul
-                if not errorlevel 1 (
+                powershell -NoProfile -ExecutionPolicy Bypass -Command "Wait-Process -Id {pid} -ErrorAction SilentlyContinue"
+                set "TRIES=0"
+                :retry
+                set /a TRIES+=1
+                move /Y "{stagedPath}" "{targetPath}" >nul 2>&1
+                if errorlevel 1 if %TRIES% LSS 15 (
                   timeout /t 1 /nobreak >nul
-                  goto wait
+                  goto retry
                 )
-                move /Y "{stagedPath}" "{targetPath}" >nul
+                cd /d "{workDir}"
                 start "" "{targetPath}"
                 del "%~f0"
                 """);
-            Process.Start(new ProcessStartInfo("cmd.exe", $"/C \"{scriptPath}\"")
+            Process.Start(new ProcessStartInfo
             {
+                FileName = "cmd.exe",
+                // start /B — отдельный процесс вне дерева MM, иначе Shutdown убивает updater
+                Arguments = $"/C start \"TNI-MM-Update\" /B cmd.exe /C \"\"{scriptPath}\"\"",
                 UseShellExecute = false,
-                CreateNoWindow = true
+                CreateNoWindow = true,
+                WorkingDirectory = Path.GetTempPath()
             });
-            SetStatus(UiStrings.UpdateDownloadedClose);
+            SetStatus(UiStrings.UpdateRestarting);
+            ScheduleAppShutdown();
             return;
         }
 
@@ -291,7 +303,26 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         File.Copy(payloadPath, stagedLinuxPath, true);
         File.SetUnixFileMode(stagedLinuxPath, mode);
         File.Move(stagedLinuxPath, targetPath, true);
-        SetStatus(UiStrings.UpdateInstalledRestart);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = targetPath,
+            WorkingDirectory = workDir,
+            UseShellExecute = true
+        });
+        SetStatus(UiStrings.UpdateRestarting);
+        ScheduleAppShutdown();
+    }
+
+    /// <summary>Закрыть UI после старта updater/нового процесса, чтобы подмена exe прошла.</summary>
+    private static void ScheduleAppShutdown()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                desktop.Shutdown();
+            else
+                Environment.Exit(0);
+        }, DispatcherPriority.Background);
     }
 
     private static void OpenLatestReleasePage() => Process.Start(new ProcessStartInfo(
