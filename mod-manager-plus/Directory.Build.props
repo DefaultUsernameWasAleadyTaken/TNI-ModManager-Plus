@@ -3,7 +3,8 @@
   <!-- Avoid Avalonia BuildServices writing outside the repo (sandbox / CI). -->
   <PropertyGroup>
     <AvaloniaSkipTelemetry>true</AvaloniaSkipTelemetry>
-    <!-- Версия = Version.props без суффикса +gitsha -->
+    <!-- Один номер в Version.props → и Version, и InformationalVersion без +gitsha -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
   </PropertyGroup>
 </Project>

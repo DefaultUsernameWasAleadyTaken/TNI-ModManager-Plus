@@ -14,14 +14,13 @@
 
 ## Версия
 
-Правишь только:
+Правишь только одно поле в `mod-manager-plus/Version.props`:
 
 ```xml
-<Version>1.0.1</Version>
-<InformationalVersion>1.0.1</InformationalVersion>
+<Version>1.1.1</Version>
 ```
 
-в `mod-manager-plus/Version.props` (оба числа одинаковые). Приложение читает версию из сборки.
+`InformationalVersion` подставляется автоматически. Приложение читает версию из сборки.
 
 ## Пример
 
