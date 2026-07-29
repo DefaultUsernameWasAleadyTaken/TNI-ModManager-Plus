@@ -7,15 +7,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>TNI-ModManager-Plus</AssemblyName>
     <Product>TNI-ModManager-Plus</Product>
-    <Version>3.8.0</Version>
-    <InformationalVersion>3.8.0</InformationalVersion>
+    <Version>1.0.0</Version>
+    <InformationalVersion>1.0.0</InformationalVersion>
     <RootNamespace>TniModManager</RootNamespace>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Themes\**" />
   </ItemGroup>
 
   <ItemGroup>

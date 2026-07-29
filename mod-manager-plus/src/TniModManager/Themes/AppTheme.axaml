@@ -1,0 +1,29 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Cohesive dark tool UI — steel accent, no purple/glow -->
+  <Color x:Key="BgColor">#12141A</Color>
+  <Color x:Key="SurfaceColor">#1A1E27</Color>
+  <Color x:Key="Surface2Color">#232833</Color>
+  <Color x:Key="BorderColor">#2C3340</Color>
+  <Color x:Key="TextColor">#E6E8EC</Color>
+  <Color x:Key="MutedColor">#8A93A3</Color>
+  <Color x:Key="AccentColor">#5B9FD4</Color>
+  <Color x:Key="AccentHoverColor">#4A8FC4</Color>
+  <Color x:Key="SuccessColor">#3D9A6A</Color>
+  <Color x:Key="DangerColor">#C45C5C</Color>
+  <Color x:Key="WarnColor">#C4923A</Color>
+  <Color x:Key="SourceDownloaded">#5B9FD4</Color>
+  <Color x:Key="SourceManual">#6A9B7A</Color>
+  <Color x:Key="SourceAvailable">#6E7888</Color>
+
+  <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
+  <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+  <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}"/>
+  <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+  <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+  <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}"/>
+  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+  <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+  <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+  <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource WarnColor}"/>
+</ResourceDictionary>

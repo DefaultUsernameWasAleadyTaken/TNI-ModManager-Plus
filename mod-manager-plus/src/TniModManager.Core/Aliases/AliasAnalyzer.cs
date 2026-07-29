@@ -30,10 +30,10 @@ public static class AliasAnalyzer
 
     public static string KindColor(AliasKind kind) => kind switch
     {
-        AliasKind.Variable => "#FF9800",
-        AliasKind.Compound => "#9C27B0",
-        AliasKind.Conditional => "#3F51B5",
-        AliasKind.Complex => "#E91E63",
-        _ => "#607D8B"
+        AliasKind.Variable => "#C4923A",
+        AliasKind.Compound => "#6A9B7A",
+        AliasKind.Conditional => "#5B9FD4",
+        AliasKind.Complex => "#C45C5C",
+        _ => "#6E7888"
     };
 }

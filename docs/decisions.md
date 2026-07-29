@@ -63,7 +63,7 @@ Self-contained артефакт: **`TNI-ModManager-Plus`** / `.exe` (имя бе
 Кроссплатформенный GUI: **.NET 8 + Avalonia 11** (MVVM) в `mod-manager-plus/src/`.
 
 - Целевые ОС: **Windows** и **Linux** (Steam Deck).
-- UI визуально повторяет прежний WPF Mod Manager до отдельного редизайна.
+- UI: современная тёмная тема приложения (**Mod Manager Plus** v1.0.0).
 - Ядро без UI: `TniModManager.Core` (paths, GitHub, mods, config, aliases).
 - `ui-config.ps1` **не исполняется**; Parameters — из `metadata.yaml` / `mod.jsonc`.
 - Userdata: Windows `Mods` / `Mods_Disabled`; Linux `mods` / `mods_disabled`.

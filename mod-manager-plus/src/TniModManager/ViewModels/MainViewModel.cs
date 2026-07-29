@@ -29,9 +29,9 @@ public partial class ModListItemViewModel : ObservableObject
     public string SourceLabel => Mod.Source.ToString();
     public IBrush BorderBrush => new SolidColorBrush(Color.Parse(Mod.Source switch
     {
-        ModSource.Downloaded => "#0078D4",
-        ModSource.Manual => "#9C27B0",
-        _ => "#607D8B"
+        ModSource.Downloaded => "#5B9FD4",
+        ModSource.Manual => "#6A9B7A",
+        _ => "#6E7888"
     }));
     public bool ShowUpdateBadge => Mod.HasUpdate;
 }
@@ -69,7 +69,7 @@ public partial class MainViewModel : ViewModelBase
         _discovery = new ModDiscovery(_paths, _cache);
         _install = new ModInstallService(_paths, _cache, _github);
         _settings = new GameSettingsStore(_paths);
-        WindowTitle = $"Tower Networking Inc - Mod Manager Plus v{GamePaths.ModManagerVersion}";
+        WindowTitle = $"{GamePaths.AppDisplayName} v{GamePaths.ModManagerVersion}";
         StatusText = "Loading...";
     }
 
@@ -387,9 +387,9 @@ public partial class MainViewModel : ViewModelBase
         ModSourceText = mod.Source.ToString();
         ModSourceBrush = new SolidColorBrush(Color.Parse(mod.Source switch
         {
-            ModSource.Downloaded => "#0078D4",
-            ModSource.Manual => "#9C27B0",
-            _ => "#607D8B"
+            ModSource.Downloaded => "#5B9FD4",
+            ModSource.Manual => "#6A9B7A",
+            _ => "#6E7888"
         }));
         ModVersionBadgeText = string.IsNullOrEmpty(mod.Version) ? "" : $"v{mod.Version}";
         ModAuthorText = mod.Author;

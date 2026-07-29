@@ -7,7 +7,8 @@ public sealed class GamePaths
     public const string ConfigFileName = "entry.lua";
     public const string ManagedMarkerFileName = "mod.managed";
     public const int SteamAppId = 2939600;
-    public const string ModManagerVersion = "3.8.0";
+    public const string ModManagerVersion = "1.0.0";
+    public const string AppDisplayName = "Mod Manager Plus";
     public const string GitHubRepo = "CJFWeatherhead/TNI-Mods";
 
     public string GameDataPath { get; }
