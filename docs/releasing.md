@@ -39,7 +39,7 @@ git push origin main
 # → Actions → GitHub Releases / Latest
 ```
 
-Ассеты (имена фиксированы для updater):
+Ассеты (имена фиксированы для updater; внутри — один исполняемый файл):
 
 - `TNI-ModManager-Plus-linux-x64.zip`
 - `TNI-ModManager-Plus-win-x64.zip`

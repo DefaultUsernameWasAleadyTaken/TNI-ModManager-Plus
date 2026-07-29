@@ -18,7 +18,7 @@ Windows: `ModManager.bat`
 
 ## Self-contained publish (no .NET install for users)
 
-Binary name is fixed: **`TNI-ModManager-Plus`** / **`TNI-ModManager-Plus.exe`** (version lives inside the assembly / window title for future in-app updates).
+Binary name is fixed: **`TNI-ModManager-Plus`** / **`TNI-ModManager-Plus.exe`** — один self-contained файл (версия в assembly / заголовке окна). На GitHub он упакован в zip с каноническим именем для updater.
 
 ```bash
 chmod +x mod-manager-plus/scripts/publish.sh
