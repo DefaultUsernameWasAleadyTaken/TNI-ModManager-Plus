@@ -1,6 +1,9 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
+using TniModManager.Core.Paths;
+using TniModManager.Core.Settings;
 using TniModManager.ViewModels;
 using TniModManager.Views;
 
@@ -17,9 +20,16 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var paths = GamePaths.Create();
+            var uiSettings = new AppUiSettings(paths);
+            uiSettings.Load();
+            RequestedThemeVariant = uiSettings.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase)
+                ? ThemeVariant.Light
+                : ThemeVariant.Dark;
+
             desktop.MainWindow = new MainWindow
             {
-                DataContext = new MainViewModel(),
+                DataContext = new MainViewModel(uiSettings),
             };
         }
 

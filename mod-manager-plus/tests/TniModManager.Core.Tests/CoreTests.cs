@@ -57,6 +57,7 @@ public class GamePathsTests
         Assert.False(string.IsNullOrWhiteSpace(paths.GameDataPath));
         Assert.True(paths.ModsDirectory.EndsWith("mods", StringComparison.OrdinalIgnoreCase)
                     || paths.ModsDirectory.EndsWith("Mods"));
+        Assert.Equal(Path.Combine(paths.GameDataPath, "mm_plus_ui.json"), paths.UiSettingsPath);
     }
 }
 

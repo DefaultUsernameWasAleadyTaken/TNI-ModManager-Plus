@@ -23,12 +23,24 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 
 **Userdata:**
 
-| ОС | Mods | Disabled |
-|----|------|----------|
-| Windows | `…\Tower Networking Inc\Mods` | `Mods_Disabled` |
-| Linux | `…/Tower Networking Inc/mods` | `mods_disabled` |
+| ОС | Mods |
+|----|------|
+| Windows | `…\Tower Networking Inc\Mods` |
+| Linux | `…/Tower Networking Inc/mods` |
 
 Каталог релизов: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
+
+### UI shell
+
+Главное окно (`Views/MainWindow.axaml`) — тонкий Avalonia shell: `Controls/AppHeader.axaml`
+(заголовок, статус, тема / язык / update / launch), прогресс загрузки и `TabControl` с
+`Views/ModsView.axaml` и `Views/AliasesView.axaml`. `MainViewModel` служит shell,
+а `ModsViewModel` и `AliasesViewModel` содержат логику вкладок. Цвета — Light/Dark `ThemeDictionaries`
+через динамические ресурсы; тема и задел языка (`en`) в `mm_plus_ui.json`. Менеджер
+устанавливает, обновляет и удаляет управляемые моды, но не переносит их между
+enabled/disabled каталогами. Self-update проверяет latest release форка
+`DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`; при невозможности автозамены
+открывается страница релиза.
 
 ### Связанные документы
 

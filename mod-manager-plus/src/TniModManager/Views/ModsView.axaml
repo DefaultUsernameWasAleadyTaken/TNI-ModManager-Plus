@@ -1,0 +1,166 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TniModManager.ViewModels"
+             x:Class="TniModManager.Views.ModsView"
+             x:DataType="vm:ModsViewModel">
+
+  <Grid ColumnDefinitions="340,*" ColumnSpacing="12" Margin="0,8,0,0">
+    <Border Grid.Column="0" Classes="panel">
+      <Grid RowDefinitions="Auto,Auto,*" Margin="14">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+          <TextBlock Text="Library" Classes="section" VerticalAlignment="Center"/>
+          <Button Grid.Column="1" Content="Refresh" Classes="ghost"
+                  Command="{Binding RefreshModsCommand}" Padding="9,5"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+          <RadioButton Content="All" Classes="filter" GroupName="Filter"
+                       IsChecked="{Binding IsFilterAll, Mode=OneWay}"
+                       Command="{Binding SetFilterCommand}" CommandParameter="All"/>
+          <RadioButton Content="Installed" Classes="filter" GroupName="Filter"
+                       IsChecked="{Binding IsFilterInstalled, Mode=OneWay}"
+                       Command="{Binding SetFilterCommand}" CommandParameter="Installed"/>
+          <RadioButton Content="Available" Classes="filter" GroupName="Filter"
+                       IsChecked="{Binding IsFilterAvailable, Mode=OneWay}"
+                       Command="{Binding SetFilterCommand}" CommandParameter="Available"/>
+        </StackPanel>
+
+        <ListBox Grid.Row="2" ItemsSource="{Binding VisibleMods}"
+                 SelectedItem="{Binding SelectedModItem}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ModListItemViewModel">
+              <Border BorderBrush="{Binding BorderBrush}" BorderThickness="3,0,0,0"
+                      Padding="12,10" Background="Transparent">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SourceLabel}" Classes="muted" FontSize="11"/>
+                  </StackPanel>
+                  <Border Grid.Column="1" Background="{DynamicResource UpdateBadgeBgBrush}"
+                          CornerRadius="6" Padding="7,3"
+                          IsVisible="{Binding ShowUpdateBadge}"
+                          VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock Text="Update" FontSize="10"
+                               Foreground="{DynamicResource WarnBrush}" FontWeight="SemiBold"/>
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Classes="panel">
+      <Grid>
+        <StackPanel IsVisible="{Binding !HasSelectedMod}"
+                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="Nothing selected" FontSize="18" FontWeight="SemiBold"
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource MutedBrush}"/>
+          <TextBlock Text="Pick a mod from the library to see details and actions."
+                     Classes="muted" HorizontalAlignment="Center" TextWrapping="Wrap"
+                     TextAlignment="Center" MaxWidth="320"/>
+        </StackPanel>
+
+        <ScrollViewer IsVisible="{Binding HasSelectedMod}"
+                      VerticalScrollBarVisibility="Auto" Padding="20">
+          <StackPanel Spacing="16">
+            <StackPanel Spacing="9">
+              <TextBlock Text="{Binding ModNameText}" FontSize="22" FontWeight="SemiBold"
+                         TextWrapping="Wrap"/>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Background="{Binding ModSourceBrush}" CornerRadius="6" Padding="10,4">
+                  <TextBlock Text="{Binding ModSourceText}"
+                             Foreground="{DynamicResource OnAccentBrush}"
+                             FontSize="11" FontWeight="SemiBold"/>
+                </Border>
+                <Border Background="{DynamicResource Surface2Brush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="6" Padding="10,4">
+                  <TextBlock Text="{Binding ModVersionBadgeText}" Classes="muted" FontSize="11"/>
+                </Border>
+              </StackPanel>
+            </StackPanel>
+
+            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
+              <Button Content="Download" Classes="success" IsVisible="{Binding ShowDownload}"
+                      Command="{Binding DownloadSelectedCommand}"/>
+              <Button Content="Update" Classes="warn" IsVisible="{Binding ShowUpdate}"
+                      Command="{Binding UpdateSelectedCommand}"/>
+              <Button Content="Remove" Classes="danger" IsVisible="{Binding ShowRemove}"
+                      Command="{Binding RemoveSelectedCommand}"/>
+            </WrapPanel>
+
+            <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8" Padding="14">
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+                <TextBlock Grid.Row="0" Text="Author" Classes="muted" Width="88"/>
+                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModAuthorText}"/>
+                <TextBlock Grid.Row="1" Text="Game" Classes="muted"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ModGameVersionText}"/>
+                <TextBlock Grid.Row="2" Text="Updated" Classes="muted"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ModLastUpdatedText}"/>
+              </Grid>
+            </Border>
+
+            <Expander Header="Description" IsExpanded="True">
+              <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8"
+                      Padding="12" MaxHeight="200" Margin="0,8,0,0">
+                <ScrollViewer>
+                  <TextBlock Text="{Binding ModDescriptionText}" TextWrapping="Wrap"
+                             Classes="muted"/>
+                </ScrollViewer>
+              </Border>
+            </Expander>
+
+            <Border Background="{DynamicResource WarnSurfaceBrush}"
+                    BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="12" IsVisible="{Binding ShowUpdateNotice}">
+              <StackPanel Spacing="4">
+                <TextBlock FontWeight="SemiBold" Foreground="{DynamicResource WarnBrush}">
+                  <Run Text="Update available · "/>
+                  <Run Text="{Binding UpdateVersionText}"/>
+                </TextBlock>
+                <TextBlock Text="{Binding UpdateNotesText}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource WarnMutedBrush}" FontSize="12"/>
+              </StackPanel>
+            </Border>
+
+            <TextBlock Text="This mod ships ui-config.ps1 — not executed; parameters come from metadata.yaml."
+                       Foreground="{DynamicResource WarnBrush}"
+                       IsVisible="{Binding HasUiConfigWarning}" TextWrapping="Wrap"
+                       FontSize="12"/>
+
+            <StackPanel IsVisible="{Binding ShowParameters}" Spacing="10">
+              <TextBlock Text="Configuration" Classes="section"/>
+              <ItemsControl ItemsSource="{Binding ParameterRows}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ParamRowViewModel">
+                    <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8"
+                            Padding="12" Margin="0,0,0,8">
+                      <StackPanel Spacing="6">
+                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Description}" Classes="muted"
+                                   FontSize="11" TextWrapping="Wrap"/>
+                        <CheckBox IsVisible="{Binding IsBoolean}" IsChecked="{Binding BoolValue}"/>
+                        <ComboBox IsVisible="{Binding IsSelect}" ItemsSource="{Binding Options}"
+                                  SelectedItem="{Binding SelectedOption}" MinWidth="220"/>
+                        <TextBox IsVisible="{Binding IsText}" Text="{Binding TextValue}"/>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                <Button Content="Reset" Command="{Binding ResetParametersCommand}"/>
+                <Button Content="Save" Classes="primary"
+                        Command="{Binding SaveParametersCommand}"/>
+              </StackPanel>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

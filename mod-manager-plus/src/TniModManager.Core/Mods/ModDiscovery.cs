@@ -21,8 +21,7 @@ public sealed class ModDiscovery
     public List<ModInfo> GetInstalledMods()
     {
         var mods = new List<ModInfo>();
-        ScanDirectory(_paths.ModsDirectory, enabled: true, mods);
-        ScanDirectory(_paths.DisabledModsDirectory, enabled: false, mods);
+        ScanDirectory(_paths.ModsDirectory, mods);
         return mods;
     }
 
@@ -64,7 +63,6 @@ public sealed class ModDiscovery
                 Version = rel.Version,
                 Description = rel.ReleaseNotes,
                 Source = ModSource.Available,
-                IsEnabled = false,
                 RemoteVersion = rel.Version,
                 RemoteNotes = rel.ReleaseNotes,
                 ReleaseTag = rel.TagName,
@@ -75,7 +73,7 @@ public sealed class ModDiscovery
         return list.OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
-    private void ScanDirectory(string root, bool enabled, List<ModInfo> mods)
+    private void ScanDirectory(string root, List<ModInfo> mods)
     {
         if (!Directory.Exists(root)) return;
         foreach (var folder in Directory.GetDirectories(root))
@@ -124,7 +122,6 @@ public sealed class ModDiscovery
                 LastUpdated = Str(meta, "Last Updated") ?? "",
                 Status = Str(meta, "Development Status") ?? "Active Development",
                 Source = source,
-                IsEnabled = enabled,
                 Parameters = parameters,
                 HasUiConfigPs1 = File.Exists(Path.Combine(folder, "ui-config.ps1")),
             });

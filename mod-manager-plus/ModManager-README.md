@@ -33,7 +33,9 @@ chmod +x mod-manager-plus/scripts/publish.sh
 ## Features
 
 - Browse / download / update mods from `CJFWeatherhead/TNI-Mods` GitHub releases
-- Enable/disable manual mods; remove downloaded mods
+- Remove downloaded mods
 - Edit `entry.lua` configuration parameters (from `metadata.yaml`)
 - Command aliases in game `settings.json`
 - Launch game via Steam (`2939600`)
+- Light / dark theme (persisted in `mm_plus_ui.json`)
+- Self-update check against the fork’s latest GitHub release

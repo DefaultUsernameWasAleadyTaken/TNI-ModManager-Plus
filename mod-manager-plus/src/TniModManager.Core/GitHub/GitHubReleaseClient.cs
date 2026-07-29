@@ -7,6 +7,14 @@ using TniModManager.Core.Util;
 
 namespace TniModManager.Core.GitHub;
 
+public sealed record AppReleaseAsset(string Name, string DownloadUrl, long Size);
+
+public sealed record AppReleaseInfo(
+    string TagName,
+    string Version,
+    string HtmlUrl,
+    IReadOnlyList<AppReleaseAsset> Assets);
+
 public sealed class GitHubReleaseClient
 {
     private static readonly Regex TagRegex = new(@"^(.+)-v(\d+\.\d+\.\d+)$", RegexOptions.Compiled);
@@ -82,6 +90,36 @@ public sealed class GitHubReleaseClient
         }
 
         return result;
+    }
+
+    public async Task<AppReleaseInfo> GetLatestAppReleaseAsync(CancellationToken cancellationToken = default)
+    {
+        var uri = $"https://api.github.com/repos/{GamePaths.AppGitHubRepo}/releases/latest";
+        using var response = await _http.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var root = doc.RootElement;
+        var tag = root.GetProperty("tag_name").GetString() ?? "";
+        var versionMatch = Regex.Match(tag, @"\d+\.\d+\.\d+");
+        var version = versionMatch.Success ? versionMatch.Value : tag.TrimStart('v', 'V');
+        var assets = new List<AppReleaseAsset>();
+        if (root.TryGetProperty("assets", out var assetsElement))
+        {
+            foreach (var asset in assetsElement.EnumerateArray())
+            {
+                assets.Add(new AppReleaseAsset(
+                    asset.GetProperty("name").GetString() ?? "",
+                    asset.GetProperty("browser_download_url").GetString() ?? "",
+                    asset.TryGetProperty("size", out var size) ? size.GetInt64() : 0));
+            }
+        }
+
+        return new AppReleaseInfo(
+            tag,
+            version,
+            root.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : "",
+            assets);
     }
 
     public async Task DownloadFileAsync(

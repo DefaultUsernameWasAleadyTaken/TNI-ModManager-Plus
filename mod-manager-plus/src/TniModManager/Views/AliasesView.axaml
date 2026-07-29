@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:TniModManager.ViewModels"
+             x:Class="TniModManager.Views.AliasesView"
+             x:DataType="vm:AliasesViewModel">
+
+  <Grid ColumnDefinitions="300,*" ColumnSpacing="12" Margin="0,8,0,0">
+    <Border Grid.Column="0" Classes="panel">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="14">
+        <TextBlock Text="Aliases" Classes="section" Margin="0,0,0,12"/>
+        <ListBox Grid.Row="1" ItemsSource="{Binding Aliases}"
+                 SelectedItem="{Binding SelectedAlias}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:AliasListItemViewModel">
+              <Border Padding="12,10">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                  <Border Background="{Binding KindBrush}" CornerRadius="6" Padding="8,3"
+                          HorizontalAlignment="Left">
+                    <TextBlock Text="{Binding KindLabel}" FontSize="10"
+                               Foreground="{DynamicResource OnAccentBrush}"
+                               FontWeight="SemiBold"/>
+                  </Border>
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
+          <Button Content="New alias" Classes="success"
+                  Command="{Binding AddAliasCommand}"/>
+          <Button Content="Delete" Classes="danger"
+                  Command="{Binding DeleteAliasCommand}"/>
+          <Button Content="Save aliases" Classes="primary"
+                  Command="{Binding SaveAliasesCommand}"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Classes="panel">
+      <Grid>
+        <StackPanel IsVisible="{Binding !AliasEditorVisible}"
+                    VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="Nothing selected" FontSize="18" FontWeight="SemiBold"
+                     Foreground="{DynamicResource MutedBrush}"/>
+          <TextBlock Text="Pick an alias to edit its command." Classes="muted"/>
+        </StackPanel>
+
+        <ScrollViewer IsVisible="{Binding AliasEditorVisible}" Padding="20">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Editor" Classes="section"/>
+              <Border Grid.Column="1" Background="{Binding AliasKindBrush}"
+                      CornerRadius="6" Padding="10,4">
+                <TextBlock Text="{Binding AliasKindText}"
+                           Foreground="{DynamicResource OnAccentBrush}"
+                           FontSize="11" FontWeight="SemiBold"/>
+              </Border>
+            </Grid>
+            <StackPanel Spacing="6">
+              <TextBlock Text="Name" Classes="muted"/>
+              <TextBox Text="{Binding AliasName}"/>
+            </StackPanel>
+            <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
+              <Button Content="$n" Command="{Binding InsertAliasSnippetCommand}"
+                      CommandParameter=" $1"/>
+              <Button Content=";" Command="{Binding InsertAliasSnippetCommand}"
+                      CommandParameter="; "/>
+              <Button Content="try/then/else" Command="{Binding InsertAliasSnippetCommand}"
+                      CommandParameter=" try  then  else "/>
+              <Button Content="on $n" Command="{Binding InsertAliasSnippetCommand}"
+                      CommandParameter=" on $1"/>
+              <Button Content="using $n" Command="{Binding InsertAliasSnippetCommand}"
+                      CommandParameter=" using $1"/>
+            </WrapPanel>
+            <StackPanel Spacing="6">
+              <TextBlock Text="Command" Classes="muted"/>
+              <TextBox Text="{Binding AliasCommand}" AcceptsReturn="True" MinHeight="96"
+                       TextWrapping="Wrap"
+                       FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
+            </StackPanel>
+            <Border Background="{DynamicResource CodeSurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="14">
+              <TextBlock Text="{Binding AliasPreview}"
+                         Foreground="{DynamicResource AccentBrush}"
+                         FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                         TextWrapping="Wrap"/>
+            </Border>
+            <Button Content="Apply" Classes="primary"
+                    Command="{Binding ApplyAliasEditsCommand}"
+                    HorizontalAlignment="Right"/>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

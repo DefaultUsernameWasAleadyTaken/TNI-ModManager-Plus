@@ -1,120 +1,63 @@
-using System.Collections.ObjectModel;
-using Avalonia.Media;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Runtime.InteropServices;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Styling;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using TniModManager.Core.Aliases;
 using TniModManager.Core.Cache;
-using TniModManager.Core.Config;
 using TniModManager.Core.GitHub;
-using TniModManager.Core.Models;
 using TniModManager.Core.Mods;
 using TniModManager.Core.Paths;
 using TniModManager.Core.Settings;
+using TniModManager.Core.Util;
 
 namespace TniModManager.ViewModels;
-
-public partial class ModListItemViewModel : ObservableObject
+public partial class MainViewModel : ViewModelBase, IAppShell
 {
-    public ModInfo Mod { get; }
-
-    public ModListItemViewModel(ModInfo mod) => Mod = mod;
-
-    public string DisplayName => Mod.Name;
-    public string StatusIcon => Mod.Source switch
-    {
-        ModSource.Available => "DL",
-        _ when Mod.IsEnabled => "✓",
-        _ => "−"
-    };
-    public string SourceLabel => Mod.Source.ToString();
-    public IBrush BorderBrush => new SolidColorBrush(Color.Parse(Mod.Source switch
-    {
-        ModSource.Downloaded => "#5B9FD4",
-        ModSource.Manual => "#6A9B7A",
-        _ => "#6E7888"
-    }));
-    public bool ShowUpdateBadge => Mod.HasUpdate;
-}
-
-public partial class AliasListItemViewModel : ObservableObject
-{
-    [ObservableProperty] private string _name;
-    [ObservableProperty] private string _command;
-
-    public AliasListItemViewModel(string name, string command)
-    {
-        _name = name;
-        _command = command;
-    }
-
-    public AliasKind Kind => AliasAnalyzer.Analyze(Command);
-    public string KindLabel => Kind.ToString();
-    public IBrush KindBrush => new SolidColorBrush(Color.Parse(AliasAnalyzer.KindColor(Kind)));
-}
-
-public partial class MainViewModel : ViewModelBase
-{
-    private readonly GamePaths _paths = GamePaths.Create();
+    private readonly GamePaths _paths;
     private readonly ModCacheStore _cache;
-    private readonly GitHubReleaseClient _github = new();
-    private readonly ModDiscovery _discovery;
-    private readonly ModInstallService _install;
+    private readonly GitHubReleaseClient _github;
     private readonly GameSettingsStore _settings;
-    private List<ModInfo> _allMods = [];
-    private Dictionary<string, ModReleaseInfo> _releases = new(StringComparer.OrdinalIgnoreCase);
-
-    public MainViewModel()
+    private readonly AppUiSettings _uiSettings;
+    private AppReleaseInfo? _appRelease;
+    public MainViewModel(AppUiSettings? uiSettings = null)
     {
+        _paths = GamePaths.Create();
         _cache = new ModCacheStore(_paths);
-        _discovery = new ModDiscovery(_paths, _cache);
-        _install = new ModInstallService(_paths, _cache, _github);
+        _github = new GitHubReleaseClient();
+        var discovery = new ModDiscovery(_paths, _cache);
+        var install = new ModInstallService(_paths, _cache, _github);
         _settings = new GameSettingsStore(_paths);
+        _uiSettings = uiSettings ?? new AppUiSettings(_paths);
+        if (uiSettings is null)
+            _uiSettings.Load();
+
+        Mods = new ModsViewModel(_paths, _cache, _github, discovery, install, this);
+        Aliases = new AliasesViewModel(_settings, this);
         WindowTitle = $"{GamePaths.AppDisplayName} v{GamePaths.ModManagerVersion}";
         StatusText = "Loading...";
+        IsDarkTheme = !_uiSettings.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase);
+        LanguageLabel = _uiSettings.Language.Equals("en", StringComparison.OrdinalIgnoreCase) ? "English" : _uiSettings.Language;
+        if (Application.Current is { } app)
+            app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
     }
-
+    public ModsViewModel Mods { get; }
+    public AliasesViewModel Aliases { get; }
+    public string AppVersionBadgeText => $"v{GamePaths.ModManagerVersion}";
+    public string ThemeToggleTooltip => IsDarkTheme ? "Switch to light theme" : "Switch to dark theme";
     [ObservableProperty] private string _windowTitle = "";
     [ObservableProperty] private string _statusText = "";
     [ObservableProperty] private double _downloadProgress;
     [ObservableProperty] private bool _isProgressVisible;
     [ObservableProperty] private string _downloadStatusText = "";
-    [ObservableProperty] private string _filterMode = "All";
-    [ObservableProperty] private ModListItemViewModel? _selectedModItem;
-    [ObservableProperty] private bool _hasSelectedMod;
-    [ObservableProperty] private string _modNameText = "";
-    [ObservableProperty] private string _modSourceText = "";
-    [ObservableProperty] private IBrush _modSourceBrush = Brushes.Gray;
-    [ObservableProperty] private string _modVersionBadgeText = "";
-    [ObservableProperty] private string _modAuthorText = "";
-    [ObservableProperty] private string _modStatusText = "";
-    [ObservableProperty] private string _modVersionText = "";
-    [ObservableProperty] private string _modGameVersionText = "";
-    [ObservableProperty] private string _modLastUpdatedText = "";
-    [ObservableProperty] private string _modDescriptionText = "";
-    [ObservableProperty] private bool _showDownload;
-    [ObservableProperty] private bool _showUpdate;
-    [ObservableProperty] private bool _showRemove;
-    [ObservableProperty] private bool _showDisable;
-    [ObservableProperty] private bool _showEnable;
-    [ObservableProperty] private bool _showUpdateNotice;
-    [ObservableProperty] private string _updateVersionText = "";
-    [ObservableProperty] private string _updateNotesText = "";
-    [ObservableProperty] private bool _showParameters;
-    [ObservableProperty] private bool _hasUiConfigWarning;
     [ObservableProperty] private bool _isBusy;
-
-    [ObservableProperty] private AliasListItemViewModel? _selectedAlias;
-    [ObservableProperty] private string _aliasName = "";
-    [ObservableProperty] private string _aliasCommand = "";
-    [ObservableProperty] private string _aliasKindText = "Plain";
-    [ObservableProperty] private IBrush _aliasKindBrush = Brushes.Gray;
-    [ObservableProperty] private string _aliasPreview = "";
-    [ObservableProperty] private bool _aliasEditorVisible;
-
-    public ObservableCollection<ModListItemViewModel> VisibleMods { get; } = [];
-    public ObservableCollection<AliasListItemViewModel> Aliases { get; } = [];
-    public ObservableCollection<ParamRowViewModel> ParameterRows { get; } = [];
-
+    [ObservableProperty] private bool _isDarkTheme = true;
+    [ObservableProperty] private string _languageLabel = "English";
+    [ObservableProperty] private bool _showAppUpdate;
+    [ObservableProperty] private string _appUpdateVersion = "";
     public async Task InitializeAsync()
     {
         try
@@ -122,380 +65,183 @@ public partial class MainViewModel : ViewModelBase
             _paths.EnsureDirectories();
             _cache.Load();
             _settings.Load();
-            ReloadAliases();
-            await RefreshModsAsync().ConfigureAwait(true);
-
-            if (!File.Exists(Path.Combine(_paths.ModsDirectory, "luajit-support", "entry.elf")))
-                StatusText = "Note: luajit-support not installed — Lua mods need it.";
+            Aliases.Load();
+            _ = CheckAppUpdateAsync();
+            await Mods.LoadAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            StatusText = $"Startup error: {ex.Message}";
+            SetStatus($"Startup error: {ex.Message}");
         }
     }
-
-    partial void OnSelectedModItemChanged(ModListItemViewModel? value) => ApplySelectedMod(value?.Mod);
-
-    partial void OnFilterModeChanged(string value) => RebuildVisibleMods();
-
-    partial void OnSelectedAliasChanged(AliasListItemViewModel? value)
-    {
-        if (value is null)
-        {
-            AliasEditorVisible = false;
-            return;
-        }
-        AliasEditorVisible = true;
-        AliasName = value.Name;
-        AliasCommand = value.Command;
-        UpdateAliasPreview();
-    }
-
-    partial void OnAliasCommandChanged(string value) => UpdateAliasPreview();
-
+    partial void OnIsDarkThemeChanged(bool value) => OnPropertyChanged(nameof(ThemeToggleTooltip));
     [RelayCommand]
-    private async Task RefreshModsAsync()
+    private void ToggleTheme()
     {
-        if (IsBusy) return;
-        IsBusy = true;
-        StatusText = "Refreshing mods...";
+        IsDarkTheme = !IsDarkTheme;
+        _uiSettings.Theme = IsDarkTheme ? "Dark" : "Light";
+        if (Application.Current is { } app)
+            app.RequestedThemeVariant = IsDarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
+        _uiSettings.Save();
+        RefreshThemeBrushes();
+    }
+    [RelayCommand]
+    private void SelectLanguage(string? language)
+    {
+        if (!string.Equals(language, "en", StringComparison.OrdinalIgnoreCase))
+            return;
+        _uiSettings.Language = "en";
+        LanguageLabel = "English";
+        _uiSettings.Save();
+    }
+    [RelayCommand]
+    private async Task CheckAppUpdateAsync()
+    {
         try
         {
-            _cache.Load();
-            var installed = _discovery.GetInstalledMods();
-            try
-            {
-                _releases = await _github.GetLatestModReleasesAsync().ConfigureAwait(true);
-                StatusText = $"Loaded {_releases.Count} GitHub releases.";
-            }
-            catch (Exception ex)
-            {
-                StatusText = $"GitHub unavailable: {ex.Message} (showing local mods)";
-                _releases = new Dictionary<string, ModReleaseInfo>(StringComparer.OrdinalIgnoreCase);
-            }
-            _allMods = _discovery.MergeWithReleases(installed, _releases);
-            RebuildVisibleMods();
+            var release = await _github.GetLatestAppReleaseAsync().ConfigureAwait(true);
+            if (!SemVer.IsNewer(release.Version, GamePaths.ModManagerVersion))
+                return;
+            _appRelease = release;
+            AppUpdateVersion = release.Version;
+            ShowAppUpdate = true;
+        }
+        catch
+        {
+            // Проверка обновления не должна мешать загрузке библиотеки модов.
+        }
+    }
+    [RelayCommand]
+    private async Task UpdateAppAsync()
+    {
+        if (!TryEnterBusy())
+            return;
+        BeginProgress($"Downloading app update {AppUpdateVersion}...");
+        try
+        {
+            _appRelease ??= await _github.GetLatestAppReleaseAsync().ConfigureAwait(true);
+            var asset = SelectPlatformAsset(_appRelease)
+                ?? throw new InvalidOperationException("No compatible release asset was found.");
+            var downloadPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}-{asset.Name}");
+            var progress = new Progress<double>(percent =>
+                ReportProgress(percent, $"Downloading app update... {percent:0}%"));
+            await _github.DownloadFileAsync(asset.DownloadUrl, downloadPath, progress).ConfigureAwait(true);
+            InstallAppUpdate(ExtractUpdatePayload(downloadPath, asset.Name));
+            ShowAppUpdate = false;
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Automatic update failed: {ex.Message}. Opening the release page.");
+            OpenLatestReleasePage();
         }
         finally
         {
-            IsBusy = false;
+            EndProgress();
+            ExitBusy();
         }
     }
-
-    [RelayCommand]
-    private async Task DownloadSelectedAsync()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod is null || string.IsNullOrEmpty(mod.ZipUrl)) return;
-        if (!_releases.TryGetValue(mod.Id, out var release) &&
-            (mod.FolderId is null || !_releases.TryGetValue(mod.FolderId, out release)))
-        {
-            release = new ModReleaseInfo
-            {
-                ModId = mod.Id,
-                Version = mod.RemoteVersion ?? mod.Version,
-                DownloadUrl = mod.ZipUrl!
-            };
-        }
-
-        await RunInstallAsync(release!).ConfigureAwait(true);
-    }
-
-    [RelayCommand]
-    private async Task UpdateSelectedAsync() => await DownloadSelectedAsync().ConfigureAwait(true);
-
-    [RelayCommand]
-    private async Task RemoveSelectedAsync()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod?.FolderPath is null || mod.FolderId is null) return;
-        _install.RemoveDownloaded(mod.FolderPath, mod.FolderId);
-        StatusText = $"Removed {mod.Name}";
-        await RefreshModsAsync().ConfigureAwait(true);
-    }
-
-    [RelayCommand]
-    private async Task DisableSelectedAsync()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod is null) return;
-        _install.SetEnabled(mod, enabled: false);
-        StatusText = mod.Source == ModSource.Downloaded ? $"Removed {mod.Name}" : $"Disabled {mod.Name}";
-        await RefreshModsAsync().ConfigureAwait(true);
-    }
-
-    [RelayCommand]
-    private async Task EnableSelectedAsync()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod is null) return;
-        _install.SetEnabled(mod, enabled: true);
-        StatusText = $"Enabled {mod.Name}";
-        await RefreshModsAsync().ConfigureAwait(true);
-    }
-
-    [RelayCommand]
-    private void SaveParameters()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod?.FolderPath is null) return;
-        var entry = Path.Combine(mod.FolderPath, GamePaths.ConfigFileName);
-        var dict = ParameterRows.ToDictionary(r => r.Name, r => r.GetValue(), StringComparer.Ordinal);
-        if (EntryLuaConfig.Write(entry, dict))
-            StatusText = "Configuration saved!";
-        else
-            StatusText = "Failed to save configuration.";
-    }
-
-    [RelayCommand]
-    private void ResetParameters()
-    {
-        var mod = SelectedModItem?.Mod;
-        if (mod is null) return;
-        ParameterRows.Clear();
-        foreach (var p in mod.Parameters)
-            ParameterRows.Add(ParamRowViewModel.FromDef(p, null));
-    }
-
     [RelayCommand]
     private void LaunchGame()
     {
         try
         {
             GameLauncher.LaunchSteamGame();
-            StatusText = "Launching game via Steam...";
+            SetStatus("Launching game via Steam...");
         }
         catch (Exception ex)
         {
-            StatusText = $"Launch failed: {ex.Message}";
+            SetStatus($"Launch failed: {ex.Message}");
         }
     }
-
     [RelayCommand]
-    private void AddAlias()
+    private static void ExitApp() =>
+        (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+    public void SetStatus(string text) => RunOnUiThread(() => StatusText = text);
+    public bool TryEnterBusy()
     {
-        var name = "new_alias";
-        var i = 1;
-        while (Aliases.Any(a => a.Name == name))
-            name = $"new_alias_{i++}";
-        var item = new AliasListItemViewModel(name, "");
-        Aliases.Add(item);
-        SelectedAlias = item;
-    }
-
-    [RelayCommand]
-    private void DeleteAlias()
-    {
-        if (SelectedAlias is null) return;
-        Aliases.Remove(SelectedAlias);
-        SelectedAlias = null;
-        AliasEditorVisible = false;
-    }
-
-    [RelayCommand]
-    private void SaveAliases()
-    {
-        if (SelectedAlias is not null)
-        {
-            SelectedAlias.Name = AliasName.Trim();
-            SelectedAlias.Command = AliasCommand;
-        }
-        var map = Aliases
-            .Where(a => !string.IsNullOrWhiteSpace(a.Name))
-            .ToDictionary(a => a.Name.Trim(), a => a.Command, StringComparer.Ordinal);
-        _settings.SaveAliases(map);
-        StatusText = "Aliases saved.";
-        ReloadAliases();
-    }
-
-    [RelayCommand]
-    private void ApplyAliasEdits()
-    {
-        if (SelectedAlias is null) return;
-        SelectedAlias.Name = AliasName.Trim();
-        SelectedAlias.Command = AliasCommand;
-        UpdateAliasPreview();
-    }
-
-    [RelayCommand]
-    private void InsertAliasSnippet(string? snippet)
-    {
-        if (string.IsNullOrEmpty(snippet)) return;
-        AliasCommand += snippet;
-    }
-
-    [RelayCommand]
-    private void ExitApp()
-    {
-        if (Avalonia.Application.Current?.ApplicationLifetime is
-            Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.Shutdown();
-        }
-    }
-
-    private async Task RunInstallAsync(ModReleaseInfo release)
-    {
+        if (!Dispatcher.UIThread.CheckAccess())
+            return Dispatcher.UIThread.InvokeAsync(TryEnterBusy).GetAwaiter().GetResult();
+        if (IsBusy)
+            return false;
         IsBusy = true;
+        return true;
+    }
+    public void ExitBusy() => RunOnUiThread(() => IsBusy = false);
+    public void BeginProgress(string statusText) => RunOnUiThread(() =>
+    {
         IsProgressVisible = true;
         DownloadProgress = 0;
-        DownloadStatusText = $"Downloading {release.ModId}...";
-        var progress = new Progress<double>(p =>
-        {
-            DownloadProgress = p;
-            DownloadStatusText = $"Downloading {release.ModId}... {p:0}%";
-        });
-        try
-        {
-            await _install.InstallFromReleaseAsync(release, progress).ConfigureAwait(true);
-            StatusText = $"{release.ModId} v{release.Version} installed.";
-            await RefreshModsAsync().ConfigureAwait(true);
-        }
-        catch (Exception ex)
-        {
-            StatusText = $"Download failed: {ex.Message}";
-        }
-        finally
-        {
-            IsProgressVisible = false;
-            IsBusy = false;
-        }
-    }
-
-    private void RebuildVisibleMods()
+        DownloadStatusText = statusText;
+    });
+    public void ReportProgress(double percent, string statusText) => RunOnUiThread(() =>
     {
-        IEnumerable<ModInfo> q = _allMods;
-        q = FilterMode switch
-        {
-            "Installed" => q.Where(m => m.Source != ModSource.Available),
-            "Available" => q.Where(m => m.Source == ModSource.Available),
-            _ => q
-        };
-        var selectedId = SelectedModItem?.Mod.Id;
-        VisibleMods.Clear();
-        foreach (var m in q)
-            VisibleMods.Add(new ModListItemViewModel(m));
-        SelectedModItem = VisibleMods.FirstOrDefault(m => m.Mod.Id == selectedId);
-    }
-
-    private void ApplySelectedMod(ModInfo? mod)
+        DownloadProgress = percent;
+        DownloadStatusText = statusText;
+    });
+    public void EndProgress() => RunOnUiThread(() => IsProgressVisible = false);
+    private static void RunOnUiThread(Action action) =>
+        (Dispatcher.UIThread.CheckAccess() ? action : () => Dispatcher.UIThread.Post(action))();
+    private void RefreshThemeBrushes() { Mods.RefreshThemeBrushes(); Aliases.RefreshThemeBrushes(); }
+    private void OnActualThemeVariantChanged(object? sender, EventArgs e) => RefreshThemeBrushes();
+    private static AppReleaseAsset? SelectPlatformAsset(AppReleaseInfo release)
     {
-        HasSelectedMod = mod is not null;
-        if (mod is null) return;
-
-        ModNameText = mod.Name;
-        ModSourceText = mod.Source.ToString();
-        ModSourceBrush = new SolidColorBrush(Color.Parse(mod.Source switch
+        var runtime = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win-x64" : "linux-x64";
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "TNI-ModManager-Plus.exe" : "TNI-ModManager-Plus";
+        return release.Assets
+            .Where(asset => asset.Name.Contains("TNI-ModManager-Plus", StringComparison.OrdinalIgnoreCase))
+            .Where(asset => asset.Name.Contains(runtime, StringComparison.OrdinalIgnoreCase) || asset.Name.Equals(executableName, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(asset => asset.Name.Contains(runtime, StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(asset => asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            .FirstOrDefault();
+    }
+    private static string ExtractUpdatePayload(string downloadPath, string assetName)
+    {
+        if (!assetName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            return downloadPath;
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "TNI-ModManager-Plus.exe" : "TNI-ModManager-Plus";
+        using var archive = ZipFile.OpenRead(downloadPath);
+        var entry = archive.Entries.FirstOrDefault(item => Path.GetFileName(item.FullName).Equals(executableName, StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidDataException($"The archive does not contain {executableName}.");
+        var payloadPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}-{executableName}");
+        entry.ExtractToFile(payloadPath, true);
+        return payloadPath;
+    }
+    private void InstallAppUpdate(string payloadPath)
+    {
+        var targetPath = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Cannot locate the running executable.");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            ModSource.Downloaded => "#5B9FD4",
-            ModSource.Manual => "#6A9B7A",
-            _ => "#6E7888"
-        }));
-        ModVersionBadgeText = string.IsNullOrEmpty(mod.Version) ? "" : $"v{mod.Version}";
-        ModAuthorText = mod.Author;
-        ModStatusText = mod.IsEnabled ? "Enabled" : (mod.Source == ModSource.Available ? "Not installed" : "Disabled");
-        ModVersionText = mod.Version;
-        ModGameVersionText = mod.GameVersion;
-        ModLastUpdatedText = mod.LastUpdated;
-        ModDescriptionText = mod.Description;
-
-        ShowDownload = mod.Source == ModSource.Available;
-        ShowUpdate = mod.HasUpdate;
-        ShowRemove = mod.Source == ModSource.Downloaded && mod.IsEnabled;
-        ShowDisable = mod.Source == ModSource.Manual && mod.IsEnabled;
-        ShowEnable = mod.Source == ModSource.Manual && !mod.IsEnabled;
-        ShowUpdateNotice = mod.HasUpdate;
-        UpdateVersionText = mod.RemoteVersion ?? "";
-        UpdateNotesText = mod.RemoteNotes ?? "";
-
-        HasUiConfigWarning = mod.HasUiConfigPs1;
-        ParameterRows.Clear();
-        ShowParameters = mod.Source != ModSource.Available && mod.FolderPath is not null && mod.Parameters.Count > 0;
-        if (ShowParameters && mod.FolderPath is not null)
-        {
-            var current = EntryLuaConfig.Read(Path.Combine(mod.FolderPath, GamePaths.ConfigFileName));
-            foreach (var p in mod.Parameters)
+            var stagedPath = targetPath + ".update";
+            File.Copy(payloadPath, stagedPath, true);
+            var scriptPath = Path.Combine(Path.GetTempPath(), $"tni-mm-update-{Guid.NewGuid():N}.cmd");
+            File.WriteAllText(scriptPath, $"""
+                @echo off
+                :wait
+                tasklist /FI "PID eq {Environment.ProcessId}" | find "{Environment.ProcessId}" >nul
+                if not errorlevel 1 (
+                  timeout /t 1 /nobreak >nul
+                  goto wait
+                )
+                move /Y "{stagedPath}" "{targetPath}" >nul
+                start "" "{targetPath}"
+                del "%~f0"
+                """);
+            Process.Start(new ProcessStartInfo("cmd.exe", $"/C \"{scriptPath}\"")
             {
-                current.TryGetValue(p.Name, out var cur);
-                ParameterRows.Add(ParamRowViewModel.FromDef(p, cur));
-            }
+                UseShellExecute = false,
+                CreateNoWindow = true
+            });
+            SetStatus("Update downloaded. Close the app to apply it and restart.");
+            return;
         }
+        var mode = File.GetUnixFileMode(targetPath);
+        var stagedLinuxPath = targetPath + ".update";
+        File.Copy(payloadPath, stagedLinuxPath, true);
+        File.SetUnixFileMode(stagedLinuxPath, mode);
+        File.Move(stagedLinuxPath, targetPath, true);
+        SetStatus("Update installed. Restart the app to use the new version.");
     }
-
-    private void ReloadAliases()
-    {
-        Aliases.Clear();
-        foreach (var (name, cmd) in _settings.CmdAliases.OrderBy(x => x.Key, StringComparer.Ordinal))
-            Aliases.Add(new AliasListItemViewModel(name, cmd));
-    }
-
-    private void UpdateAliasPreview()
-    {
-        var kind = AliasAnalyzer.Analyze(AliasCommand);
-        AliasKindText = kind.ToString();
-        AliasKindBrush = new SolidColorBrush(Color.Parse(AliasAnalyzer.KindColor(kind)));
-        AliasPreview = string.IsNullOrWhiteSpace(AliasCommand) ? "(empty)" : AliasCommand;
-    }
-}
-
-public partial class ParamRowViewModel : ObservableObject
-{
-    public string Name { get; init; } = "";
-    public string Label { get; init; } = "";
-    public string Type { get; init; } = "string";
-    public string Description { get; init; } = "";
-    public List<string> Options { get; init; } = [];
-
-    [ObservableProperty] private bool _boolValue;
-    [ObservableProperty] private string _textValue = "";
-    [ObservableProperty] private string _selectedOption = "";
-
-    public bool IsBoolean => Type == "boolean";
-    public bool IsSelect => Type == "select";
-    public bool IsText => Type is not ("boolean" or "select");
-
-    public static ParamRowViewModel FromDef(ParameterDef def, object? current)
-    {
-        var row = new ParamRowViewModel
-        {
-            Name = def.Name,
-            Label = string.IsNullOrEmpty(def.Label) ? def.Name : def.Label,
-            Type = def.Type.ToLowerInvariant(),
-            Description = def.Description,
-            Options = def.Options ?? []
-        };
-
-        var value = current ?? (def.Default.HasValue ? JsonElementToObject(def.Default.Value) : null);
-        switch (row.Type)
-        {
-            case "boolean":
-                row.BoolValue = value is true or "true";
-                break;
-            case "select":
-                row.SelectedOption = value?.ToString() ?? row.Options.FirstOrDefault() ?? "";
-                break;
-            default:
-                row.TextValue = value?.ToString() ?? "";
-                break;
-        }
-        return row;
-    }
-
-    public object? GetValue() => Type switch
-    {
-        "boolean" => BoolValue,
-        "select" => SelectedOption,
-        "integer" when int.TryParse(TextValue, out var i) => i,
-        "number" when double.TryParse(TextValue, out var d) => d,
-        _ => TextValue
-    };
-
-    private static object? JsonElementToObject(System.Text.Json.JsonElement el) => el.ValueKind switch
-    {
-        System.Text.Json.JsonValueKind.True => true,
-        System.Text.Json.JsonValueKind.False => false,
-        System.Text.Json.JsonValueKind.Number => el.TryGetInt64(out var l) ? l : el.GetDouble(),
-        System.Text.Json.JsonValueKind.String => el.GetString(),
-        _ => el.ToString()
-    };
+    private static void OpenLatestReleasePage() => Process.Start(new ProcessStartInfo(
+        $"https://github.com/{GamePaths.AppGitHubRepo}/releases/latest") { UseShellExecute = true });
 }

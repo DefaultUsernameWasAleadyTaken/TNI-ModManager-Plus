@@ -10,27 +10,27 @@ public sealed class GamePaths
     public const string ModManagerVersion = "1.0.0";
     public const string AppDisplayName = "Mod Manager Plus";
     public const string GitHubRepo = "CJFWeatherhead/TNI-Mods";
+    public const string AppGitHubRepo = "DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus";
 
     public string GameDataPath { get; }
     public string ModsDirectory { get; }
-    public string DisabledModsDirectory { get; }
     public string SettingsPath { get; }
     public string ModCachePath { get; }
+    public string UiSettingsPath { get; }
 
-    public GamePaths(string gameDataPath, string modsDirectory, string disabledModsDirectory)
+    public GamePaths(string gameDataPath, string modsDirectory)
     {
         GameDataPath = gameDataPath;
         ModsDirectory = modsDirectory;
-        DisabledModsDirectory = disabledModsDirectory;
         SettingsPath = Path.Combine(gameDataPath, "settings.json");
         ModCachePath = Path.Combine(gameDataPath, "mod_cache.json");
+        UiSettingsPath = Path.Combine(gameDataPath, "mm_plus_ui.json");
     }
 
     public static GamePaths Create()
     {
         string gameDataPath;
         string modsName;
-        string disabledName;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -38,7 +38,6 @@ public sealed class GamePaths
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "Godot", "app_userdata", "Tower Networking Inc");
             modsName = "Mods";
-            disabledName = "Mods_Disabled";
         }
         else
         {
@@ -46,19 +45,16 @@ public sealed class GamePaths
             gameDataPath = Path.Combine(
                 home, ".local", "share", "godot", "app_userdata", "Tower Networking Inc");
             modsName = "mods";
-            disabledName = "mods_disabled";
         }
 
         return new GamePaths(
             gameDataPath,
-            Path.Combine(gameDataPath, modsName),
-            Path.Combine(gameDataPath, disabledName));
+            Path.Combine(gameDataPath, modsName));
     }
 
     public void EnsureDirectories()
     {
         Directory.CreateDirectory(GameDataPath);
         Directory.CreateDirectory(ModsDirectory);
-        Directory.CreateDirectory(DisabledModsDirectory);
     }
 }

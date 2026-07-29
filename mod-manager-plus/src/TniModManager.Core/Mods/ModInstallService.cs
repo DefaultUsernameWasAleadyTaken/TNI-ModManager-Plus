@@ -50,32 +50,6 @@ public sealed class ModInstallService
         _cache.Remove(cacheKey);
     }
 
-    public void SetEnabled(ModInfo mod, bool enabled)
-    {
-        if (string.IsNullOrEmpty(mod.FolderPath) || string.IsNullOrEmpty(mod.FolderId))
-            throw new InvalidOperationException("Mod has no folder path.");
-
-        if (mod.Source == ModSource.Downloaded)
-        {
-            if (!enabled)
-                RemoveDownloaded(mod.FolderPath, mod.FolderId);
-            return;
-        }
-
-        // Manual: move between mods dirs
-        var destRoot = enabled ? _paths.ModsDirectory : _paths.DisabledModsDirectory;
-        var dest = Path.Combine(destRoot, mod.FolderId);
-        if (string.Equals(Path.GetFullPath(mod.FolderPath), Path.GetFullPath(dest), StringComparison.OrdinalIgnoreCase))
-            return;
-
-        Directory.CreateDirectory(destRoot);
-        if (Directory.Exists(dest))
-            Directory.Delete(dest, true);
-        Directory.Move(mod.FolderPath, dest);
-        mod.FolderPath = dest;
-        mod.IsEnabled = enabled;
-    }
-
     public static void ExtractModZip(string zipPath, string modId, string targetPath)
     {
         var tempExtract = Path.Combine(Path.GetTempPath(), $"tni-mod-extract-{modId}-{Guid.NewGuid():N}");

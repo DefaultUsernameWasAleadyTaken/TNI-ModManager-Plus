@@ -13,7 +13,6 @@ public sealed class ModInfo
     public ModSource Source { get; set; }
     public string? FolderPath { get; set; }
     public string? FolderId { get; set; }
-    public bool IsEnabled { get; set; }
     public bool HasUpdate { get; set; }
     public string? RemoteVersion { get; set; }
     public string? RemoteNotes { get; set; }

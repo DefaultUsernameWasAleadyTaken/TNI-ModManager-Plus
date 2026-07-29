@@ -1,29 +1,137 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <!-- Cohesive dark tool UI — steel accent, no purple/glow -->
-  <Color x:Key="BgColor">#12141A</Color>
-  <Color x:Key="SurfaceColor">#1A1E27</Color>
-  <Color x:Key="Surface2Color">#232833</Color>
-  <Color x:Key="BorderColor">#2C3340</Color>
-  <Color x:Key="TextColor">#E6E8EC</Color>
-  <Color x:Key="MutedColor">#8A93A3</Color>
-  <Color x:Key="AccentColor">#5B9FD4</Color>
-  <Color x:Key="AccentHoverColor">#4A8FC4</Color>
-  <Color x:Key="SuccessColor">#3D9A6A</Color>
-  <Color x:Key="DangerColor">#C45C5C</Color>
-  <Color x:Key="WarnColor">#C4923A</Color>
-  <Color x:Key="SourceDownloaded">#5B9FD4</Color>
-  <Color x:Key="SourceManual">#6A9B7A</Color>
-  <Color x:Key="SourceAvailable">#6E7888</Color>
+  <!-- Steel-blue dual theme — tokens for DynamicResource -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Dark">
+      <Color x:Key="BgColor">#0E1219</Color>
+      <Color x:Key="SurfaceColor">#161B24</Color>
+      <Color x:Key="Surface2Color">#1E2530</Color>
+      <Color x:Key="BorderColor">#2A3344</Color>
+      <Color x:Key="TextColor">#E8EEF6</Color>
+      <Color x:Key="MutedColor">#94A3B8</Color>
+      <Color x:Key="AccentColor">#60A5FA</Color>
+      <Color x:Key="AccentHoverColor">#4A8FC4</Color>
+      <Color x:Key="SuccessColor">#3D9A6A</Color>
+      <Color x:Key="SuccessHoverColor">#348558</Color>
+      <Color x:Key="DangerColor">#C45C5C</Color>
+      <Color x:Key="WarnColor">#C4923A</Color>
+      <Color x:Key="OnAccentColor">#0B0D12</Color>
+      <Color x:Key="SourceDownloaded">#60A5FA</Color>
+      <Color x:Key="SourceManual">#6A9B7A</Color>
+      <Color x:Key="SourceAvailable">#6E7888</Color>
+      <Color x:Key="ListHoverColor">#232833</Color>
+      <Color x:Key="ListSelectedColor">#2A3344</Color>
+      <Color x:Key="ListSelectedHoverColor">#2F3A4E</Color>
+      <Color x:Key="DangerBorderColor">#5A3030</Color>
+      <Color x:Key="DangerHoverBgColor">#2A1818</Color>
+      <Color x:Key="WarnSurfaceColor">#2A2418</Color>
+      <Color x:Key="WarnBorderColor">#4A3C20</Color>
+      <Color x:Key="WarnMutedColor">#A89060</Color>
+      <Color x:Key="UpdateBadgeBgColor">#3A2E1A</Color>
+      <Color x:Key="CodeSurfaceColor">#0E1016</Color>
+      <Color x:Key="AliasPlain">#6E7888</Color>
+      <Color x:Key="AliasVariable">#C4923A</Color>
+      <Color x:Key="AliasCompound">#6A9B7A</Color>
+      <Color x:Key="AliasConditional">#60A5FA</Color>
+      <Color x:Key="AliasComplex">#C45C5C</Color>
 
-  <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
-  <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
-  <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}"/>
-  <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
-  <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
-  <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}"/>
-  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
-  <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
-  <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
-  <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource WarnColor}"/>
+      <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
+      <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+      <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}"/>
+      <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+      <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+      <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}"/>
+      <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
+      <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+      <SolidColorBrush x:Key="SuccessHoverBrush" Color="{StaticResource SuccessHoverColor}"/>
+      <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+      <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource WarnColor}"/>
+      <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}"/>
+      <SolidColorBrush x:Key="SourceDownloadedBrush" Color="{StaticResource SourceDownloaded}"/>
+      <SolidColorBrush x:Key="SourceManualBrush" Color="{StaticResource SourceManual}"/>
+      <SolidColorBrush x:Key="SourceAvailableBrush" Color="{StaticResource SourceAvailable}"/>
+      <SolidColorBrush x:Key="ListHoverBrush" Color="{StaticResource ListHoverColor}"/>
+      <SolidColorBrush x:Key="ListSelectedBrush" Color="{StaticResource ListSelectedColor}"/>
+      <SolidColorBrush x:Key="ListSelectedHoverBrush" Color="{StaticResource ListSelectedHoverColor}"/>
+      <SolidColorBrush x:Key="DangerBorderBrush" Color="{StaticResource DangerBorderColor}"/>
+      <SolidColorBrush x:Key="DangerHoverBgBrush" Color="{StaticResource DangerHoverBgColor}"/>
+      <SolidColorBrush x:Key="WarnSurfaceBrush" Color="{StaticResource WarnSurfaceColor}"/>
+      <SolidColorBrush x:Key="WarnBorderBrush" Color="{StaticResource WarnBorderColor}"/>
+      <SolidColorBrush x:Key="WarnMutedBrush" Color="{StaticResource WarnMutedColor}"/>
+      <SolidColorBrush x:Key="UpdateBadgeBgBrush" Color="{StaticResource UpdateBadgeBgColor}"/>
+      <SolidColorBrush x:Key="CodeSurfaceBrush" Color="{StaticResource CodeSurfaceColor}"/>
+      <SolidColorBrush x:Key="AliasPlainBrush" Color="{StaticResource AliasPlain}"/>
+      <SolidColorBrush x:Key="AliasVariableBrush" Color="{StaticResource AliasVariable}"/>
+      <SolidColorBrush x:Key="AliasCompoundBrush" Color="{StaticResource AliasCompound}"/>
+      <SolidColorBrush x:Key="AliasConditionalBrush" Color="{StaticResource AliasConditional}"/>
+      <SolidColorBrush x:Key="AliasComplexBrush" Color="{StaticResource AliasComplex}"/>
+    </ResourceDictionary>
+
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="BgColor">#F1F5F9</Color>
+      <Color x:Key="SurfaceColor">#FFFFFF</Color>
+      <Color x:Key="Surface2Color">#F8FAFC</Color>
+      <Color x:Key="BorderColor">#E2E8F0</Color>
+      <Color x:Key="TextColor">#0F172A</Color>
+      <Color x:Key="MutedColor">#64748B</Color>
+      <Color x:Key="AccentColor">#2563EB</Color>
+      <Color x:Key="AccentHoverColor">#1D4ED8</Color>
+      <Color x:Key="SuccessColor">#15803D</Color>
+      <Color x:Key="SuccessHoverColor">#166534</Color>
+      <Color x:Key="DangerColor">#DC2626</Color>
+      <Color x:Key="WarnColor">#D97706</Color>
+      <Color x:Key="OnAccentColor">#FFFFFF</Color>
+      <Color x:Key="SourceDownloaded">#2563EB</Color>
+      <Color x:Key="SourceManual">#15803D</Color>
+      <Color x:Key="SourceAvailable">#64748B</Color>
+      <Color x:Key="ListHoverColor">#F1F5F9</Color>
+      <Color x:Key="ListSelectedColor">#E2E8F0</Color>
+      <Color x:Key="ListSelectedHoverColor">#CBD5E1</Color>
+      <Color x:Key="DangerBorderColor">#FECACA</Color>
+      <Color x:Key="DangerHoverBgColor">#FEF2F2</Color>
+      <Color x:Key="WarnSurfaceColor">#FFFBEB</Color>
+      <Color x:Key="WarnBorderColor">#FDE68A</Color>
+      <Color x:Key="WarnMutedColor">#B45309</Color>
+      <Color x:Key="UpdateBadgeBgColor">#FEF3C7</Color>
+      <Color x:Key="CodeSurfaceColor">#F1F5F9</Color>
+      <Color x:Key="AliasPlain">#64748B</Color>
+      <Color x:Key="AliasVariable">#D97706</Color>
+      <Color x:Key="AliasCompound">#15803D</Color>
+      <Color x:Key="AliasConditional">#2563EB</Color>
+      <Color x:Key="AliasComplex">#DC2626</Color>
+
+      <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
+      <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
+      <SolidColorBrush x:Key="Surface2Brush" Color="{StaticResource Surface2Color}"/>
+      <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+      <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
+      <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}"/>
+      <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}"/>
+      <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}"/>
+      <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
+      <SolidColorBrush x:Key="SuccessHoverBrush" Color="{StaticResource SuccessHoverColor}"/>
+      <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}"/>
+      <SolidColorBrush x:Key="WarnBrush" Color="{StaticResource WarnColor}"/>
+      <SolidColorBrush x:Key="OnAccentBrush" Color="{StaticResource OnAccentColor}"/>
+      <SolidColorBrush x:Key="SourceDownloadedBrush" Color="{StaticResource SourceDownloaded}"/>
+      <SolidColorBrush x:Key="SourceManualBrush" Color="{StaticResource SourceManual}"/>
+      <SolidColorBrush x:Key="SourceAvailableBrush" Color="{StaticResource SourceAvailable}"/>
+      <SolidColorBrush x:Key="ListHoverBrush" Color="{StaticResource ListHoverColor}"/>
+      <SolidColorBrush x:Key="ListSelectedBrush" Color="{StaticResource ListSelectedColor}"/>
+      <SolidColorBrush x:Key="ListSelectedHoverBrush" Color="{StaticResource ListSelectedHoverColor}"/>
+      <SolidColorBrush x:Key="DangerBorderBrush" Color="{StaticResource DangerBorderColor}"/>
+      <SolidColorBrush x:Key="DangerHoverBgBrush" Color="{StaticResource DangerHoverBgColor}"/>
+      <SolidColorBrush x:Key="WarnSurfaceBrush" Color="{StaticResource WarnSurfaceColor}"/>
+      <SolidColorBrush x:Key="WarnBorderBrush" Color="{StaticResource WarnBorderColor}"/>
+      <SolidColorBrush x:Key="WarnMutedBrush" Color="{StaticResource WarnMutedColor}"/>
+      <SolidColorBrush x:Key="UpdateBadgeBgBrush" Color="{StaticResource UpdateBadgeBgColor}"/>
+      <SolidColorBrush x:Key="CodeSurfaceBrush" Color="{StaticResource CodeSurfaceColor}"/>
+      <SolidColorBrush x:Key="AliasPlainBrush" Color="{StaticResource AliasPlain}"/>
+      <SolidColorBrush x:Key="AliasVariableBrush" Color="{StaticResource AliasVariable}"/>
+      <SolidColorBrush x:Key="AliasCompoundBrush" Color="{StaticResource AliasCompound}"/>
+      <SolidColorBrush x:Key="AliasConditionalBrush" Color="{StaticResource AliasConditional}"/>
+      <SolidColorBrush x:Key="AliasComplexBrush" Color="{StaticResource AliasComplex}"/>
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>
