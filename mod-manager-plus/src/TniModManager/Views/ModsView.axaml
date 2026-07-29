@@ -4,7 +4,6 @@
              x:Class="TniModManager.Views.ModsView"
              x:DataType="vm:ModsViewModel">
 
-  <!-- Auto: панель списка расширяется под самые длинные подписи фильтров (без переноса слов) -->
   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
     <Border Grid.Column="0" Classes="panel" MinWidth="320">
       <Grid RowDefinitions="Auto,Auto,*" Margin="14">
@@ -14,7 +13,6 @@
                   Command="{Binding RefreshModsCommand}" Padding="9,5"/>
         </Grid>
 
-        <!-- Равные колонки; ширина = 3×самая длинная подпись (язык не важен) -->
         <UniformGrid Grid.Row="1" Columns="3" Margin="0,0,0,10">
           <RadioButton Content="{DynamicResource L.FilterAll}" Classes="filter" GroupName="Filter"
                        Margin="0,0,6,0"
@@ -56,7 +54,7 @@
       </Grid>
     </Border>
 
-    <Border Grid.Column="1" Classes="panel">
+    <Border Grid.Column="1" Classes="panel" ClipToBounds="True">
       <Grid>
         <StackPanel IsVisible="{Binding !HasSelectedMod}"
                     VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
@@ -68,72 +66,92 @@
                      TextAlignment="Center" MaxWidth="320"/>
         </StackPanel>
 
-        <ScrollViewer IsVisible="{Binding HasSelectedMod}"
-                      VerticalScrollBarVisibility="Auto" Padding="20">
-          <StackPanel Spacing="16">
-            <StackPanel Spacing="9">
-              <TextBlock Text="{Binding ModNameText}" FontSize="22" FontWeight="SemiBold"
-                         TextWrapping="Wrap"/>
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Border Background="{Binding ModSourceBrush}" CornerRadius="6" Padding="10,4">
+        <!-- Grid: описание в * — не раздувает ширину окна -->
+        <Grid IsVisible="{Binding HasSelectedMod}"
+              Margin="20"
+              RowDefinitions="Auto,Auto,*,Auto,Auto,Auto"
+              RowSpacing="14">
+          <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Text="{Binding ModNameText}" FontSize="22" FontWeight="SemiBold"
+                       TextWrapping="Wrap"/>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Border Background="{Binding ModSourceBrush}" CornerRadius="6" Padding="10,4"
+                        VerticalAlignment="Center">
                   <TextBlock Text="{Binding ModSourceText}"
                              Foreground="{DynamicResource OnAccentBrush}"
                              FontSize="11" FontWeight="SemiBold"/>
                 </Border>
                 <Border Background="{DynamicResource Surface2Brush}"
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                        CornerRadius="6" Padding="10,4">
+                        CornerRadius="6" Padding="10,4" VerticalAlignment="Center">
                   <TextBlock Text="{Binding ModVersionBadgeText}" Classes="muted" FontSize="11"/>
                 </Border>
               </StackPanel>
-            </StackPanel>
-
-            <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
-              <Button Content="{DynamicResource L.Download}" Classes="success" IsVisible="{Binding ShowDownload}"
-                      Command="{Binding DownloadSelectedCommand}"/>
-              <Button Content="{DynamicResource L.Update}" Classes="warn" IsVisible="{Binding ShowUpdate}"
-                      Command="{Binding UpdateSelectedCommand}"/>
-              <Button Content="{DynamicResource L.Remove}" Classes="danger" IsVisible="{Binding ShowRemove}"
-                      Command="{Binding RemoveSelectedCommand}"/>
-            </WrapPanel>
-
-            <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8" Padding="14">
-              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
-                <TextBlock Grid.Row="0" Text="{DynamicResource L.Author}" Classes="muted" Width="88"/>
-                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModAuthorText}"/>
-                <TextBlock Grid.Row="1" Text="{DynamicResource L.Game}" Classes="muted"/>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ModGameVersionText}"/>
-                <TextBlock Grid.Row="2" Text="{DynamicResource L.Updated}" Classes="muted"/>
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ModLastUpdatedText}"/>
-              </Grid>
-            </Border>
-
-            <Expander Header="{DynamicResource L.Description}" IsExpanded="True">
-              <Border Background="{DynamicResource Surface2Brush}" CornerRadius="8"
-                      Padding="12" MaxHeight="200" Margin="0,8,0,0">
-                <ScrollViewer>
-                  <TextBlock Text="{Binding ModDescriptionText}" TextWrapping="Wrap"/>
-                </ScrollViewer>
-              </Border>
-            </Expander>
-
-            <Border Background="{DynamicResource WarnSurfaceBrush}"
-                    BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
-                    CornerRadius="8" Padding="12" IsVisible="{Binding ShowUpdateNotice}">
-              <StackPanel Spacing="4">
-                <TextBlock Text="{Binding UpdateNoticeHeader}" FontWeight="SemiBold"
-                           Foreground="{DynamicResource WarnBrush}"/>
-                <TextBlock Text="{Binding UpdateNotesText}" TextWrapping="Wrap"
-                           Foreground="{DynamicResource WarnMutedBrush}" FontSize="12"/>
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
+                          HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Content="{DynamicResource L.Download}" Classes="success mod-action"
+                        IsVisible="{Binding ShowDownload}"
+                        Command="{Binding DownloadSelectedCommand}"/>
+                <Button Content="{DynamicResource L.Update}" Classes="warn mod-action"
+                        IsVisible="{Binding ShowUpdate}"
+                        Command="{Binding UpdateSelectedCommand}"/>
+                <Button Content="{DynamicResource L.Remove}" Classes="danger mod-action"
+                        IsVisible="{Binding ShowRemove}"
+                        Command="{Binding RemoveSelectedCommand}"/>
               </StackPanel>
+            </Grid>
+          </StackPanel>
+
+          <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}" CornerRadius="8" Padding="14">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+              <TextBlock Grid.Row="0" Text="{DynamicResource L.Author}" Classes="muted" Width="88"/>
+              <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModAuthorText}" TextWrapping="Wrap"/>
+              <TextBlock Grid.Row="1" Text="{DynamicResource L.Game}" Classes="muted"/>
+              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ModGameVersionText}" TextWrapping="Wrap"/>
+              <TextBlock Grid.Row="2" Text="{DynamicResource L.Updated}" Classes="muted"/>
+              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ModLastUpdatedText}" TextWrapping="Wrap"/>
+            </Grid>
+          </Border>
+
+          <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="8" MinHeight="120">
+            <TextBlock Text="{DynamicResource L.Description}" Classes="section"/>
+            <Border Grid.Row="1" Background="{DynamicResource Surface2Brush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    CornerRadius="8" Padding="16,14,10,14" ClipToBounds="True">
+              <ScrollViewer x:Name="ModDescriptionScroll"
+                            HorizontalScrollBarVisibility="Disabled"
+                            VerticalScrollBarVisibility="Auto">
+                <TextBlock x:Name="ModDescriptionText"
+                           Text="{Binding ModDescriptionText}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource MutedBrush}"
+                           FontSize="13" LineHeight="20"
+                           Margin="0,0,8,0"/>
+              </ScrollViewer>
             </Border>
+          </Grid>
 
-            <TextBlock Text="{DynamicResource L.UiConfigWarning}"
-                       Foreground="{DynamicResource WarnBrush}"
-                       IsVisible="{Binding HasUiConfigWarning}" TextWrapping="Wrap"
-                       FontSize="12"/>
+          <Border Grid.Row="3" Background="{DynamicResource WarnSurfaceBrush}"
+                  BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1"
+                  CornerRadius="8" Padding="12" IsVisible="{Binding ShowUpdateNotice}">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{Binding UpdateNoticeHeader}" FontWeight="SemiBold"
+                         Foreground="{DynamicResource WarnBrush}" TextWrapping="Wrap"/>
+              <TextBlock Text="{Binding UpdateNotesText}" TextWrapping="Wrap"
+                         Foreground="{DynamicResource WarnMutedBrush}" FontSize="12"/>
+            </StackPanel>
+          </Border>
 
-            <StackPanel IsVisible="{Binding ShowParameters}" Spacing="10">
+          <TextBlock Grid.Row="4" Text="{DynamicResource L.UiConfigWarning}"
+                     Foreground="{DynamicResource WarnBrush}"
+                     IsVisible="{Binding HasUiConfigWarning}" TextWrapping="Wrap"
+                     FontSize="12"/>
+
+          <ScrollViewer Grid.Row="5" IsVisible="{Binding ShowParameters}"
+                        HorizontalScrollBarVisibility="Disabled"
+                        VerticalScrollBarVisibility="Auto"
+                        MaxHeight="280">
+            <StackPanel Spacing="10" Margin="0,0,8,0">
               <TextBlock Text="{DynamicResource L.Configuration}" Classes="section"/>
               <ItemsControl ItemsSource="{Binding ParameterRows}">
                 <ItemsControl.ItemTemplate>
@@ -146,7 +164,8 @@
                                    FontSize="11" TextWrapping="Wrap"/>
                         <CheckBox IsVisible="{Binding IsBoolean}" IsChecked="{Binding BoolValue}"/>
                         <ComboBox IsVisible="{Binding IsSelect}" ItemsSource="{Binding Options}"
-                                  SelectedItem="{Binding SelectedOption}" MinWidth="220"/>
+                                  SelectedItem="{Binding SelectedOption}" MinWidth="220"
+                                  HorizontalAlignment="Stretch"/>
                         <TextBox IsVisible="{Binding IsText}" Text="{Binding TextValue}"/>
                       </StackPanel>
                     </Border>
@@ -159,8 +178,8 @@
                         Command="{Binding SaveParametersCommand}"/>
               </StackPanel>
             </StackPanel>
-          </StackPanel>
-        </ScrollViewer>
+          </ScrollViewer>
+        </Grid>
       </Grid>
     </Border>
   </Grid>
