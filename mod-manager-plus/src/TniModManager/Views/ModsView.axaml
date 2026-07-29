@@ -90,6 +90,9 @@
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6"
                           HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Content="{DynamicResource L.GitHub}" Classes="secondary mod-action"
+                        IsVisible="{Binding ShowGitHub}"
+                        Command="{Binding OpenModGitHubCommand}"/>
                 <Button Content="{DynamicResource L.Download}" Classes="success mod-action"
                         IsVisible="{Binding ShowDownload}"
                         Command="{Binding DownloadSelectedCommand}"/>

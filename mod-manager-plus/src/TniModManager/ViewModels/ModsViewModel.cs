@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -59,6 +60,7 @@ public partial class ModsViewModel : ViewModelBase
     [ObservableProperty] private bool _showDownload;
     [ObservableProperty] private bool _showUpdate;
     [ObservableProperty] private bool _showRemove;
+    [ObservableProperty] private bool _showGitHub;
     [ObservableProperty] private bool _showUpdateNotice;
     [ObservableProperty] private string _updateVersionText = "";
     [ObservableProperty] private string _updateNoticeHeader = "";
@@ -146,6 +148,23 @@ public partial class ModsViewModel : ViewModelBase
         _install.RemoveDownloaded(mod.FolderPath, mod.FolderId);
         _shell.SetStatus(UiStrings.Removed(mod.Name));
         LoadModsLocalOnly();
+    }
+
+    [RelayCommand]
+    private void OpenModGitHub()
+    {
+        var url = SelectedModItem?.Mod.HtmlUrl;
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
+        }
     }
 
     [RelayCommand]
@@ -296,6 +315,7 @@ public partial class ModsViewModel : ViewModelBase
             ShowDownload = false;
             ShowUpdate = false;
             ShowRemove = false;
+            ShowGitHub = false;
             ShowUpdateNotice = false;
             UpdateVersionText = "";
             UpdateNoticeHeader = "";
@@ -322,6 +342,7 @@ public partial class ModsViewModel : ViewModelBase
         ShowDownload = mod.Source == ModSource.Available;
         ShowUpdate = mod.HasUpdate;
         ShowRemove = mod.Source == ModSource.Downloaded;
+        ShowGitHub = !string.IsNullOrWhiteSpace(mod.HtmlUrl);
         ShowUpdateNotice = mod.HasUpdate;
         UpdateVersionText = mod.RemoteVersion ?? "";
         UpdateNoticeHeader = UiStrings.UpdateAvailablePrefix + UpdateVersionText;

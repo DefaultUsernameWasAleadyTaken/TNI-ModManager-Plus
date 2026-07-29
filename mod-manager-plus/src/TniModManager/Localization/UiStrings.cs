@@ -134,6 +134,9 @@ public static class UiStrings
             : $"Commands require {joined} suffix unless 'always on' or 'always using' is set by the player.";
     }
 
+    public static string OpenUrlFailed(string message) =>
+        Ru ? $"Не удалось открыть ссылку: {message}" : $"Could not open link: {message}";
+
     public static string UpdateAvailablePrefix => Ru ? "Доступно обновление · " : "Update available · ";
 
     public static string FormatModSource(ModSource source) => source switch

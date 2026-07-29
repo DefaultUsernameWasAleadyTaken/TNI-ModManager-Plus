@@ -20,4 +20,6 @@ public sealed class ModInfo
     public bool HasUiConfigPs1 { get; set; }
     public string? ReleaseTag { get; set; }
     public string? ZipUrl { get; set; }
+    /// <summary>Страница релиза GitHub (html_url).</summary>
+    public string? HtmlUrl { get; set; }
 }
