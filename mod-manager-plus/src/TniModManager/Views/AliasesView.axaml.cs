@@ -59,13 +59,22 @@ public partial class AliasesView : UserControl
         LivePreviewText.Inlines = inlines;
     }
 
-    private static IBrush BrushFor(AliasPreviewTokenKind kind) => kind switch
+    private static IBrush BrushFor(AliasPreviewTokenKind kind)
     {
-        AliasPreviewTokenKind.Variable => ThemeBrushResolver.Get("AliasVariableBrush"),
-        AliasPreviewTokenKind.Keyword => ThemeBrushResolver.Get("AliasComplexBrush"),
-        AliasPreviewTokenKind.OnUsing => ThemeBrushResolver.Get("AliasCompoundBrush"),
-        AliasPreviewTokenKind.Separator => ThemeBrushResolver.Get("AliasConditionalBrush"),
-        AliasPreviewTokenKind.Placeholder => ThemeBrushResolver.Get("MutedBrush"),
-        _ => ThemeBrushResolver.Get("TextBrush")
-    };
+        var key = kind switch
+        {
+            AliasPreviewTokenKind.Variable => "AliasVariableBrush",
+            AliasPreviewTokenKind.Keyword => "AliasComplexBrush",
+            AliasPreviewTokenKind.OnUsing => "AliasCompoundBrush",
+            AliasPreviewTokenKind.Separator => "AliasConditionalBrush",
+            AliasPreviewTokenKind.Placeholder => "MutedBrush",
+            _ => "PreviewCommandBrush"
+        };
+
+        // Копия цвета: DynamicResource-кисть не обновляет уже созданные Run при смене темы.
+        var brush = ThemeBrushResolver.Get(key);
+        return brush is ISolidColorBrush solid
+            ? new SolidColorBrush(solid.Color)
+            : brush;
+    }
 }

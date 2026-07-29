@@ -144,6 +144,8 @@ public partial class AliasesViewModel : ViewModelBase
         foreach (var alias in Aliases)
             alias.RefreshBrush();
         AliasKindBrush = ThemeBrushResolver.GetAlias(AliasAnalyzer.Analyze(AliasCommand).Kind);
+        // Runs в Live Preview держат старые SolidColorBrush — пересобрать под текущую тему.
+        UpdateAliasPreview();
     }
 
     public void RefreshLocalizedLabels()
