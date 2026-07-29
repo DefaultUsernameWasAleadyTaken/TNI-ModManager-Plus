@@ -2,8 +2,8 @@
 
 ## Русский
 
-- **Рабочая ветка:** только `alpha`.
-- **Не трогать как продуктовую базу:** `beta`, `main` (устаревший Python MM).
+- **Рабочая ветка:** только `beta`.
+- **Не трогать как продуктовую базу:** `main` (устаревший Python MM / старый tree).
 - **Scope ([ADR-002](docs/decisions.md)):** только Mod Manager — `mod-manager-plus/`, лаунчеры, `docs/`.
 - **Стек ([ADR-003](docs/decisions.md)):** .NET 8 + Avalonia 11; Core в `src/TniModManager.Core/`.
 - **Язык с пользователем:** русский.
@@ -12,4 +12,4 @@
 
 ## English
 
-- Working branch: `alpha` only. Stack: .NET 8 + Avalonia ([ADR-003](docs/decisions.md)). Scope: Mod Manager only.
+- Working branch: `beta` only. Stack: .NET 8 + Avalonia ([ADR-003](docs/decisions.md)). Scope: Mod Manager only.

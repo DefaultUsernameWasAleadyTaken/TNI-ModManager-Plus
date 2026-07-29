@@ -1,4 +1,4 @@
-# Architecture Decision Records — TNI-ModManager-Plus (`alpha`)
+# Architecture Decision Records — TNI-ModManager-Plus (`beta`)
 
 ---
 
@@ -8,13 +8,15 @@
 
 | Поле | Значение |
 |------|----------|
-| **Статус** | Принято |
+| **Статус** | Заменено ([ADR-005](#adr-005-рабочая-база--ветка-beta-ветка-alpha-удалена)) |
 | **Дата** | 2026-07-29 |
-| **Ветка** | `alpha` |
+| **Ветка** | `alpha` (исторически) |
 
 ### Решение
 
 Единственная рабочая ветка форка — **`alpha`**. Линия **`beta` / `main`** (эксперимент Python/PySide6) **закрыта**.
+
+> Позже содержимое Avalonia-линейки перенесено в `beta`, ветка `alpha` удалена — см. ADR-005.
 
 ### Связанные документы
 
@@ -80,9 +82,9 @@ WPF не работает на Linux. Avalonia ближе к WPF/XAML и даё�
 
 ## English
 
-## ADR-001: Working base = `alpha`; abandon `beta`/`main`
+## ADR-001: Working base = `alpha`; abandon Python `beta`/`main` (superseded)
 
-Accepted 2026-07-29. Only `alpha` is the working branch; the Python/PySide6 `beta`/`main` experiment is closed.
+Accepted 2026-07-29; **superseded by ADR-005**. Originally only `alpha` was the working branch.
 
 ## ADR-002: Scope = Mod Manager only
 
@@ -115,3 +117,30 @@ Accepted 2026-07-29. Cross-platform GUI via Avalonia; Core library for paths/Git
 ## ADR-004: Remove legacy PowerShell+WPF Mod Manager
 
 Accepted 2026-07-29. Drop in-tree legacy PS1; Avalonia app is the sole product.
+
+---
+
+## ADR-005: Рабочая база = ветка `beta`; ветка `alpha` удалена
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Принято |
+| **Дата** | 2026-07-29 |
+| **Ветка** | `beta` |
+
+### Решение
+
+- `origin/beta` выровнен на состояние Avalonia Mod Manager (бывший tip `alpha`, коммит линейки UI redesign).
+- Ветка **`alpha`** удалена локально и на `origin`.
+- Единственная рабочая ветка форка — **`beta`**.
+- **`main`** по-прежнему не использовать как продуктовую базу (старый tree / Python MM).
+
+### Почему
+
+После force-reset `beta` ← `alpha` дублировать две одинаковые ветки незачем; `beta` остаётся основной линией форка.
+
+### English
+
+## ADR-005: Working base = `beta`; delete `alpha`
+
+Accepted 2026-07-29. `beta` holds the Avalonia Mod Manager tip; `alpha` removed from origin. Do not use `main` as product base.

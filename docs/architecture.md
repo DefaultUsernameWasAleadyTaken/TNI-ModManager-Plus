@@ -1,6 +1,6 @@
-# Architecture — TNI-ModManager-Plus (`alpha`)
+# Architecture — TNI-ModManager-Plus (`beta`)
 
-**Ветка / Branch:** `alpha` · **Стек / Stack:** .NET 8 + Avalonia 11 · **Scope:** [ADR-002](decisions.md) · **UI:** [ADR-003](decisions.md)
+**Ветка / Branch:** `beta` · **Стек / Stack:** .NET 8 + Avalonia 11 · **Scope:** [ADR-002](decisions.md) · **UI:** [ADR-003](decisions.md)
 
 ---
 
