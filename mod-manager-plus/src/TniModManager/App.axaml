@@ -118,6 +118,21 @@
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
     </Style>
 
+    <!-- Кнопки шапки: заметный фон/рамка в тёмной теме -->
+    <Style Selector="Button.header">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding" Value="12,10"/>
+      <Setter Property="MinHeight" Value="40"/>
+      <Setter Property="FontSize" Value="13"/>
+    </Style>
+    <Style Selector="Button.header:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
     <Style Selector="TextBox">
       <Setter Property="Padding" Value="10,8"/>
       <Setter Property="FontSize" Value="13"/>

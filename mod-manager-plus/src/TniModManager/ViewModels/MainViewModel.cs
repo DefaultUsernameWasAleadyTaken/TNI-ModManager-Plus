@@ -44,6 +44,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         StatusText = UiStrings.Loading;
         IsDarkTheme = !_uiSettings.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase);
         LanguageLabel = LocalizationManager.DisplayName(_uiSettings.Language);
+        LanguageCode = LocalizationManager.Normalize(_uiSettings.Language);
         if (Application.Current is { } app)
             app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
         LocalizationManager.LanguageChanged += OnLanguageChanged;
@@ -64,6 +65,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private bool _isDarkTheme = true;
     [ObservableProperty] private string _languageLabel = "English";
+    [ObservableProperty] private string _languageCode = "en";
     [ObservableProperty] private bool _showAppUpdate;
     [ObservableProperty] private string _appUpdateVersion = "";
 
@@ -105,6 +107,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         var code = LocalizationManager.Normalize(language);
         _uiSettings.Language = code;
         LanguageLabel = LocalizationManager.DisplayName(code);
+        LanguageCode = code;
         _uiSettings.Save();
         LocalizationManager.Apply(code);
     }
@@ -220,6 +223,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         RunOnUiThread(() =>
         {
             LanguageLabel = LocalizationManager.DisplayName(LocalizationManager.Current);
+            LanguageCode = LocalizationManager.Current;
             OnPropertyChanged(nameof(ThemeToggleTooltip));
             OnPropertyChanged(nameof(AppUpdateButtonLabel));
             Mods.RefreshLocalizedLabels();
