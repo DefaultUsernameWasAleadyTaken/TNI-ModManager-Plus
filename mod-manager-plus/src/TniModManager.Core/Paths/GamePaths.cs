@@ -9,7 +9,7 @@ public sealed class GamePaths
     public const string ManagedMarkerFileName = "mod.managed";
     public const int SteamAppId = 2939600;
     public const string AppDisplayName = "Mod Manager Plus";
-    public const string GitHubRepo = "CJFWeatherhead/TNI-Mods";
+    /// <summary>Релизы приложения (self-update). Каталог модов — mod-sources.json.</summary>
     public const string AppGitHubRepo = "DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus";
 
     /// <summary>Версия приложения из Version.props (InformationalVersion сборки Core).</summary>

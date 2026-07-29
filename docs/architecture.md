@@ -29,7 +29,7 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 | Windows | `…\Tower Networking Inc\Mods` |
 | Linux | `…/Tower Networking Inc/mods` |
 
-Каталог модов: `CJFWeatherhead/TNI-Mods`. Steam App ID: `2939600`.
+Каталог модов: список репозиториев в [`mod-manager-plus/mod-sources.json`](../mod-manager-plus/mod-sources.json) (сейчас `CJFWeatherhead/TNI-Mods` и `DefaultUsernameWasAleadyTaken/TNI-data-extractor`). Steam App ID: `2939600`.
 
 ### UI shell
 

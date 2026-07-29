@@ -32,7 +32,7 @@ chmod +x mod-manager-plus/scripts/publish.sh
 
 ## Features
 
-- Browse / download / update mods from `CJFWeatherhead/TNI-Mods` GitHub releases
+- Browse / download / update mods from GitHub releases listed in [`mod-sources.json`](mod-sources.json)
 - Remove downloaded mods
 - Edit `entry.lua` configuration parameters (from `metadata.yaml`)
 - Command aliases in game `settings.json`

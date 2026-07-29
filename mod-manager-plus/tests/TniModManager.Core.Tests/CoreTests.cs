@@ -1,4 +1,5 @@
 using TniModManager.Core.Config;
+using TniModManager.Core.GitHub;
 using TniModManager.Core.Mods;
 using TniModManager.Core.Paths;
 using TniModManager.Core.Util;
@@ -14,6 +15,40 @@ public class SemVerTests
     [InlineData("2.0", "1.9.9", 1)]
     public void Compare_Works(string a, string b, int expected) =>
         Assert.Equal(expected, SemVer.Compare(a, b));
+}
+
+public class ModSourcesTests
+{
+    [Theory]
+    [InlineData("CJFWeatherhead/TNI-Mods", "CJFWeatherhead/TNI-Mods")]
+    [InlineData("https://github.com/DefaultUsernameWasAleadyTaken/TNI-data-extractor", "DefaultUsernameWasAleadyTaken/TNI-data-extractor")]
+    [InlineData("https://github.com/owner/repo/", "owner/repo")]
+    public void NormalizeRepo_Works(string input, string expected) =>
+        Assert.Equal(expected, ModSources.NormalizeRepo(input));
+
+    [Fact]
+    public void ParseJson_ReadsRepositories()
+    {
+        var repos = ModSources.ParseJson("""
+            {
+              "modRepositories": [
+                "CJFWeatherhead/TNI-Mods",
+                "https://github.com/DefaultUsernameWasAleadyTaken/TNI-data-extractor"
+              ]
+            }
+            """);
+        Assert.Equal(2, repos.Count);
+        Assert.Contains("CJFWeatherhead/TNI-Mods", repos);
+        Assert.Contains("DefaultUsernameWasAleadyTaken/TNI-data-extractor", repos);
+    }
+
+    [Fact]
+    public void GetRepositories_ReturnsEmbeddedDefaults()
+    {
+        var repos = ModSources.GetRepositories(baseDirectory: Path.GetTempPath());
+        Assert.Contains("CJFWeatherhead/TNI-Mods", repos);
+        Assert.Contains("DefaultUsernameWasAleadyTaken/TNI-data-extractor", repos);
+    }
 }
 
 public class EntryLuaConfigTests

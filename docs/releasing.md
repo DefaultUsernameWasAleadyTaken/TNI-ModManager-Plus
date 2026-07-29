@@ -10,7 +10,7 @@
 
 Если **не** менял `Version.props` (номер тот же, что у Latest) — релиза **не будет** (skip). Код всё равно попадёт в `main`.
 
-Моды из этого репозитория **не** публикуются — каталог модов: upstream [`CJFWeatherhead/TNI-Mods`](https://github.com/CJFWeatherhead/TNI-Mods).
+Моды из этого репозитория **не** публикуются — каталог модов задаётся в [`mod-manager-plus/mod-sources.json`](../mod-manager-plus/mod-sources.json) (upstream + сторонние репо с тегами `modId-vX.Y.Z`).
 
 ## Версия
 

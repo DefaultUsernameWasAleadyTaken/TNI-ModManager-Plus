@@ -32,12 +32,40 @@ public sealed class GitHubReleaseClient
         CancellationToken cancellationToken = default)
     {
         var result = new Dictionary<string, ModReleaseInfo>(StringComparer.OrdinalIgnoreCase);
+        var repos = ModSources.GetRepositories();
+        Exception? lastError = null;
+        var anySuccess = false;
+
+        foreach (var repo in repos)
+        {
+            try
+            {
+                await FetchRepoReleasesAsync(repo, result, cancellationToken).ConfigureAwait(false);
+                anySuccess = true;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+            }
+        }
+
+        if (!anySuccess && lastError is not null)
+            throw lastError;
+
+        return result;
+    }
+
+    private async Task FetchRepoReleasesAsync(
+        string repo,
+        Dictionary<string, ModReleaseInfo> result,
+        CancellationToken cancellationToken)
+    {
         const int perPage = 100;
         const int maxPages = 5;
 
         for (var page = 1; page <= maxPages; page++)
         {
-            var uri = $"https://api.github.com/repos/{GamePaths.GitHubRepo}/releases?per_page={perPage}&page={page}";
+            var uri = $"https://api.github.com/repos/{repo}/releases?per_page={perPage}&page={page}";
             using var response = await _http.GetAsync(uri, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
@@ -47,49 +75,50 @@ public sealed class GitHubReleaseClient
                 break;
 
             foreach (var release in doc.RootElement.EnumerateArray())
-            {
-                var tag = release.GetProperty("tag_name").GetString() ?? "";
-                var match = TagRegex.Match(tag);
-                if (!match.Success) continue;
-
-                var modId = match.Groups[1].Value;
-                var version = match.Groups[2].Value;
-                if (!release.TryGetProperty("assets", out var assets)) continue;
-
-                JsonElement? zip = null;
-                foreach (var asset in assets.EnumerateArray())
-                {
-                    var name = asset.GetProperty("name").GetString() ?? "";
-                    if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                    {
-                        zip = asset;
-                        break;
-                    }
-                }
-                if (zip is null) continue;
-
-                var info = new ModReleaseInfo
-                {
-                    ModId = modId,
-                    Version = version,
-                    TagName = tag,
-                    DownloadUrl = zip.Value.GetProperty("browser_download_url").GetString() ?? "",
-                    AssetName = zip.Value.GetProperty("name").GetString() ?? "",
-                    Size = zip.Value.TryGetProperty("size", out var size) ? size.GetInt64() : 0,
-                    PublishedAt = release.TryGetProperty("published_at", out var pub) && DateTimeOffset.TryParse(pub.GetString(), out var dt) ? dt : null,
-                    ReleaseNotes = release.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "",
-                    HtmlUrl = release.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : "",
-                };
-
-                if (!result.TryGetValue(modId, out var existing) || SemVer.IsNewer(version, existing.Version))
-                    result[modId] = info;
-            }
+                TryAddRelease(release, result);
 
             if (doc.RootElement.GetArrayLength() < perPage)
                 break;
         }
+    }
 
-        return result;
+    private static void TryAddRelease(JsonElement release, Dictionary<string, ModReleaseInfo> result)
+    {
+        var tag = release.GetProperty("tag_name").GetString() ?? "";
+        var match = TagRegex.Match(tag);
+        if (!match.Success) return;
+
+        var modId = match.Groups[1].Value;
+        var version = match.Groups[2].Value;
+        if (!release.TryGetProperty("assets", out var assets)) return;
+
+        JsonElement? zip = null;
+        foreach (var asset in assets.EnumerateArray())
+        {
+            var name = asset.GetProperty("name").GetString() ?? "";
+            if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                zip = asset;
+                break;
+            }
+        }
+        if (zip is null) return;
+
+        var info = new ModReleaseInfo
+        {
+            ModId = modId,
+            Version = version,
+            TagName = tag,
+            DownloadUrl = zip.Value.GetProperty("browser_download_url").GetString() ?? "",
+            AssetName = zip.Value.GetProperty("name").GetString() ?? "",
+            Size = zip.Value.TryGetProperty("size", out var size) ? size.GetInt64() : 0,
+            PublishedAt = release.TryGetProperty("published_at", out var pub) && DateTimeOffset.TryParse(pub.GetString(), out var dt) ? dt : null,
+            ReleaseNotes = release.TryGetProperty("body", out var body) ? body.GetString() ?? "" : "",
+            HtmlUrl = release.TryGetProperty("html_url", out var html) ? html.GetString() ?? "" : "",
+        };
+
+        if (!result.TryGetValue(modId, out var existing) || SemVer.IsNewer(version, existing.Version))
+            result[modId] = info;
     }
 
     public async Task<AppReleaseInfo> GetLatestAppReleaseAsync(CancellationToken cancellationToken = default)
