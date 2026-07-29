@@ -37,5 +37,3 @@ chmod +x mod-manager-plus/scripts/publish.sh
 - Edit `entry.lua` configuration parameters (from `metadata.yaml`)
 - Command aliases in game `settings.json`
 - Launch game via Steam (`2939600`)
-
-Legacy PowerShell+WPF reference: `legacy/ModManagerGUI.ps1`.

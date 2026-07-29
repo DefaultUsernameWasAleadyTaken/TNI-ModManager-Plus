@@ -14,7 +14,6 @@
 | GUI | `mod-manager-plus/src/TniModManager/` | Avalonia desktop |
 | Core | `mod-manager-plus/src/TniModManager.Core/` | paths, GitHub, mods, config, aliases |
 | Tests | `mod-manager-plus/tests/` | xUnit |
-| Legacy | `mod-manager-plus/legacy/ModManagerGUI.ps1` | эталон WPF (не runtime) |
 | Лаунчеры | `ModManager.bat`, `ModManager.sh` | Win / Linux |
 | Docs | `docs/*.md` | архитектура, ADR |
 
@@ -39,4 +38,4 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 
 ## English
 
-Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core library ([ADR-003](decisions.md)). Legacy PowerShell GUI is reference-only under `legacy/`.
+Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core library ([ADR-003](decisions.md)).

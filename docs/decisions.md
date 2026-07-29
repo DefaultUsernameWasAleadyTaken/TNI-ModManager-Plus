@@ -34,7 +34,7 @@
 
 В репозитории **только** приложение Mod Manager:
 
-- каталог `mod-manager-plus/` (Avalonia/.NET: `src/`, `scripts/`, `legacy/`)
+- каталог `mod-manager-plus/` (Avalonia/.NET: `src/`, `scripts/`)
 - корневые лаунчеры `ModManager.bat` / `ModManager.sh`
 - `docs/` (architecture, ADR), `.cursor/`, `AGENTS.md`
 
@@ -63,12 +63,10 @@ Self-contained артефакт: **`TNI-ModManager-Plus`** / `.exe` (имя бе
 Кроссплатформенный GUI: **.NET 8 + Avalonia 11** (MVVM) в `mod-manager-plus/src/`.
 
 - Целевые ОС: **Windows** и **Linux** (Steam Deck).
-- UI визуально повторяет legacy WPF (`mod-manager-plus/legacy/ModManagerGUI.ps1`) до отдельного редизайна.
+- UI визуально повторяет прежний WPF Mod Manager до отдельного редизайна.
 - Ядро без UI: `TniModManager.Core` (paths, GitHub, mods, config, aliases).
 - `ui-config.ps1` **не исполняется**; Parameters — из `metadata.yaml` / `mod.jsonc`.
 - Userdata: Windows `Mods` / `Mods_Disabled`; Linux `mods` / `mods_disabled`.
-
-Legacy PowerShell+WPF — только эталон в `legacy/` до явного cutover.
 
 ### Почему
 
@@ -92,4 +90,28 @@ Accepted 2026-07-29. Keep Mod Manager app and project docs. Kit/mods/Hugo/CI sta
 
 ## ADR-003: Stack = .NET 8 + Avalonia 11 (Windows + Linux)
 
-Accepted 2026-07-29. Cross-platform GUI via Avalonia; Core library for paths/GitHub/mods; legacy PS1 kept as reference only. Do not execute `ui-config.ps1`.
+Accepted 2026-07-29. Cross-platform GUI via Avalonia; Core library for paths/GitHub/mods. Do not execute `ui-config.ps1`.
+
+---
+
+## ADR-004: Удаление legacy PowerShell+WPF Mod Manager
+
+| Поле | Значение |
+|------|----------|
+| **Статус** | Принято |
+| **Дата** | 2026-07-29 |
+| **Ветка** | `alpha` |
+
+### Решение
+
+Удалить `mod-manager-plus/legacy/ModManagerGUI.ps1` и все runtime/docs-ссылки на PowerShell+WPF менеджер. Единственный продукт — Avalonia (`TNI-ModManager-Plus`). История git сохраняет старый скрипт при необходимости.
+
+### Почему
+
+Порт на Avalonia закрыл потребность в эталоне in-tree; дублирование путает scope.
+
+### English
+
+## ADR-004: Remove legacy PowerShell+WPF Mod Manager
+
+Accepted 2026-07-29. Drop in-tree legacy PS1; Avalonia app is the sole product.

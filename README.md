@@ -44,7 +44,6 @@ mod-manager-plus/
   src/TniModManager.Core/      # логика без UI
   tests/
   scripts/publish.sh|.cmd      # self-contained publish
-  legacy/ModManagerGUI.ps1
 ModManager.bat / ModManager.sh
 docs/
 ```
