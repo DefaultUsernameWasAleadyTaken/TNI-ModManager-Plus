@@ -29,11 +29,24 @@ if not errorlevel 1 goto run_source
 goto fail_no_dotnet
 
 :run_source
+REM WinExe + start: не оставляем консоль от "dotnet run" (dotnet.exe — console app).
 cd /d "%ROOT%mod-manager-plus"
-dotnet run --project "%PROJ%"
-SET "RC=!ERRORLEVEL!"
-if not "!RC!"=="0" pause
-exit /b !RC!
+echo Building Mod Manager Plus...
+dotnet build "%PROJ%" -nologo -v q
+if errorlevel 1 (
+  echo Build failed.
+  pause
+  exit /b 1
+)
+SET "EXE=%ROOT%mod-manager-plus\src\TniModManager\bin\Debug\net8.0\TNI-ModManager-Plus.exe"
+if not exist "!EXE!" SET "EXE=%ROOT%mod-manager-plus\src\TniModManager\bin\Release\net8.0\TNI-ModManager-Plus.exe"
+if not exist "!EXE!" (
+  echo Built binary not found under bin\Debug|Release\net8.0\
+  pause
+  exit /b 1
+)
+start "" "!EXE!"
+exit /b 0
 
 :run_published
 if exist "%PUB%" (

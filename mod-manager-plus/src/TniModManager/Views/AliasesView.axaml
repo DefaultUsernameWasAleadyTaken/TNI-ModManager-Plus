@@ -4,8 +4,9 @@
              x:Class="TniModManager.Views.AliasesView"
              x:DataType="vm:AliasesViewModel">
 
-  <Grid ColumnDefinitions="240,*" ColumnSpacing="12" Margin="0,8,0,0">
-    <Border Grid.Column="0" Classes="panel">
+  <!-- Auto: панель расширяется, если подписи кнопок (или строк списка) шире -->
+  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="0,8,0,0">
+    <Border Grid.Column="0" Classes="panel" MinWidth="200">
       <Grid RowDefinitions="Auto,*,Auto" Margin="12">
         <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,10"/>
         <ListBox Grid.Row="1" ItemsSource="{Binding Aliases}"
@@ -30,15 +31,15 @@
           </ListBox.ItemTemplate>
         </ListBox>
         <StackPanel Grid.Row="2" Spacing="8" Margin="0,10,0,0">
-          <!-- Вариант 2: Новый | Удалить поровну, Сохранить на всю ширину -->
-          <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+          <!-- Равные колонки: ширина = 2×самая длинная подпись (язык не важен) -->
+          <UniformGrid Columns="2">
             <Button Content="{DynamicResource L.NewAlias}" Classes="success"
-                    HorizontalAlignment="Stretch"
+                    Margin="0,0,8,0" HorizontalAlignment="Stretch"
                     Command="{Binding AddAliasCommand}"/>
-            <Button Grid.Column="1" Content="{DynamicResource L.Delete}" Classes="danger"
+            <Button Content="{DynamicResource L.Delete}" Classes="danger"
                     HorizontalAlignment="Stretch"
                     Command="{Binding DeleteAliasCommand}"/>
-          </Grid>
+          </UniformGrid>
           <Button Content="{DynamicResource L.SaveAliases}" Classes="primary"
                   HorizontalAlignment="Stretch"
                   Command="{Binding SaveAliasesCommand}"/>

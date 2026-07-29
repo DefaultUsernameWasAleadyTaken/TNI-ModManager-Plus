@@ -64,6 +64,8 @@
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
@@ -192,9 +194,11 @@
             <StackPanel Orientation="Horizontal" Spacing="7"
                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="Center">
-              <Panel Width="12" Height="12" VerticalAlignment="Center">
+              <Grid Width="12" Height="12" VerticalAlignment="Center">
                 <Ellipse x:Name="Outer"
                          Width="12" Height="12"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
                          Stroke="{DynamicResource MutedBrush}"
                          StrokeThickness="1.5"
                          Fill="Transparent"/>
@@ -204,7 +208,7 @@
                          VerticalAlignment="Center"
                          Fill="{DynamicResource AccentBrush}"
                          IsVisible="False"/>
-              </Panel>
+              </Grid>
               <TextBlock Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
                          TextWrapping="NoWrap"
                          Foreground="{TemplateBinding Foreground}"
