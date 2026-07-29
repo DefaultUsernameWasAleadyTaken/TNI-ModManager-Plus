@@ -16,12 +16,12 @@ public sealed class AppUiSettings
     public AppUiSettings(GamePaths paths) => _paths = paths;
 
     public string Theme { get; set; } = "Dark";
-    public string Language { get; set; } = "en";
+    public string Language { get; set; } = "ru";
 
     public void Load()
     {
         Theme = "Dark";
-        Language = "en";
+        Language = "ru";
         if (!File.Exists(_paths.UiSettingsPath)) return;
         try
         {
@@ -50,6 +50,6 @@ public sealed class AppUiSettings
     private sealed class AppUiSettingsData
     {
         public string Theme { get; set; } = "Dark";
-        public string Language { get; set; } = "en";
+        public string Language { get; set; } = "ru";
     }
 }

@@ -23,10 +23,10 @@
     </StackPanel>
 
     <TabControl Grid.Row="2">
-      <TabItem Header="Mods">
+      <TabItem Header="{DynamicResource L.TabMods}">
         <views:ModsView DataContext="{Binding Mods}"/>
       </TabItem>
-      <TabItem Header="Aliases">
+      <TabItem Header="{DynamicResource L.TabAliases}">
         <views:AliasesView DataContext="{Binding Aliases}"/>
       </TabItem>
     </TabControl>

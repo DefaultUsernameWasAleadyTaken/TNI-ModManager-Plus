@@ -4,6 +4,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using TniModManager.Core.Paths;
 using TniModManager.Core.Settings;
+using TniModManager.Localization;
 using TniModManager.ViewModels;
 using TniModManager.Views;
 
@@ -26,6 +27,7 @@ public partial class App : Application
             RequestedThemeVariant = uiSettings.Theme.Equals("Light", StringComparison.OrdinalIgnoreCase)
                 ? ThemeVariant.Light
                 : ThemeVariant.Dark;
+            LocalizationManager.Apply(uiSettings.Language);
 
             desktop.MainWindow = new MainWindow
             {

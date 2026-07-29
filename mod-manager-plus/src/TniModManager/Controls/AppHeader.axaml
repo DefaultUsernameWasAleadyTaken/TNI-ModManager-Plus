@@ -31,11 +31,13 @@
         </Panel>
       </Button>
 
-      <Button Classes="ghost" ToolTip.Tip="Language" Padding="10">
+      <Button Classes="ghost" ToolTip.Tip="{DynamicResource L.Language}" Padding="10">
         <Button.Flyout>
           <MenuFlyout Placement="BottomEdgeAlignedRight">
-            <MenuItem Header="English" Command="{Binding SelectLanguageCommand}"
+            <MenuItem Header="{DynamicResource L.English}" Command="{Binding SelectLanguageCommand}"
                       CommandParameter="en"/>
+            <MenuItem Header="{DynamicResource L.Russian}" Command="{Binding SelectLanguageCommand}"
+                      CommandParameter="ru"/>
           </MenuFlyout>
         </Button.Flyout>
         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -55,7 +57,7 @@
       <Button Classes="success" Command="{Binding LaunchGameCommand}">
         <StackPanel Orientation="Horizontal" Spacing="7">
           <PathIcon Width="16" Height="16" Data="M8,5V19L19,12Z"/>
-          <TextBlock Text="Launch Game"/>
+          <TextBlock Text="{DynamicResource L.LaunchGame}"/>
         </StackPanel>
       </Button>
     </StackPanel>

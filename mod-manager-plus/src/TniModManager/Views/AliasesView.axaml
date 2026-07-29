@@ -7,7 +7,7 @@
   <Grid ColumnDefinitions="300,*" ColumnSpacing="12" Margin="0,8,0,0">
     <Border Grid.Column="0" Classes="panel">
       <Grid RowDefinitions="Auto,*,Auto" Margin="14">
-        <TextBlock Text="Aliases" Classes="section" Margin="0,0,0,12"/>
+        <TextBlock Text="{DynamicResource L.Aliases}" Classes="section" Margin="0,0,0,12"/>
         <ListBox Grid.Row="1" ItemsSource="{Binding Aliases}"
                  SelectedItem="{Binding SelectedAlias}">
           <ListBox.ItemTemplate>
@@ -27,11 +27,11 @@
           </ListBox.ItemTemplate>
         </ListBox>
         <StackPanel Grid.Row="2" Spacing="8" Margin="0,12,0,0">
-          <Button Content="New alias" Classes="success"
+          <Button Content="{DynamicResource L.NewAlias}" Classes="success"
                   Command="{Binding AddAliasCommand}"/>
-          <Button Content="Delete" Classes="danger"
+          <Button Content="{DynamicResource L.Delete}" Classes="danger"
                   Command="{Binding DeleteAliasCommand}"/>
-          <Button Content="Save aliases" Classes="primary"
+          <Button Content="{DynamicResource L.SaveAliases}" Classes="primary"
                   Command="{Binding SaveAliasesCommand}"/>
         </StackPanel>
       </Grid>
@@ -41,15 +41,15 @@
       <Grid>
         <StackPanel IsVisible="{Binding !AliasEditorVisible}"
                     VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
-          <TextBlock Text="Nothing selected" FontSize="18" FontWeight="SemiBold"
+          <TextBlock Text="{DynamicResource L.NothingSelected}" FontSize="18" FontWeight="SemiBold"
                      Foreground="{DynamicResource MutedBrush}"/>
-          <TextBlock Text="Pick an alias to edit its command." Classes="muted"/>
+          <TextBlock Text="{DynamicResource L.PickAlias}" Classes="muted"/>
         </StackPanel>
 
         <ScrollViewer IsVisible="{Binding AliasEditorVisible}" Padding="20">
           <StackPanel Spacing="12">
             <Grid ColumnDefinitions="*,Auto">
-              <TextBlock Text="Editor" Classes="section"/>
+              <TextBlock Text="{DynamicResource L.Editor}" Classes="section"/>
               <Border Grid.Column="1" Background="{Binding AliasKindBrush}"
                       CornerRadius="6" Padding="10,4">
                 <TextBlock Text="{Binding AliasKindText}"
@@ -58,7 +58,7 @@
               </Border>
             </Grid>
             <StackPanel Spacing="6">
-              <TextBlock Text="Name" Classes="muted"/>
+              <TextBlock Text="{DynamicResource L.Name}" Classes="muted"/>
               <TextBox Text="{Binding AliasName}"/>
             </StackPanel>
             <WrapPanel Orientation="Horizontal" ItemSpacing="6" LineSpacing="6">
@@ -74,7 +74,7 @@
                       CommandParameter=" using $1"/>
             </WrapPanel>
             <StackPanel Spacing="6">
-              <TextBlock Text="Command" Classes="muted"/>
+              <TextBlock Text="{DynamicResource L.Command}" Classes="muted"/>
               <TextBox Text="{Binding AliasCommand}" AcceptsReturn="True" MinHeight="96"
                        TextWrapping="Wrap"
                        FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
@@ -87,7 +87,7 @@
                          FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
                          TextWrapping="Wrap"/>
             </Border>
-            <Button Content="Apply" Classes="primary"
+            <Button Content="{DynamicResource L.Apply}" Classes="primary"
                     Command="{Binding ApplyAliasEditsCommand}"
                     HorizontalAlignment="Right"/>
           </StackPanel>

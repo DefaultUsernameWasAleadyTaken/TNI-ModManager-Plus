@@ -8,6 +8,7 @@ using TniModManager.Core.GitHub;
 using TniModManager.Core.Models;
 using TniModManager.Core.Mods;
 using TniModManager.Core.Paths;
+using TniModManager.Localization;
 
 namespace TniModManager.ViewModels;
 
@@ -58,6 +59,7 @@ public partial class ModsViewModel : ViewModelBase
     [ObservableProperty] private bool _showRemove;
     [ObservableProperty] private bool _showUpdateNotice;
     [ObservableProperty] private string _updateVersionText = "";
+    [ObservableProperty] private string _updateNoticeHeader = "";
     [ObservableProperty] private string _updateNotesText = "";
     [ObservableProperty] private bool _showParameters;
     [ObservableProperty] private bool _hasUiConfigWarning;
@@ -69,7 +71,7 @@ public partial class ModsViewModel : ViewModelBase
     {
         await RefreshModsAsync().ConfigureAwait(true);
         if (!File.Exists(Path.Combine(_paths.ModsDirectory, "luajit-support", "entry.elf")))
-            _shell.SetStatus("Note: luajit-support not installed — Lua mods need it.");
+            _shell.SetStatus(UiStrings.NoteLuajit);
     }
 
     partial void OnSelectedModItemChanged(ModListItemViewModel? value) => ApplySelectedMod(value?.Mod);
@@ -95,7 +97,7 @@ public partial class ModsViewModel : ViewModelBase
         if (!_shell.TryEnterBusy())
             return;
 
-        _shell.SetStatus("Refreshing mods...");
+        _shell.SetStatus(UiStrings.RefreshingMods);
         try
         {
             await ReloadModsCoreAsync().ConfigureAwait(true);
@@ -138,7 +140,7 @@ public partial class ModsViewModel : ViewModelBase
             return;
 
         _install.RemoveDownloaded(mod.FolderPath, mod.FolderId);
-        _shell.SetStatus($"Removed {mod.Name}");
+        _shell.SetStatus(UiStrings.Removed(mod.Name));
         await RefreshModsAsync().ConfigureAwait(true);
     }
 
@@ -152,8 +154,8 @@ public partial class ModsViewModel : ViewModelBase
         var entry = Path.Combine(mod.FolderPath, GamePaths.ConfigFileName);
         var values = ParameterRows.ToDictionary(row => row.Name, row => row.GetValue(), StringComparer.Ordinal);
         _shell.SetStatus(EntryLuaConfig.Write(entry, values)
-            ? "Configuration saved!"
-            : "Failed to save configuration.");
+            ? UiStrings.ConfigSaved
+            : UiStrings.ConfigSaveFailed);
     }
 
     [RelayCommand]
@@ -176,23 +178,31 @@ public partial class ModsViewModel : ViewModelBase
             ApplySelectedMod(SelectedModItem.Mod);
     }
 
+    public void RefreshLocalizedLabels()
+    {
+        foreach (var mod in VisibleMods)
+            mod.RefreshLocalizedLabels();
+        if (SelectedModItem is not null)
+            ApplySelectedMod(SelectedModItem.Mod);
+    }
+
     private async Task RunInstallAsync(ModReleaseInfo release)
     {
         if (!_shell.TryEnterBusy())
             return;
 
-        _shell.BeginProgress($"Downloading {release.ModId}...");
+        _shell.BeginProgress(UiStrings.DownloadingMod(release.ModId));
         var progress = new Progress<double>(percent =>
-            _shell.ReportProgress(percent, $"Downloading {release.ModId}... {percent:0}%"));
+            _shell.ReportProgress(percent, UiStrings.DownloadingModPercent(release.ModId, percent)));
         try
         {
             await _install.InstallFromReleaseAsync(release, progress).ConfigureAwait(true);
-            _shell.SetStatus($"{release.ModId} v{release.Version} installed.");
+            _shell.SetStatus(UiStrings.ModInstalled(release.ModId, release.Version));
             await ReloadModsCoreAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
-            _shell.SetStatus($"Download failed: {ex.Message}");
+            _shell.SetStatus(UiStrings.DownloadFailed(ex.Message));
         }
         finally
         {
@@ -208,11 +218,11 @@ public partial class ModsViewModel : ViewModelBase
         try
         {
             _releases = await _github.GetLatestModReleasesAsync().ConfigureAwait(true);
-            _shell.SetStatus($"Loaded {_releases.Count} GitHub releases.");
+            _shell.SetStatus(UiStrings.LoadedReleases(_releases.Count));
         }
         catch (Exception ex)
         {
-            _shell.SetStatus($"GitHub unavailable: {ex.Message} (showing local mods)");
+            _shell.SetStatus(UiStrings.GitHubUnavailable(ex.Message));
             _releases = new Dictionary<string, ModReleaseInfo>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -254,6 +264,7 @@ public partial class ModsViewModel : ViewModelBase
             ShowRemove = false;
             ShowUpdateNotice = false;
             UpdateVersionText = "";
+            UpdateNoticeHeader = "";
             UpdateNotesText = "";
             HasUiConfigWarning = false;
             ShowParameters = false;
@@ -262,7 +273,7 @@ public partial class ModsViewModel : ViewModelBase
         }
 
         ModNameText = mod.Name;
-        ModSourceText = mod.Source.ToString();
+        ModSourceText = UiStrings.FormatModSource(mod.Source);
         ModSourceBrush = ThemeBrushResolver.Get(mod.Source switch
         {
             ModSource.Downloaded => "SourceDownloadedBrush",
@@ -279,6 +290,7 @@ public partial class ModsViewModel : ViewModelBase
         ShowRemove = mod.Source == ModSource.Downloaded;
         ShowUpdateNotice = mod.HasUpdate;
         UpdateVersionText = mod.RemoteVersion ?? "";
+        UpdateNoticeHeader = UiStrings.UpdateAvailablePrefix + UpdateVersionText;
         UpdateNotesText = mod.RemoteNotes ?? "";
         HasUiConfigWarning = mod.HasUiConfigPs1;
 

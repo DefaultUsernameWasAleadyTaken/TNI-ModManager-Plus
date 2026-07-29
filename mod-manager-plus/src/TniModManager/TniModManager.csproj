@@ -14,6 +14,7 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <AvaloniaResource Include="Themes\**" />
+    <AvaloniaResource Include="Localization\**" />
   </ItemGroup>
 
   <ItemGroup>
