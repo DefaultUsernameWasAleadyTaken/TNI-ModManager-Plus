@@ -69,11 +69,12 @@ public partial class ModsViewModel : ViewModelBase
     public ObservableCollection<ModListItemViewModel> VisibleMods { get; } = [];
     public ObservableCollection<ParamRowViewModel> ParameterRows { get; } = [];
 
-    public async Task LoadAsync()
+    public Task LoadAsync()
     {
-        await RefreshModsAsync().ConfigureAwait(true);
+        LoadModsLocalOnly();
         if (!File.Exists(Path.Combine(_paths.ModsDirectory, "luajit-support", "entry.elf")))
             _shell.SetStatus(UiStrings.NoteLuajit);
+        return Task.CompletedTask;
     }
 
     partial void OnSelectedModItemChanged(ModListItemViewModel? value) => ApplySelectedMod(value?.Mod);
@@ -93,6 +94,7 @@ public partial class ModsViewModel : ViewModelBase
             FilterMode = mode;
     }
 
+    /// <summary>Явное обновление каталога с GitHub (кнопка «Обновить»).</summary>
     [RelayCommand]
     public async Task RefreshModsAsync()
     {
@@ -102,7 +104,7 @@ public partial class ModsViewModel : ViewModelBase
         _shell.SetStatus(UiStrings.RefreshingMods);
         try
         {
-            await ReloadModsCoreAsync().ConfigureAwait(true);
+            await FetchRemoteCatalogAsync().ConfigureAwait(true);
         }
         finally
         {
@@ -135,7 +137,7 @@ public partial class ModsViewModel : ViewModelBase
     private Task UpdateSelectedAsync() => DownloadSelectedAsync();
 
     [RelayCommand]
-    private async Task RemoveSelectedAsync()
+    private void RemoveSelected()
     {
         var mod = SelectedModItem?.Mod;
         if (mod?.FolderPath is null || mod.FolderId is null)
@@ -143,7 +145,7 @@ public partial class ModsViewModel : ViewModelBase
 
         _install.RemoveDownloaded(mod.FolderPath, mod.FolderId);
         _shell.SetStatus(UiStrings.Removed(mod.Name));
-        await RefreshModsAsync().ConfigureAwait(true);
+        LoadModsLocalOnly();
     }
 
     [RelayCommand]
@@ -200,7 +202,7 @@ public partial class ModsViewModel : ViewModelBase
         {
             await _install.InstallFromReleaseAsync(release, progress).ConfigureAwait(true);
             _shell.SetStatus(UiStrings.ModInstalled(release.ModId, release.Version));
-            await ReloadModsCoreAsync().ConfigureAwait(true);
+            LoadModsLocalOnly(preserveStatus: true);
         }
         catch (Exception ex)
         {
@@ -213,12 +215,32 @@ public partial class ModsViewModel : ViewModelBase
         }
     }
 
-    private async Task ReloadModsCoreAsync()
+    /// <summary>Локальные моды + кэш каталога, без запроса к GitHub.</summary>
+    private void LoadModsLocalOnly(bool preserveStatus = false)
     {
         _cache.Load();
         var installed = _discovery.GetInstalledMods();
 
-        // Подтянуть прошлый каталог с диска, если в памяти ещё пусто (cold start / rate limit).
+        if (_releases.Count == 0)
+            _releases = _releaseCache.Load();
+
+        _allMods = _discovery.MergeWithReleases(installed, _releases);
+        RebuildVisibleMods();
+
+        if (preserveStatus)
+            return;
+
+        if (_releases.Count > 0)
+            _shell.SetStatus(UiStrings.LoadedCachedReleases(_releases.Count, _releaseCache.SavedAt));
+        else
+            _shell.SetStatus(UiStrings.CatalogCacheEmpty);
+    }
+
+    private async Task FetchRemoteCatalogAsync()
+    {
+        _cache.Load();
+        var installed = _discovery.GetInstalledMods();
+
         if (_releases.Count == 0)
             _releases = _releaseCache.Load();
 

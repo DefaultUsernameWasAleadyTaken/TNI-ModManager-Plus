@@ -76,6 +76,26 @@ public static class UiStrings
     public static string LoadedReleases(int count) =>
         Ru ? $"Загружено релизов с GitHub: {count}." : $"Loaded {count} GitHub releases.";
 
+    public static string LoadedCachedReleases(int count, DateTimeOffset? savedAt)
+    {
+        if (savedAt is null)
+        {
+            return Ru
+                ? $"Каталог из кэша: {count} мод. (Обновить — с GitHub)"
+                : $"Cached catalog: {count} mods. (Refresh fetches GitHub)";
+        }
+
+        var local = savedAt.Value.ToLocalTime().ToString("g");
+        return Ru
+            ? $"Каталог из кэша: {count} мод. (сохранён {local}; Обновить — с GitHub)"
+            : $"Cached catalog: {count} mods (saved {local}; Refresh fetches GitHub)";
+    }
+
+    public static string CatalogCacheEmpty =>
+        Ru
+            ? "Кэш каталога пуст. Нажмите «Обновить», чтобы загрузить моды с GitHub."
+            : "Catalog cache is empty. Press Refresh to load mods from GitHub.";
+
     public static string GitHubUnavailable(string message) =>
         Ru
             ? $"GitHub недоступен: {message} (показаны локальные моды)"

@@ -31,7 +31,7 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 
 Каталог модов: список репозиториев в [`mod-manager-plus/mod-sources.json`](../mod-manager-plus/mod-sources.json) (сейчас `CJFWeatherhead/TNI-Mods` и `DefaultUsernameWasAleadyTaken/TNI-data-extractor`). Steam App ID: `2939600`.
 
-После успешной загрузки релизов GitHub каталог пишется в `release_cache.json` (рядом с `mod_cache.json` в userdata). При ошибке API (в т.ч. rate limit 403/429) менеджер **не очищает** список: показывает кэш сессии или с диска, а не только установленные моды.
+После успешной загрузки релизов GitHub каталог пишется в `release_cache.json` (рядом с `mod_cache.json` в userdata). При старте менеджер **не** дергает GitHub: показывает кэш + установленные моды. Сеть — только по кнопке «Обновить». При ошибке API (в т.ч. rate limit 403/429) список тоже не очищается.
 
 ### UI shell
 
