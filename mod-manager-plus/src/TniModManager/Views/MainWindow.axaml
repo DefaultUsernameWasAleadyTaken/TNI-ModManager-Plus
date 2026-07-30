@@ -15,7 +15,7 @@
         Icon="/Assets/app.ico"
         Title="{Binding WindowTitle}">
 
-  <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14">
+  <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" ClipToBounds="True">
     <controls:AppHeader Grid.Row="0"/>
 
     <StackPanel Grid.Row="1" Spacing="6" IsVisible="{Binding IsProgressVisible}">
@@ -23,12 +23,16 @@
       <TextBlock Text="{Binding DownloadStatusText}" Classes="muted" FontSize="11"/>
     </StackPanel>
 
-    <TabControl Grid.Row="2">
+    <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
       <TabItem Header="{DynamicResource L.TabMods}">
-        <views:ModsView DataContext="{Binding Mods}"/>
+        <Grid ClipToBounds="True">
+          <views:ModsView DataContext="{Binding Mods}"/>
+        </Grid>
       </TabItem>
       <TabItem Header="{DynamicResource L.TabAliases}">
-        <views:AliasesView DataContext="{Binding Aliases}"/>
+        <Grid ClipToBounds="True">
+          <views:AliasesView DataContext="{Binding Aliases}"/>
+        </Grid>
       </TabItem>
     </TabControl>
   </Grid>

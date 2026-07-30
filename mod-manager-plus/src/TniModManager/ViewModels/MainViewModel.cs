@@ -266,32 +266,44 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         {
             var stagedPath = targetPath + ".update";
             File.Copy(payloadPath, stagedPath, true);
-            var scriptPath = Path.Combine(Path.GetTempPath(), $"tni-mm-update-{Guid.NewGuid():N}.cmd");
             var pid = Environment.ProcessId;
-            // Wait-Process + start /B: updater не умирает вместе с приложением.
-            File.WriteAllText(scriptPath, $"""
-                @echo off
-                powershell -NoProfile -ExecutionPolicy Bypass -Command "Wait-Process -Id {pid} -ErrorAction SilentlyContinue"
-                set "TRIES=0"
-                :retry
-                set /a TRIES+=1
-                move /Y "{stagedPath}" "{targetPath}" >nul 2>&1
-                if errorlevel 1 if %TRIES% LSS 15 (
-                  timeout /t 1 /nobreak >nul
-                  goto retry
+            var scriptPath = Path.Combine(Path.GetTempPath(), $"tni-mm-update-{Guid.NewGuid():N}.ps1");
+            // Отдельный .ps1 + UseShellExecute: не умирает вместе с MM (в отличие от дочернего cmd).
+            File.WriteAllText(scriptPath, """
+                param(
+                  [Parameter(Mandatory = $true)][int]$AppPid,
+                  [Parameter(Mandatory = $true)][string]$Staged,
+                  [Parameter(Mandatory = $true)][string]$Target,
+                  [Parameter(Mandatory = $true)][string]$WorkDir
                 )
-                cd /d "{workDir}"
-                start "" "{targetPath}"
-                del "%~f0"
+                Wait-Process -Id $AppPid -ErrorAction SilentlyContinue
+                Start-Sleep -Milliseconds 800
+                $ok = $false
+                for ($i = 0; $i -lt 30; $i++) {
+                  try {
+                    Copy-Item -LiteralPath $Staged -Destination $Target -Force -ErrorAction Stop
+                    Remove-Item -LiteralPath $Staged -Force -ErrorAction SilentlyContinue
+                    $ok = $true
+                    break
+                  } catch {
+                    Start-Sleep -Seconds 1
+                  }
+                }
+                if (-not $ok) {
+                  Move-Item -LiteralPath $Staged -Destination $Target -Force -ErrorAction SilentlyContinue
+                }
+                Start-Process -FilePath $Target -WorkingDirectory $WorkDir
+                Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue
                 """);
             Process.Start(new ProcessStartInfo
             {
-                FileName = "cmd.exe",
-                // start /B — отдельный процесс вне дерева MM, иначе Shutdown убивает updater
-                Arguments = $"/C start \"TNI-MM-Update\" /B cmd.exe /C \"\"{scriptPath}\"\"",
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                WorkingDirectory = Path.GetTempPath()
+                FileName = "powershell.exe",
+                Arguments =
+                    "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden " +
+                    $"-File \"{scriptPath}\" -AppPid {pid} " +
+                    $"-Staged \"{stagedPath}\" -Target \"{targetPath}\" -WorkDir \"{workDir}\"",
+                UseShellExecute = true,
+                WindowStyle = ProcessWindowStyle.Hidden
             });
             SetStatus(UiStrings.UpdateRestarting);
             ScheduleAppShutdown();
@@ -313,16 +325,30 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         ScheduleAppShutdown();
     }
 
-    /// <summary>Закрыть UI после старта updater/нового процесса, чтобы подмена exe прошла.</summary>
+    /// <summary>Закрыть процесс, чтобы updater смог заменить exe и запустить новую версию.</summary>
     private static void ScheduleAppShutdown()
     {
         Dispatcher.UIThread.Post(() =>
         {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-                desktop.Shutdown();
-            else
-                Environment.Exit(0);
-        }, DispatcherPriority.Background);
+            try
+            {
+                if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                    desktop.Shutdown(0);
+            }
+            catch
+            {
+                // ignore — ниже Exit
+            }
+
+            Environment.Exit(0);
+        }, DispatcherPriority.Send);
+
+        // Если UI-поток завис на finally обновления — всё равно выйти.
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2000).ConfigureAwait(false);
+            Environment.Exit(0);
+        });
     }
 
     private static void OpenLatestReleasePage() => Process.Start(new ProcessStartInfo(
