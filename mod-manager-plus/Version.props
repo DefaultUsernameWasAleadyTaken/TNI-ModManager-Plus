@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
     <!-- Единственное поле версии приложения; InformationalVersion берётся из Version. -->
-    <Version>1.3.3</Version>
+    <Version>1.3.4</Version>
   </PropertyGroup>
 </Project>
