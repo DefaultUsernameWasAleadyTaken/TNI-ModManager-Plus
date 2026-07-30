@@ -65,15 +65,8 @@
 
       <Button Classes="warn toolbar" IsVisible="{Binding ShowAppUpdate}"
               Command="{Binding UpdateAppCommand}"
-              ToolTip.Tip="{Binding AppUpdateButtonLabel}">
-        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-          <PathIcon Width="16" Height="16" VerticalAlignment="Center"
-                    Foreground="{DynamicResource OnAccentBrush}"
-                    Data="M12,2V11M8.5,7.5L12,11L15.5,7.5M5,13H19V21H5V13M5,13L12,16.5L19,13"/>
-          <TextBlock Text="{Binding AppUpdateButtonLabel}" VerticalAlignment="Center"
-                     Foreground="{DynamicResource OnAccentBrush}" FontSize="13"/>
-        </StackPanel>
-      </Button>
+              ToolTip.Tip="{Binding AppUpdateButtonLabel}"
+              Content="{Binding AppUpdateButtonLabel}"/>
 
       <Button Classes="success toolbar" Command="{Binding LaunchGameCommand}">
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
