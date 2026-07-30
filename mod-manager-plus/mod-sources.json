@@ -1,6 +1,7 @@
 {
   "modRepositories": [
     "CJFWeatherhead/TNI-Mods",
-    "DefaultUsernameWasAleadyTaken/TNI-data-extractor"
+    "DefaultUsernameWasAleadyTaken/TNI-data-extractor",
+    "DefaultUsernameWasAleadyTaken/TNI-MM-Mods"
   ]
 }

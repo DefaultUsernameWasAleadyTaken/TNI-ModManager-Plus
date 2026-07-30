@@ -49,6 +49,7 @@ public class ModSourcesTests
         var repos = ModSources.GetRepositories(baseDirectory: Path.GetTempPath());
         Assert.Contains("CJFWeatherhead/TNI-Mods", repos);
         Assert.Contains("DefaultUsernameWasAleadyTaken/TNI-data-extractor", repos);
+        Assert.Contains("DefaultUsernameWasAleadyTaken/TNI-MM-Mods", repos);
     }
 }
 
