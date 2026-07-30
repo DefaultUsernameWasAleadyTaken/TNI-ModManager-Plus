@@ -20,22 +20,21 @@
     </StackPanel>
 
     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
-                VerticalAlignment="Top">
+                VerticalAlignment="Center">
       <!-- Тема: PNG с прозрачным фоном — солнце в тёмной, луна в светлой -->
       <Button Classes="header" Command="{Binding ToggleThemeCommand}"
-              ToolTip.Tip="{Binding ThemeToggleTooltip}" Padding="12,10" MinWidth="40" MinHeight="40">
-        <Panel Width="22" Height="22" Background="Transparent">
-          <Image Width="22" Height="22" Stretch="Uniform"
+              ToolTip.Tip="{Binding ThemeToggleTooltip}" MinWidth="40">
+        <Panel Width="20" Height="20" Background="Transparent">
+          <Image Width="20" Height="20" Stretch="Uniform"
                  IsVisible="{Binding IsDarkTheme}"
                  Source="avares://TNI-ModManager-Plus/Assets/Icons/theme-sun-on-dark.png"/>
-          <Image Width="22" Height="22" Stretch="Uniform"
+          <Image Width="20" Height="20" Stretch="Uniform"
                  IsVisible="{Binding !IsDarkTheme}"
                  Source="avares://TNI-ModManager-Plus/Assets/Icons/theme-moon-on-light.png"/>
         </Panel>
       </Button>
 
-      <Button Classes="header" ToolTip.Tip="{DynamicResource L.Language}"
-              Padding="14,10" MinHeight="40">
+      <Button Classes="header" ToolTip.Tip="{DynamicResource L.Language}">
         <Button.Flyout>
           <!-- Left: меню под кнопкой языка, не уезжает под тему -->
           <MenuFlyout Placement="BottomEdgeAlignedLeft">
@@ -64,22 +63,22 @@
         <TextBlock Text="{Binding LanguageLabel}" VerticalAlignment="Center" FontSize="13"/>
       </Button>
 
-      <Button Classes="warn" IsVisible="{Binding ShowAppUpdate}"
+      <Button Classes="warn toolbar" IsVisible="{Binding ShowAppUpdate}"
               Command="{Binding UpdateAppCommand}"
-              ToolTip.Tip="{Binding AppUpdateButtonLabel}"
-              Padding="14,10" MinHeight="40">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <PathIcon Width="18" Height="18" Foreground="{DynamicResource OnAccentBrush}"
+              ToolTip.Tip="{Binding AppUpdateButtonLabel}">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <PathIcon Width="16" Height="16" VerticalAlignment="Center"
+                    Foreground="{DynamicResource OnAccentBrush}"
                     Data="M12,2V11M8.5,7.5L12,11L15.5,7.5M5,13H19V21H5V13M5,13L12,16.5L19,13"/>
           <TextBlock Text="{Binding AppUpdateButtonLabel}" VerticalAlignment="Center"
                      Foreground="{DynamicResource OnAccentBrush}" FontSize="13"/>
         </StackPanel>
       </Button>
 
-      <Button Classes="success" Command="{Binding LaunchGameCommand}"
-              Padding="14,10" MinHeight="40">
-        <StackPanel Orientation="Horizontal" Spacing="8">
-          <PathIcon Width="18" Height="18" Foreground="{DynamicResource OnSuccessBrush}"
+      <Button Classes="success toolbar" Command="{Binding LaunchGameCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <PathIcon Width="16" Height="16" VerticalAlignment="Center"
+                    Foreground="{DynamicResource OnSuccessBrush}"
                     Data="M8,5V19L19,12Z"/>
           <TextBlock Text="{DynamicResource L.LaunchGame}" VerticalAlignment="Center"
                      Foreground="{DynamicResource OnSuccessBrush}" FontSize="13"/>
