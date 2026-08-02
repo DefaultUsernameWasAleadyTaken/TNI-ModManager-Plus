@@ -1,0 +1,885 @@
+{
+  "format": 2,
+  "generated_at": "2026-08-02T19:09:36Z",
+  "purpose": "In-game terminal command reference for alias authoring helpers",
+  "count": 33,
+  "commands": [
+    {
+      "name": "alias",
+      "summary": "use the terminal your way.",
+      "usage": [
+        "alias",
+        "alias <alias> <command>",
+        "alias <alias>"
+      ],
+      "usage_notes": [
+        "list command aliases.",
+        "set command alias.",
+        "unset command alias."
+      ],
+      "examples": [
+        "e.g.: alias",
+        "e.g.: alias apt program",
+        "e.g.: alias telnet always using",
+        "e.g.: alias apt",
+        "e.g.: alias tr trace ${1} from @dbg; tr 123"
+      ],
+      "keywords": [
+        "else",
+        "from",
+        "set",
+        "then",
+        "using",
+        "via"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "always",
+      "summary": "shell quality-of-life enhancements.",
+      "usage": [
+        "always using <debugger_addr>",
+        "always using",
+        "always not using",
+        "always on <device_addr>",
+        "always color <traffic> <color>",
+        "always not color <traffic>",
+        "always color"
+      ],
+      "usage_notes": [
+        "sets a 'default' debugger to always use.",
+        "cycle a 'default' debugger to always use.",
+        "clear always helper settings.",
+        "sets a 'default' device to always be on.",
+        "colors visible packets of a traffic class.",
+        "clears the packet coloring for a traffic class.",
+        "shows the packet coloring rules."
+      ],
+      "examples": [
+        "e.g.: always using 456",
+        "e.g.: always using",
+        "e.g.: always not using",
+        "e.g.: always on 123",
+        "e.g.: always (not) on",
+        "e.g.: always color tcp/443 green",
+        "e.g.: always not color tcp/443"
+      ],
+      "keywords": [
+        "always",
+        "color",
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "botconf",
+      "summary": "manage bots on devices.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [
+        "e.g.: botconf show on 123 using 456",
+        "e.g.: botconf create visitor to 789 on 123 using 456"
+      ],
+      "keywords": [
+        "create",
+        "show",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "clear",
+      "summary": "clear screen.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "cron",
+      "summary": "scheduled commands.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [
+        "e.g.: cron show",
+        "e.g.: cron add hourly ping 123",
+        "e.g.: cron add 1200 program start dns-server on @noon",
+        "e.g.: cron remove #0 #2",
+        "e.g.: cron clear",
+        "e.g.: cron clear all",
+        "e.g.: */30 - every 30 minutes",
+        "e.g.: */120 - every 2 hours",
+        "e.g.: 0800 - at 8 A.M. daily",
+        "e.g.: daily - at 12 A.M. daily"
+      ],
+      "keywords": [
+        "add",
+        "clear",
+        "daily",
+        "hourly",
+        "install",
+        "list",
+        "remove",
+        "show",
+        "uninstall"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "dhcp",
+      "summary": "show DHCP options on dhcp server.",
+      "usage": [
+        "dhcp show on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option dns <dns_addr> [<dns_addr2>] on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option prefix <naddr_prefix> on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option [un]bind <hwaddr> [as <nwaddr>] on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option lease <seconds> on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option clear dns|prefix|binds|lease on <dhcp_srv_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show DHCP options on dhcp server.",
+        "make the DHCP server auto designate dns servers.",
+        "make the DHCP server auto assign network addresses with specific prefix.",
+        "make the DHCP server assign a specific network address based on hardware address.",
+        "set the lease duration (in seconds) for DHCP-assigned options. 0 = indefinite.",
+        "clear a specific set of options on the DHCP server."
+      ],
+      "examples": [
+        "e.g.: 'dhcp show on @mydhcp using @mydebug",
+        "e.g.: 'dhcp option dns @mydns on @mydhcp using @mydebug",
+        "e.g.: 'dhcp option prefix @net1/ on @mydhcp using 456",
+        "e.g.: 'dhcp option bind 1234 as @fixed on @dhcp using 456",
+        "e.g.: 'dhcp option unbind 1234 on @dhcp using 456",
+        "e.g.: 'dhcp option lease 180 on @dhcp using 456",
+        "e.g.: 'dhcp option clear binds on @dhcp using 456",
+        "e.g.: @1234-5678",
+        "e.g.: @foobar/1",
+        "e.g.: @net2_3"
+      ],
+      "keywords": [
+        "clear",
+        "option",
+        "show",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "dns",
+      "summary": "test resolving a domain.",
+      "usage": [
+        "dns lookup <domain> [on <dns_addr>] using <debugger_addr>",
+        "dns map <domain> as <address> [on <dns_addr>] using <debugger_addr>",
+        "dns unmap <domain> [on <dns_addr>] using <debugger_addr>",
+        "dns show on <dns_addr> using <debugger_addr>",
+        "dns clear on <dns_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "test resolving a domain.",
+        "map a domain to an address.",
+        "clear dns record for domain.",
+        "show dns server mapping.",
+        "clear all dns records on a server."
+      ],
+      "examples": [
+        "e.g.: 'dns lookup abc.xyz using 456",
+        "e.g.: 'dns map readnews.com as 123 using 456",
+        "e.g.: 'dns map readnews.com as @foobar using 456",
+        "e.g.: 'dns map readnews.com as pqrs using 456",
+        "e.g.: 'dns unmap readnews.com using 456",
+        "e.g.: 'dns show using 456",
+        "e.g.: 'dns clear on @mydns using 456"
+      ],
+      "keywords": [
+        "clear",
+        "lookup",
+        "map",
+        "show",
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "dstat",
+      "summary": "view device status through a remote debugger.",
+      "usage": [
+        "dstat <address> using <debugger_address>",
+        "dstat clear <address> using <debugger_address>"
+      ],
+      "usage_notes": [
+        "get status of the specified device.",
+        "clear port tx/rx statistics on the specified device."
+      ],
+      "examples": [
+        "e.g.: dstat 123 using 456",
+        "e.g.: dstat clear 123 using 456"
+      ],
+      "keywords": [
+        "clear",
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "echo",
+      "summary": "send multiplayer message (visible on everyone's terminal).",
+      "usage": [
+        "echo <msg>"
+      ],
+      "usage_notes": [
+        "send multiplayer message (visible on everyone's terminal)."
+      ],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "firewall",
+      "summary": "manage rules on firewalls.",
+      "usage": [
+        "firewall show on <firewall_addr> using <debugger_addr>",
+        "firewall <allow/deny> [<traffic_type>] [from <src_addr>] [to <dst_addr>] on <firewall_addr> using <debugger_addr>",
+        "firewall remove #<num> on <firewall_addr> using <debugger_addr>",
+        "firewall clear on <firewall_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show firewall policies and their number.",
+        "add a firewall policy.",
+        "remove firewall policies by number.",
+        "clear all policies."
+      ],
+      "examples": [
+        "e.g.: firewall allow from @alice to @bob on 123 using 456",
+        "e.g.: firewall allow udp/53 to @dns on 123 using 456",
+        "e.g.: firewall deny from @alice to @bob on 123 using 456",
+        "e.g.: firewall deny tcp/22 from @hacker on 123 using 456",
+        "e.g.: firewall deny tcp/7*9 on 123 using 456",
+        "e.g.: firewall show on 123 using 456",
+        "e.g.: firewall default allow on 123 using 456",
+        "e.g.: firewall remove #0 on 123 using 456",
+        "e.g.: firewall remove #2 #3 #5 on 123 using 456",
+        "e.g.: firewall clear on 123 using 456",
+        "e.g.: firewall default deny on 123 using 456"
+      ],
+      "keywords": [
+        "allow",
+        "clear",
+        "default",
+        "deny",
+        "from",
+        "list",
+        "remove",
+        "show",
+        "traffic",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "god",
+      "summary": "pressing UP arrow will cycle previous commands.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [],
+      "keywords": [
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "haconf",
+      "summary": "manage high-availability setup on devices.",
+      "usage": [
+        "haconf show on <dev_addr> using <debugger_addr>",
+        "haconf group <portid> [<portid> ...] on <dev_addr> using <debugger_addr>",
+        "haconf ungroup #<num> on <dev_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show all ports on the device.",
+        "create a physical port grouping.",
+        "remove port grouping by number."
+      ],
+      "examples": [
+        "e.g.: haconf show on 123 using 456",
+        "e.g.: haconf group port0 port1 on 123 using 456",
+        "e.g.: haconf ungroup #0 #2 on 123 using 456"
+      ],
+      "keywords": [
+        "group",
+        "list",
+        "remove",
+        "show",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "lstdbg",
+      "summary": "list debuggers for remote access.",
+      "usage": [
+        "lstdbg"
+      ],
+      "usage_notes": [
+        "list accessible remote debuggers."
+      ],
+      "examples": [],
+      "keywords": [
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "man",
+      "summary": "usage manual/help routine.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "middlebox",
+      "summary": "manage middlebox configuration on devices.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [
+        "e.g.: middlebox show on 123 using 456",
+        "e.g.: middlebox translate dst broadcast to @unicast on 123 using 456",
+        "e.g.: middlebox translate dst @addr1 traffic tcp/3306 to @addr2 with tcp/5432 on 123 using 456",
+        "e.g.: middlebox translate traffic udp/67 to @dhcpsrv on 123 using 456",
+        "e.g.: middlebox remove #0 on 123 using 456",
+        "e.g.: middlebox remove #0 #1 #2 on 123 using 456",
+        "e.g.: middlebox ttl 3 on 123 using 456",
+        "e.g.: middlebox ttl reset on 123 using 456",
+        "e.g.: middlebox hairpin enable on 123 using 456"
+      ],
+      "keywords": [
+        "broadcast",
+        "clear",
+        "enable",
+        "map",
+        "remove",
+        "show",
+        "traffic",
+        "translate",
+        "using",
+        "with"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "net",
+      "summary": "network address must begin with a '@' and may only consist of digits 0-9, alphabets a-z, '_' underscore, '-' dash and '/' slash characters.",
+      "usage": [
+        "net timeout request set <seconds> on <target_addr> using <debugger_addr>",
+        "net address set @<network_addr> on <target_addr> using <debugger_addr>",
+        "net address clear on <target_addr> using <debugger_addr>",
+        "net dns set <dns_addr> [<dns_addr2>] on <target_addr> using <debugger_addr>",
+        "net dns clear on <target_addr> using <debugger_addr>",
+        "net dhcp boot/periodic/disable on <target_addr> using <debugger_addr>",
+        "net dhcp request on <target_addr> using <debugger_addr>",
+        "net dhcp period set <seconds> on <target_addr> using <debugger_addr>",
+        "net port show on <target_addr> using <debugger_addr>",
+        "net port config reset <portid> [<portid> ...] on <target_addr> using <debugger_addr>",
+        "net port config backend <portid> [<portid> ...] on <target_addr> using <debugger_addr>",
+        "net port metric <value> <portid> [<portid> ...] on <target_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "set a request timeout on device/user.",
+        "set a network address on device/user.",
+        "clear the network address on device/user.",
+        "designate the DNS server address for the device/user.",
+        "clear the designated dns server on device/user.",
+        "configure dhcp request mode for the device/user.",
+        "perform a dhcp request from the device/user now.",
+        "set the dhcp request period.",
+        "show port configuration for device/user.",
+        "reset/clear port configuration on ports.",
+        "configure ports as backend/upstream for proxies/load-balancers.",
+        "set a different port metric."
+      ],
+      "examples": [
+        "e.g.: @1234-5678",
+        "e.g.: @foobar/1",
+        "e.g.: @net2_3",
+        "e.g.: net show on 123 using 456",
+        "e.g.: net dhcp periodic on 456",
+        "e.g.: net dhcp request on 456",
+        "e.g.: net dhcp request on broadcast",
+        "e.g.: net dhcp period set 180 on 456",
+        "e.g.: net dns set 789 on 123 using 456",
+        "e.g.: net dns clear on 456",
+        "e.g.: net address set @235-013 on 123 using 456",
+        "e.g.: net addr set @debug1 on 123 using 456",
+        "e.g.: net a set @mybox on 123 using 456",
+        "e.g.: net addr clear on 456",
+        "e.g.: net port show on 123 using 456",
+        "e.g.: net port config reset port0 port1 on 123",
+        "e.g.: net p config backend port0 on 123",
+        "e.g.: net timeout request set 4.2 on 123 using 456"
+      ],
+      "keywords": [
+        "broadcast",
+        "clear",
+        "enable",
+        "request",
+        "set",
+        "show",
+        "start",
+        "stop",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "notify",
+      "summary": "sends an on-screen notification.",
+      "usage": [
+        "notify <msg...>"
+      ],
+      "usage_notes": [
+        "sends an on-screen notification."
+      ],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "pcap",
+      "summary": "starts traffic capture on a network tap.",
+      "usage": [
+        "pcap [dump] [exclude] [=<traffic_type>] on <tap_address> using <debugger_address>"
+      ],
+      "usage_notes": [
+        "starts traffic capture on a network tap, with optional traffic filters."
+      ],
+      "examples": [
+        "e.g.: pcap on 123 using 456",
+        "e.g.: pcap =udp/520 on 123 using 456",
+        "e.g.: pcap exclude =tcp/23 =udp/23 on 123 using 456",
+        "e.g.: pcap dump =udp/53 on 123 using 456"
+      ],
+      "keywords": [
+        "broadcast",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "ping",
+      "summary": "ping a device from the debugger.",
+      "usage": [
+        "ping <address1> using <debugger_address>",
+        "ping <address1> [with <traffic_type>] using <debugger_address>"
+      ],
+      "usage_notes": [
+        "send a ping with a specific traffic class."
+      ],
+      "examples": [
+        "e.g.: ping 123 using 456",
+        "e.g.: ping 123 with tcp/80 using 456"
+      ],
+      "keywords": [
+        "using",
+        "with"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "power",
+      "summary": "remote device power management.",
+      "usage": [
+        "power wake|suspend [on <dev_addr>|broadcast]"
+      ],
+      "usage_notes": [
+        "remotely power on/off device(s)."
+      ],
+      "examples": [
+        "e.g.: power suspend on 123 using 456",
+        "e.g.: power wake on 123 using 456",
+        "e.g.: power wake broadcast using 456"
+      ],
+      "keywords": [
+        "broadcast",
+        "start",
+        "stop",
+        "suspend",
+        "using",
+        "wake"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "program",
+      "summary": "list available programs to install.",
+      "usage": [
+        "program list",
+        "program describe <program_name>",
+        "program view [installed/running] on <device_addr> using <debugger_addr>",
+        "program install <program_name> on <device_addr> using <debugger_addr>",
+        "program start <program_name> on <device_addr> using <debugger_addr>",
+        "program stop <program_name> on <device_addr> using <debugger_addr>",
+        "program uninstall <program_name> on <device_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "list available programs to install.",
+        "get program description.",
+        "view installed/running programs on device.",
+        "install program on device.",
+        "start program on device.",
+        "stop program on device.",
+        "uninstall program on device."
+      ],
+      "examples": [
+        "e.g.: program view installed on 123 using 456",
+        "e.g.: program start dns-lite on 123 using 456",
+        "e.g.: program uninstall * on 123 using 456"
+      ],
+      "keywords": [
+        "describe",
+        "install",
+        "installed",
+        "list",
+        "remove",
+        "running",
+        "start",
+        "stop",
+        "uninstall",
+        "using",
+        "view"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "quit",
+      "summary": null,
+      "usage": [],
+      "usage_notes": [],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "rip",
+      "summary": "configure auto route discovery on routers.",
+      "usage": [
+        "rip show on <router_addr> using <debugger_addr>",
+        "rip [stop] advertise [via <port_id>] on <router_addr> using <debugger_addr>",
+        "rip [listen/ignore] on <router_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show routes and their number.",
+        "start/stop advertise routing information.",
+        "listen/ignore advertised routing information from other routers."
+      ],
+      "examples": [
+        "e.g.: rip show on 123 using 456",
+        "e.g.: rip advertise on 123 using 456",
+        "e.g.: rip stop advertise on 123 using 456",
+        "e.g.: rip listen on 123 using 456",
+        "e.g.: rip ignore on 123 using 456"
+      ],
+      "keywords": [
+        "advertise",
+        "list",
+        "show",
+        "stop",
+        "using",
+        "via"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "route",
+      "summary": "manage routes on routers.",
+      "usage": [
+        "route show on <router_addr> using <debugger_addr>",
+        "route default [via <port_id>] [drop] on <router_addr> using <debugger_addr>",
+        "route add [<dst_addr>] [traffic <traffic_type>] [from <port_id:src_addr>] via <port_id> on <router_addr> using <debugger_addr>",
+        "route remove #<num> on <router_addr> using <debugger_addr>",
+        "route clear on <router_addr> using <debugger_addr>",
+        "route <enable/drop> broadcast on <router_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show routes and their number.",
+        "set a default route.",
+        "append route.",
+        "remove route by number.",
+        "clear all routes.",
+        "forward/drop all broadcast requests."
+      ],
+      "examples": [
+        "e.g.: route show on 123 using 456",
+        "e.g.: route default via port0 on 123 using 456",
+        "e.g.: route default drop on 123 using 456",
+        "e.g.: route add @abc via port1 on 123 using 456",
+        "e.g.: route add @abc traffic tcp/80 via port2 on 123 using 456",
+        "e.g.: route add traffic udp/5060 from @voip via port2 on 123 using 456",
+        "e.g.: route add traffic udp/67 from port1 via port2 on 123 using 456",
+        "e.g.: route add from port1:98712 via port2 on 123 using 456",
+        "e.g.: route remove #0 on 123 using 456",
+        "e.g.: route remove #2 #3 #5 on 123 using 456",
+        "e.g.: route clear on 123 using 456",
+        "e.g.: route enable broadcast on 123 using 456",
+        "e.g.: route add from port1:@net1/ via port1 on 123",
+        "e.g.: route add from 98712 via port1 on 123",
+        "e.g.: route add from port1 via port4 on 123"
+      ],
+      "keywords": [
+        "add",
+        "broadcast",
+        "clear",
+        "default",
+        "deny",
+        "drop",
+        "enable",
+        "from",
+        "list",
+        "remove",
+        "show",
+        "traffic",
+        "using",
+        "via"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "scan",
+      "summary": "scan and list devices that are accessible via a broadcast.",
+      "usage": [
+        "scan [device_type] [noex] [from <source>] [with <traffic_type>] using <debugger_address>",
+        "scan [device_type] [from <source>] [with <traffic_type>] using <debugger_address>"
+      ],
+      "usage_notes": [
+        "scan for devices matching the type reachable from a source.",
+        "available device types:"
+      ],
+      "examples": [
+        "e.g.: 'scan devices using 123",
+        "e.g.: 'scan d",
+        "e.g.: 'scan dhcp from 123 with udp/67",
+        "e.g.: 'scan routers noex using 456"
+      ],
+      "keywords": [
+        "from",
+        "noex",
+        "using",
+        "with"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "sftp",
+      "summary": "remote tool for file backup/migration.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [
+        "e.g.: sftp ls on 123 using 456",
+        "e.g.: sftp cp %s on 123 to 789 rename backup1",
+        "e.g.: sftp cp * on 123 to 789",
+        "e.g.: sftp rm myfile on 1337"
+      ],
+      "keywords": [
+        "list",
+        "show",
+        "using"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "sleep",
+      "summary": "delay execution for N seconds.",
+      "usage": [],
+      "usage_notes": [],
+      "examples": [],
+      "keywords": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "stp",
+      "summary": "configure spanning tree protocol on managed switches.",
+      "usage": [
+        "stp show on <mngedsw> using <debugger_addr>",
+        "stp enable/disable on <mngedsw> using <debugger_addr>",
+        "stp priority <value> on <mngedsw> using <debugger_addr>",
+        "stp trace <address1> from <address2> with <traffic_type> using <debugger_address>"
+      ],
+      "usage_notes": [
+        "show stp status.",
+        "enable/disable stp.",
+        "configure stp priority value.",
+        "trace potential network loops between source and destination."
+      ],
+      "examples": [
+        "e.g.: stp show on 123 using 456",
+        "e.g.: stp enable on 123 using 456",
+        "e.g.: stp priority 1 on 123 using 456",
+        "e.g.: stp trace 123 from 789 using 456"
+      ],
+      "keywords": [
+        "enable",
+        "from",
+        "list",
+        "show",
+        "using",
+        "via",
+        "with"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "trace",
+      "summary": "trace network traversal from a device to another device.",
+      "usage": [
+        "trace <address1> from <address2> using <debugger_address>",
+        "trace <address1> from <address2> [with <traffic_type>] using <debugger_address>"
+      ],
+      "usage_notes": [
+        "perform a network graph trace from address2 to address1 using a debugger.",
+        "trace with specific traffic type."
+      ],
+      "examples": [
+        "e.g.: trace 123 using 789",
+        "e.g.: trace 123 from 456 using 789",
+        "e.g.: trace 123 from 456 with udp/53 using 789"
+      ],
+      "keywords": [
+        "from",
+        "using",
+        "with"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "try",
+      "summary": "try a command, run another if failed.",
+      "usage": [
+        "try <cmd1> [then <cmd2>] [else <cmd3>]"
+      ],
+      "usage_notes": [
+        "try running cmd1, then cmd2 if successful, otherwise cmd3."
+      ],
+      "examples": [
+        "e.g.: try ping 1234 else notify 1234 is down"
+      ],
+      "keywords": [
+        "else",
+        "then"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "vlan",
+      "summary": "manage virtual local area networks.",
+      "usage": [
+        "vlan show on <msw_addr> using <debugger_addr>",
+        "vlan tag <portid> [<portid> ...] with #<tag> [#<tag> ...] on <msw_addr> using <debugger_addr>",
+        "vlan untag <portid> [<portid> ...] [with #<tag>] on <msw_addr> using <debugger_addr>",
+        "vlan clear on <msw_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show virtual lan setup on the managed switch.",
+        "tag a vlan ID to port(s) on the managed switch.",
+        "untag a vlan ID from port(s) on the managed switch.",
+        "clear vlan configuration on the managed switch."
+      ],
+      "examples": [
+        "e.g.: 'vlan show on @mysw1 using @mydebug",
+        "e.g.: 'vlan tag port1 with #vlan1 on @mysw",
+        "e.g.: 'vlan tag port1 port2 with #vlan2 on @mysw",
+        "e.g.: 'vlan tag port3 with #vlan1 #vlan2 on @mysw",
+        "e.g.: 'vlan tag port3.10 with #vsub1",
+        "e.g.: 'vlan untag port2 with #vlan2 on @mysw",
+        "e.g.: 'vlan untag port2 port1 on @mysw",
+        "e.g.: 'vlan clear on @mysw"
+      ],
+      "keywords": [
+        "clear",
+        "list",
+        "show",
+        "tag",
+        "using",
+        "with"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "vmconf",
+      "summary": "manage virtual machines.",
+      "usage": [
+        "vmconf show on <srv_addr> using <debugger_addr>",
+        "vmconf create <cpu> <memory> <storage> [netaddr <nwaddr>] on <srv_addr> using <debugger_addr>"
+      ],
+      "usage_notes": [
+        "show virtual machines on the server.",
+        "create a virtual machine on the server."
+      ],
+      "examples": [
+        "e.g.: 'vmconf show on @mysrv using @mydebug",
+        "e.g.: 'vmconf create 2 1 1 on @mysrv",
+        "e.g.: 'vmconf create 2 1 1 netaddr @myvm on @mysrv"
+      ],
+      "keywords": [
+        "create",
+        "list",
+        "show",
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "watch",
+      "summary": "watch the device information/programs through a remote debugger.",
+      "usage": [
+        "watch <address> using <debugger_address>",
+        "watch using <debugger_address>"
+      ],
+      "usage_notes": [
+        "watch the specified device.",
+        "watch any moused-over device."
+      ],
+      "examples": [
+        "e.g.: watch using 123",
+        "e.g.: watch 123 using 456"
+      ],
+      "keywords": [
+        "using"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    }
+  ]
+}

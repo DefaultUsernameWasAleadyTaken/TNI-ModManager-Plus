@@ -39,11 +39,14 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 (заголовок, статус, тема / язык / update / launch), прогресс загрузки и `TabControl` с
 `Views/ModsView.axaml` и `Views/AliasesView.axaml`. `MainViewModel` служит shell,
 а `ModsViewModel` и `AliasesViewModel` содержат логику вкладок. Редактор алиасов
-снова с полями legacy: аргументы `$n`, предупреждение on/using, Live Preview
-(с подсветкой), Full Usage, Cancel/Apply. Цвета — Light/Dark `ThemeDictionaries`
-через динамические ресурсы; тема и язык (`en` / `ru`) в `mm_plus_ui.json`. Менеджер
-устанавливает, обновляет и удаляет управляемые моды, но не переносит их между
-enabled/disabled каталогами. Self-update проверяет latest release форка
+поддерживает аргументы `$n`, Live Preview (с подсветкой), Full Usage, Cancel/Apply,
+автодополнение команд/ключевых слов/имён программ (встроенный справочник
+`alias_helper_catalog.json` в Core), контекстную справку по токену, проверку
+зарезервированных имён и предупреждения `on`/`using` по известным командам.
+Цвета — Light/Dark `ThemeDictionaries` через динамические ресурсы; тема и язык
+(`en` / `ru`) в `mm_plus_ui.json`. Менеджер устанавливает, обновляет и удаляет
+управляемые моды, но не переносит их между enabled/disabled каталогами.
+Self-update проверяет latest release форка
 `DefaultUsernameWasAleadyTaken/TNI-ModManager-Plus`; при невозможности автозамены
 открывается страница релиза.
 
@@ -59,4 +62,4 @@ enabled/disabled каталогами. Self-update проверяет latest rel
 
 ## English
 
-Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core ([ADR-003](decisions.md)). App releases on push to `main` when `Version.props` is newer ([ADR-006](decisions.md)). Successful GitHub catalog fetches are saved to `release_cache.json`; on API failure (including rate limit) the UI keeps the cached catalog instead of dropping to installed-only.
+Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core ([ADR-003](decisions.md)). App releases on push to `main` when `Version.props` is newer ([ADR-006](decisions.md)). Successful GitHub catalog fetches are saved to `release_cache.json`; on API failure (including rate limit) the UI keeps the cached catalog instead of dropping to installed-only. The Aliases tab includes autocomplete and token help from an embedded in-game command/program catalog (`alias_helper_catalog.json`).

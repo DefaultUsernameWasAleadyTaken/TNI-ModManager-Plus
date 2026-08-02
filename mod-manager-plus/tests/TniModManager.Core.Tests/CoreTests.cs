@@ -116,6 +116,68 @@ public class ZipExtractTests
     }
 }
 
+public class GameCommandCatalogTests
+{
+    [Fact]
+    public void Embedded_LoadsCommandsAndPrograms()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.True(cat.Commands.Count >= 30);
+        Assert.True(cat.Programs.Count >= 50);
+        Assert.NotNull(cat.FindCommand("ping"));
+        Assert.NotNull(cat.FindProgram("dns-lite"));
+        Assert.Null(cat.FindCommand("placeholder"));
+    }
+
+    [Fact]
+    public void Suggest_CommandsAndProgramContext()
+    {
+        var cat = GameCommandCatalog.Default;
+        var ping = cat.Suggest("pi", 2);
+        Assert.Contains(ping, i => i.Name == "ping" && i.Kind == AliasCompletionKind.Command);
+
+        var text = "program install dn";
+        var progs = cat.Suggest(text, text.Length);
+        Assert.Contains(progs, i => i.Name.StartsWith("dn", StringComparison.OrdinalIgnoreCase)
+                                    && i.Kind == AliasCompletionKind.Program);
+    }
+
+    [Fact]
+    public void ApplyCompletion_ReplacesToken()
+    {
+        var (text, caret) = GameCommandCatalog.ApplyCompletion("pi $1", 2, "ping");
+        Assert.Equal("ping $1", text);
+        Assert.Equal(4, caret);
+    }
+
+    [Fact]
+    public void ReservedAndRequirements()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.True(cat.IsReservedAliasName("ping"));
+        Assert.False(cat.IsReservedAliasName("myprobe"));
+        var notice = cat.GetRequirementNotice("scan devices");
+        Assert.NotNull(notice);
+        Assert.True(notice!.NeedUsing);
+    }
+
+    [Fact]
+    public void RequirementNotice_IsPerSegment()
+    {
+        var cat = GameCommandCatalog.Default;
+        // using только во втором сегменте не закрывает requires_using у scan
+        var notice = cat.GetRequirementNotice("scan devices; echo hi using 1");
+        Assert.NotNull(notice);
+        Assert.True(notice!.NeedUsing);
+
+        var ok = cat.GetRequirementNotice("scan devices using 1; echo hi");
+        Assert.Null(ok);
+
+        var always = cat.GetRequirementNotice("scan devices; always using");
+        Assert.Null(always);
+    }
+}
+
 public class AliasAnalyzerTests
 {
     [Fact]

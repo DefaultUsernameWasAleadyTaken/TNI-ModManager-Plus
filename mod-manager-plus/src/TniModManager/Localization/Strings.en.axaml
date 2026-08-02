@@ -37,6 +37,7 @@
   <sys:String x:Key="L.Name">Name</sys:String>
   <sys:String x:Key="L.QuickInsert">Quick Insert</sys:String>
   <sys:String x:Key="L.Command">Command</sys:String>
+  <sys:String x:Key="L.AliasContextHelp">Token help</sys:String>
   <sys:String x:Key="L.ArgsRequired">Arguments Required</sys:String>
   <sys:String x:Key="L.DeviceTargetNotice">Device Target Notice</sys:String>
   <sys:String x:Key="L.LivePreview">Live Preview</sys:String>

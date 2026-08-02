@@ -1,0 +1,580 @@
+{
+  "format": 2,
+  "generated_at": "2026-08-02T19:09:36Z",
+  "purpose": "Installable programs known to the in-game `program` command",
+  "notes": [
+    "install_size.code / install_size.data correspond to in-game install size (code+data).",
+    "Use with: program list | program describe <name> | program install <name> …"
+  ],
+  "count": 60,
+  "with_description": 60,
+  "with_install_size": 43,
+  "programs": [
+    {
+      "release_name": "bladeos",
+      "description": "Network switch firmware.",
+      "cpu_load": 2
+    },
+    {
+      "release_name": "blobdb",
+      "description": "General blob storage server. Stores media files.",
+      "install_size": {
+        "code": 5,
+        "data": 3,
+        "total": 8
+      },
+      "cpu_load": 4,
+      "produce_factor": 5
+    },
+    {
+      "release_name": "cctv_edge",
+      "description": "cctv camera firmware"
+    },
+    {
+      "release_name": "complaint-lite",
+      "description": "Lightweight complaint server which allows customers to submit complaints and customer service to manage and respond to tickets.",
+      "install_size": {
+        "data": 2,
+        "total": 2
+      },
+      "produce_factor": 2
+    },
+    {
+      "release_name": "complaint-server2",
+      "description": "Allows customers to submit complaints and customer service to manage and respond to tickets.\nRequires access to a running mail server.",
+      "install_size": {
+        "code": 3,
+        "data": 9,
+        "total": 12
+      },
+      "cpu_load": 5,
+      "produce_factor": 15,
+      "consume_factor": 2,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "decentro-collector",
+      "description": "Collects decentro currencies over the network and accumulate them on the installed device."
+    },
+    {
+      "release_name": "decentro-node",
+      "description": "Authenticate Decentro transactions. Decentro peers can connect to this program to perform peer-to-peer transactions. You may only spend decentro currencies that are accessible by decentro nodes.",
+      "install_size": {
+        "code": 6,
+        "data": 12,
+        "total": 18
+      },
+      "cpu_load": 24,
+      "produce_factor": 10
+    },
+    {
+      "release_name": "decentro-wallet",
+      "description": "Safeguards your decentro currencies from power loss or unscheduled shutdown events.",
+      "install_size": {
+        "code": 2,
+        "data": 2,
+        "total": 4
+      }
+    },
+    {
+      "release_name": "dns-lite",
+      "description": "Replies network-addresses to DNS queries.",
+      "produce_factor": 3
+    },
+    {
+      "release_name": "dns-server",
+      "description": "Replies network-addresses to DNS queries.\nRequires access to a running text storage program.",
+      "install_size": {
+        "code": 2,
+        "data": 3,
+        "total": 5
+      },
+      "cpu_load": 4,
+      "produce_factor": 20
+    },
+    {
+      "release_name": "dnsmasq",
+      "description": "Automatically assigns network addresses and designated DNS server to network devices.",
+      "produce_factor": 3
+    },
+    {
+      "release_name": "dnsspam",
+      "description": "DNS load test software."
+    },
+    {
+      "release_name": "firewatcher",
+      "description": "Firewall operating system; performs packet filtering.",
+      "cpu_load": 4
+    },
+    {
+      "release_name": "gitcoffee",
+      "description": "open-source software repository. Supports software-updates requests.",
+      "install_size": {
+        "code": 4,
+        "data": 2,
+        "total": 6
+      },
+      "cpu_load": 4,
+      "produce_factor": 16,
+      "consume_factor": 2
+    },
+    {
+      "release_name": "hakernel",
+      "description": "HA-enabled port grouping kernel.",
+      "install_size": {
+        "data": 2,
+        "total": 2
+      },
+      "cpu_load": 4
+    },
+    {
+      "release_name": "hypervisor-server",
+      "description": "Provisions and allocates virtual compute resources for monitoring and scaling.\nRequires access to a running text storage program.",
+      "install_size": {
+        "code": 8,
+        "data": 10,
+        "total": 18
+      },
+      "cpu_load": 20,
+      "produce_factor": 15,
+      "consume_factor": 4,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "kea",
+      "description": "Automatically assigns network addresses and designated DNS server to network devices.\n\nRequires access to a running text storage program.",
+      "install_size": {
+        "code": 6,
+        "data": 5,
+        "total": 11
+      },
+      "cpu_load": 6,
+      "produce_factor": 15
+    },
+    {
+      "release_name": "lbrr",
+      "description": "Round-robin network load balancer.",
+      "cpu_load": 2
+    },
+    {
+      "release_name": "log-lite",
+      "description": "Lightweight event log storage. Records and searches system activity.",
+      "install_size": {
+        "code": 3,
+        "total": 3
+      },
+      "produce_factor": 2
+    },
+    {
+      "release_name": "log-server",
+      "description": "Event log storage. Records and searches system activity.\nRequires access to a running text storage program.",
+      "install_size": {
+        "code": 16,
+        "data": 9,
+        "total": 25
+      },
+      "cpu_load": 5,
+      "produce_factor": 15,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "mailer",
+      "description": "Provides exchange email usages to users.",
+      "install_size": {
+        "code": 3,
+        "data": 6,
+        "total": 9
+      },
+      "cpu_load": 5,
+      "produce_factor": 15,
+      "consume_factor": 3
+    },
+    {
+      "release_name": "maintenance-server",
+      "description": "Serve to manages physical asset maintenance schedules and fault history.\nCoordinates field work orders for grid equipment.",
+      "install_size": {
+        "code": 7,
+        "data": 5,
+        "total": 12
+      },
+      "cpu_load": 3,
+      "produce_factor": 8,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "mbox",
+      "description": "Network middlebox program. Configure with the \"middlebox\" command.\n\nAllows packet mangling/translation. Install on a device to make it a network middlebox."
+    },
+    {
+      "release_name": "netpeeker",
+      "description": "Remote debugger."
+    },
+    {
+      "release_name": "nop",
+      "description": "Generic program."
+    },
+    {
+      "release_name": "oauth-serv",
+      "description": "Allows staff to login to internal portal.",
+      "install_size": {
+        "code": 3,
+        "data": 6,
+        "total": 9
+      },
+      "cpu_load": 5,
+      "produce_factor": 15,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "padu_v1",
+      "description": "Primary aggregation data unit. Supports text and image storage.",
+      "install_size": {
+        "code": 4,
+        "data": 2,
+        "total": 6
+      }
+    },
+    {
+      "release_name": "padu_v2",
+      "description": "Primary aggregation data unit. Supports text, image and audio storage.\n\nImproved disk handling algorithm.",
+      "install_size": {
+        "code": 8,
+        "data": 4,
+        "total": 12
+      },
+      "cpu_load": 2,
+      "produce_factor": 2
+    },
+    {
+      "release_name": "padu_v3",
+      "description": "Primary aggregation data unit. Supports text, image, audio and video storage.\n\nImproved disk handling algorithm.",
+      "install_size": {
+        "code": 12,
+        "data": 6,
+        "total": 18
+      },
+      "cpu_load": 4,
+      "produce_factor": 4
+    },
+    {
+      "release_name": "poems-db",
+      "description": "Based text-based database. Supports text storage usage.",
+      "install_size": {
+        "code": 6,
+        "data": 4,
+        "total": 10
+      },
+      "cpu_load": 4,
+      "produce_factor": 4
+    },
+    {
+      "release_name": "print-server",
+      "description": "Support printing services.\nAllows printer to be connected to produce print-text and print-image uses.",
+      "install_size": {
+        "code": 4,
+        "total": 4
+      },
+      "cpu_load": 2,
+      "produce_factor": 10
+    },
+    {
+      "release_name": "print-server2",
+      "description": "Support printing services.\n\nAllows printer to be connected to produce print-text and print-image uses.",
+      "install_size": {
+        "code": 5,
+        "data": 3,
+        "total": 8
+      },
+      "cpu_load": 5,
+      "produce_factor": 20
+    },
+    {
+      "release_name": "printer_edge",
+      "description": "printer firmware."
+    },
+    {
+      "release_name": "riserswfirm",
+      "description": "Riser switch firmware."
+    },
+    {
+      "release_name": "rtkernel",
+      "description": "Packet routing program.",
+      "cpu_load": 4
+    },
+    {
+      "release_name": "rtsp-diva-r",
+      "description": "Support surveillance monitoring services.\n\nAllows surveillance accessories to be connected to produce stream-live-video uses.",
+      "install_size": {
+        "code": 10,
+        "data": 4,
+        "total": 14
+      },
+      "cpu_load": 6,
+      "produce_factor": 13
+    },
+    {
+      "release_name": "san-server",
+      "description": "Mounts remote storage from a SAN.\n\nFetches raw blocks over the network and serves them as text or image storage on this device.",
+      "install_size": {
+        "code": 6,
+        "data": 14,
+        "total": 20
+      },
+      "cpu_load": 6,
+      "produce_factor": 8,
+      "traffic_weight": 4
+    },
+    {
+      "release_name": "san-storage",
+      "description": "The storage array's operating system.\n\nExposes their capacity as raw blocks (store-block) to the network.",
+      "install_size": {
+        "code": 10,
+        "data": 5,
+        "total": 15
+      },
+      "cpu_load": 2,
+      "produce_factor": 4
+    },
+    {
+      "release_name": "sun-dns",
+      "description": "Enterprise grade DNS server.\nRequires access to a running text storage program.",
+      "install_size": {
+        "code": 8,
+        "data": 6,
+        "total": 14
+      },
+      "cpu_load": 10,
+      "produce_factor": 40,
+      "consume_factor": 3
+    },
+    {
+      "release_name": "ten-anomaly-server",
+      "description": "Serve as advanced nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid officer to perform scada operations.",
+      "install_size": {
+        "code": 4,
+        "data": 8,
+        "total": 12
+      },
+      "cpu_load": 20,
+      "gpu_load": 10,
+      "produce_factor": 20,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "ten-bill-server",
+      "description": "Enables Billing Staff to generate and post invoices to residents based on recorded consumption data.\nRequires meter readings submitted by Meter Readers.",
+      "install_size": {
+        "code": 3,
+        "data": 9,
+        "total": 12
+      },
+      "cpu_load": 3,
+      "produce_factor": 8,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "ten-public-lite",
+      "description": "Publishes outage updates and company news for public viewing.",
+      "produce_factor": 2
+    },
+    {
+      "release_name": "ten-public-portal",
+      "description": "Publishes outage updates and company news for public viewing.\nRequires access to a running text and image storage program.",
+      "install_size": {
+        "code": 4,
+        "data": 3,
+        "total": 7
+      },
+      "cpu_load": 3,
+      "produce_factor": 8,
+      "consume_factor": 2,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "ten-scada-server",
+      "description": "Serve as real-time supervisory control and data acquisition system for grid operations.\nRequires access to a running log server.",
+      "install_size": {
+        "code": 3,
+        "data": 9,
+        "total": 12
+      },
+      "cpu_load": 16,
+      "produce_factor": 8,
+      "consume_factor": 2,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tena-calc-server",
+      "description": "Serve as nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid officer to perform scada operations.",
+      "install_size": {
+        "code": 4,
+        "data": 8,
+        "total": 12
+      },
+      "cpu_load": 15,
+      "produce_factor": 10,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tena-calc-server2",
+      "description": "Serve as advanced nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid officer to perform scada operations.",
+      "install_size": {
+        "code": 4,
+        "data": 8,
+        "total": 12
+      },
+      "cpu_load": 20,
+      "gpu_load": 10,
+      "produce_factor": 20,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tena-employee-db",
+      "description": "Stores employee data.\nRequires access to a running text and image storage program.",
+      "install_size": {
+        "code": 8,
+        "data": 7,
+        "total": 15
+      },
+      "cpu_load": 3,
+      "produce_factor": 8
+    },
+    {
+      "release_name": "tena-gis-server",
+      "description": "Serve as Geographic information system. Maps grid infrastructure, customer zones, and candidate sites for expansion.\nRequires access to a running text and image storage program.",
+      "install_size": {
+        "code": 3,
+        "data": 9,
+        "total": 12
+      },
+      "cpu_load": 16,
+      "produce_factor": 8,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tena-mail",
+      "description": "Provides exchange email usages to users.",
+      "install_size": {
+        "code": 3,
+        "data": 6,
+        "total": 9
+      },
+      "cpu_load": 5,
+      "produce_factor": 15,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tena-meter-db",
+      "description": "Allow meter reader to stores meter reading data.\nRequires access to a running text and image storage program.",
+      "install_size": {
+        "code": 6,
+        "data": 3,
+        "total": 9
+      },
+      "cpu_load": 5,
+      "produce_factor": 8
+    },
+    {
+      "release_name": "tena-staff-portal",
+      "description": "Serve landing page for staff internally for company resources and announcement.\nRequires access to a running text or image storage program.",
+      "install_size": {
+        "code": 9,
+        "data": 3,
+        "total": 12
+      },
+      "cpu_load": 5,
+      "produce_factor": 8,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tmp-collabpoint0",
+      "description": "Allows media sharing among staff.",
+      "install_size": {
+        "data": 2,
+        "total": 2
+      },
+      "produce_factor": 2
+    },
+    {
+      "release_name": "tmp-collabpoint1",
+      "description": "Allows media sharing among staff.\nRequires access to a running text and image storage program.",
+      "install_size": {
+        "code": 5,
+        "data": 7,
+        "total": 12
+      },
+      "cpu_load": 5,
+      "produce_factor": 25,
+      "consume_factor": 3,
+      "traffic_weight": 3
+    },
+    {
+      "release_name": "tnbmon",
+      "description": "Power meter firmware."
+    },
+    {
+      "release_name": "ubbt",
+      "description": "Analyzes user traffic behavior from a network tap to support botnet operations.\n\nRequires access to a network tap with user traffic.",
+      "install_size": {
+        "code": 6,
+        "data": 4,
+        "total": 10
+      },
+      "cpu_load": 4,
+      "produce_factor": 4,
+      "consume_factor": 4,
+      "traffic_weight": 2
+    },
+    {
+      "release_name": "vlanfirm",
+      "description": "Managed switch firmware.",
+      "install_size": {
+        "data": 2,
+        "total": 2
+      },
+      "cpu_load": 2
+    },
+    {
+      "release_name": "voip-server",
+      "description": "Supports Voice over Internet Protocol for streaming voice messages phones.\n\nAllows voip phones to be connected to produce stream-voice uses.",
+      "install_size": {
+        "code": 5,
+        "data": 2,
+        "total": 7
+      },
+      "cpu_load": 5,
+      "produce_factor": 10
+    },
+    {
+      "release_name": "vonet_edge",
+      "description": "VOIP phone firmware."
+    },
+    {
+      "release_name": "vrout3",
+      "description": "Packet routing with VLAN subinterfaces.",
+      "install_size": {
+        "code": 2,
+        "total": 2
+      },
+      "cpu_load": 4
+    },
+    {
+      "release_name": "wirerat",
+      "description": "Packet monitoring system.",
+      "install_size": {
+        "data": 2,
+        "total": 2
+      },
+      "cpu_load": 2
+    }
+  ]
+}

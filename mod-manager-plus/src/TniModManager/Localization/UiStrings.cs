@@ -117,8 +117,16 @@ public static class UiStrings
         Ru ? "Введите команду выше…" : "Enter a command above...";
     public static string AliasNameRequired =>
         Ru ? "Укажите имя алиаса." : "Please enter an alias name.";
+    public static string AliasNameReserved(string name) =>
+        Ru
+            ? $"«{name}» зарезервировано и нельзя использовать как имя алиаса."
+            : $"'{name}' is reserved and cannot be used as an alias name.";
     public static string AliasApplied(string name) =>
         Ru ? $"Алиас «{name}» применён." : $"Alias '{name}' applied.";
+    public static string AliasContextHelp =>
+        Ru ? "Справка по токену" : "Token help";
+    public static string AliasCompletion =>
+        Ru ? "Автодополнение" : "Autocomplete";
 
     public static string AliasArgsRequired(int count, string variables) =>
         Ru

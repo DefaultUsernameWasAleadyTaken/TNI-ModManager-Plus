@@ -37,6 +37,7 @@
   <sys:String x:Key="L.Name">Имя</sys:String>
   <sys:String x:Key="L.QuickInsert">Быстрая вставка</sys:String>
   <sys:String x:Key="L.Command">Команда</sys:String>
+  <sys:String x:Key="L.AliasContextHelp">Справка по токену</sys:String>
   <sys:String x:Key="L.ArgsRequired">Нужны аргументы</sys:String>
   <sys:String x:Key="L.DeviceTargetNotice">Цель устройства</sys:String>
   <sys:String x:Key="L.LivePreview">Живой просмотр</sys:String>

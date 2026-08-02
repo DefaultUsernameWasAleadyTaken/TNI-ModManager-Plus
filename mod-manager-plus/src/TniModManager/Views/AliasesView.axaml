@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:TniModManager.ViewModels"
+             xmlns:aliases="using:TniModManager.Core.Aliases"
              x:Class="TniModManager.Views.AliasesView"
              x:DataType="vm:AliasesViewModel">
 
@@ -75,6 +76,10 @@
               <StackPanel Spacing="6">
                 <TextBlock Text="{DynamicResource L.Name}" Classes="muted"/>
                 <TextBox Text="{Binding AliasName}"/>
+                <TextBlock Text="{Binding AliasNameErrorText}"
+                           IsVisible="{Binding ShowAliasNameError}"
+                           Foreground="{DynamicResource DangerBrush}"
+                           TextWrapping="Wrap" FontSize="12"/>
               </StackPanel>
 
               <StackPanel Spacing="6">
@@ -95,14 +100,62 @@
 
               <StackPanel Spacing="6">
                 <TextBlock Text="{DynamicResource L.Command}" Classes="muted"/>
-                <TextBox Text="{Binding AliasCommand}" AcceptsReturn="True"
-                         MinHeight="96" MaxHeight="280"
-                         TextWrapping="Wrap"
-                         Padding="12,10"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto"
-                         FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"/>
+                <Panel>
+                  <TextBox x:Name="AliasCommandBox"
+                           Text="{Binding AliasCommand}" AcceptsReturn="True"
+                           MinHeight="96" MaxHeight="280"
+                           TextWrapping="Wrap"
+                           Padding="12,10"
+                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                           ScrollViewer.VerticalScrollBarVisibility="Auto"
+                           FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                           KeyDown="OnAliasCommandKeyDown"
+                           TextChanged="OnAliasCommandTextChanged"
+                           GotFocus="OnAliasCommandCaretChanged"
+                           PointerReleased="OnAliasCommandPointerReleased"
+                           LostFocus="OnAliasCommandLostFocus"/>
+                  <Popup IsOpen="{Binding IsCompletionOpen, Mode=TwoWay}"
+                         PlacementTarget="{Binding #AliasCommandBox}"
+                         Placement="Bottom"
+                         IsLightDismissEnabled="True"
+                         Closed="OnCompletionPopupClosed">
+                    <Border Background="{DynamicResource SurfaceBrush}"
+                            BorderBrush="{DynamicResource BorderBrush}"
+                            BorderThickness="1" CornerRadius="8"
+                            MinWidth="280" MaxWidth="520" MaxHeight="220"
+                            Padding="4">
+                      <ListBox x:Name="CompletionList"
+                               ItemsSource="{Binding CompletionItems}"
+                               SelectedIndex="{Binding SelectedCompletionIndex}"
+                               DoubleTapped="OnCompletionDoubleTapped">
+                        <ListBox.ItemTemplate>
+                          <DataTemplate x:DataType="aliases:AliasCompletionItem">
+                            <StackPanel Spacing="2" Margin="4,2">
+                              <TextBlock Text="{Binding Name}"
+                                         FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                                         FontWeight="SemiBold"/>
+                              <TextBlock Text="{Binding Hint}" Classes="muted" FontSize="11"
+                                         TextWrapping="Wrap"/>
+                            </StackPanel>
+                          </DataTemplate>
+                        </ListBox.ItemTemplate>
+                      </ListBox>
+                    </Border>
+                  </Popup>
+                </Panel>
               </StackPanel>
+
+              <Border IsVisible="{Binding ShowAliasContextHelp}"
+                      Background="{DynamicResource SurfaceBrush}"
+                      BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                      CornerRadius="8" Padding="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{DynamicResource L.AliasContextHelp}" Classes="muted" FontSize="11"/>
+                  <TextBlock Text="{Binding AliasContextHelpText}" TextWrapping="Wrap"
+                             FontFamily="JetBrains Mono, Cascadia Mono, Consolas, monospace"
+                             FontSize="12"/>
+                </StackPanel>
+              </Border>
 
               <Border IsVisible="{Binding ShowAliasArgsSummary}"
                       Background="{DynamicResource WarnSurfaceBrush}"
