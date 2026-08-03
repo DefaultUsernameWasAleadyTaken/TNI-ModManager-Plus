@@ -121,12 +121,23 @@ public static class UiStrings
         Ru
             ? $"«{name}» зарезервировано и нельзя использовать как имя алиаса."
             : $"'{name}' is reserved and cannot be used as an alias name.";
-    public static string AliasApplied(string name) =>
-        Ru ? $"Алиас «{name}» применён." : $"Alias '{name}' applied.";
+    public static string AliasNameDuplicate =>
+        Ru ? "Имя алиаса уже используется." : "That alias name is already in use.";
     public static string AliasContextHelp =>
         Ru ? "Справка по токену" : "Token help";
     public static string AliasCompletion =>
         Ru ? "Автодополнение" : "Autocomplete";
+
+    public static string FormatCompletionKind(AliasCompletionKind kind) => kind switch
+    {
+        AliasCompletionKind.Command => Ru ? "команда" : "cmd",
+        AliasCompletionKind.Program => Ru ? "программа" : "prog",
+        AliasCompletionKind.Keyword => Ru ? "ключ" : "kw",
+        AliasCompletionKind.DeviceType => Ru ? "устройство" : "device",
+        AliasCompletionKind.Traffic => Ru ? "трафик" : "traffic",
+        AliasCompletionKind.UserAlias => Ru ? "алиас" : "alias",
+        _ => kind.ToString()
+    };
 
     public static string AliasArgsRequired(int count, string variables) =>
         Ru

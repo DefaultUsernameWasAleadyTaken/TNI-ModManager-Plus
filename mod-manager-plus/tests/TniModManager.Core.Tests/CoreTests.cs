@@ -135,11 +135,61 @@ public class GameCommandCatalogTests
         var cat = GameCommandCatalog.Default;
         var ping = cat.Suggest("pi", 2);
         Assert.Contains(ping, i => i.Name == "ping" && i.Kind == AliasCompletionKind.Command);
+        Assert.Contains(ping, i => i.Name == "ping" && !string.IsNullOrWhiteSpace(i.Hint));
 
         var text = "program install dn";
         var progs = cat.Suggest(text, text.Length);
         Assert.Contains(progs, i => i.Name.StartsWith("dn", StringComparison.OrdinalIgnoreCase)
                                     && i.Kind == AliasCompletionKind.Program);
+    }
+
+    [Fact]
+    public void Suggest_AllowEmptyPrefix_ReturnsCommands()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.Empty(cat.Suggest("", 0));
+        var open = cat.Suggest("", 0, allowEmptyPrefix: true);
+        Assert.NotEmpty(open);
+        Assert.Contains(open, i => i.Kind == AliasCompletionKind.Command);
+    }
+
+    [Fact]
+    public void ResolveTokenManual_PingHasUsage()
+    {
+        var cat = GameCommandCatalog.Default;
+        var manual = cat.ResolveTokenManual("ping 123", 2);
+        Assert.NotNull(manual);
+        Assert.Equal("ping", manual!.Name);
+        Assert.False(string.IsNullOrWhiteSpace(manual.Summary));
+        Assert.NotNull(AliasTokenManual.NormalizeExample("e.g.: ping 123 using 456"));
+    }
+
+    [Fact]
+    public void ResolveTokenManual_CompoundUsesSegmentUnderCaret()
+    {
+        var cat = GameCommandCatalog.Default;
+        const string cmd = "sftp ls on 123 using 456; scan devices using 123;";
+        var sftp = cat.ResolveTokenManual(cmd, 2);
+        Assert.Equal("sftp", sftp?.Name);
+
+        var scanPos = cmd.IndexOf("scan", StringComparison.Ordinal);
+        var scan = cat.ResolveTokenManual(cmd, scanPos + 2);
+        Assert.Equal("scan", scan?.Name);
+
+        // Caret на аргументах scan — всё равно справка по команде сегмента.
+        var afterScan = cat.ResolveTokenManual(cmd, scanPos + "scan devices".Length);
+        Assert.Equal("scan", afterScan?.Name);
+    }
+
+    [Fact]
+    public void GetCommandSpans_PreservesIndices()
+    {
+        const string cmd = "sftp ls; scan devices;";
+        var spans = AliasAnalyzer.GetCommandSpans(cmd);
+        Assert.Equal(2, spans.Count);
+        Assert.Equal("sftp ls", spans[0].Text);
+        Assert.Equal("scan devices", spans[1].Text);
+        Assert.Equal(spans[1].Text, cmd.Substring(spans[1].Start, spans[1].Length));
     }
 
     [Fact]

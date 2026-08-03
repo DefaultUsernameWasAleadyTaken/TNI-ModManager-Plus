@@ -32,16 +32,26 @@
   <sys:String x:Key="L.NewAlias">New alias</sys:String>
   <sys:String x:Key="L.Delete">Delete</sys:String>
   <sys:String x:Key="L.SaveAliases">Save aliases</sys:String>
+  <sys:String x:Key="L.SearchAliases">Search aliases…</sys:String>
   <sys:String x:Key="L.PickAlias">Pick an alias to edit its command.</sys:String>
   <sys:String x:Key="L.Editor">Editor</sys:String>
   <sys:String x:Key="L.Name">Name</sys:String>
-  <sys:String x:Key="L.QuickInsert">Quick Insert</sys:String>
   <sys:String x:Key="L.Command">Command</sys:String>
+  <sys:String x:Key="L.AliasCompletionHint">Ctrl+Space · Tab · click step</sys:String>
+  <sys:String x:Key="L.AliasManual">Manual</sys:String>
+  <sys:String x:Key="L.AliasUsage">Usage</sys:String>
+  <sys:String x:Key="L.AliasExamples">Examples</sys:String>
+  <sys:String x:Key="L.InsertExample">Insert example</sys:String>
   <sys:String x:Key="L.AliasContextHelp">Token help</sys:String>
   <sys:String x:Key="L.ArgsRequired">Arguments Required</sys:String>
   <sys:String x:Key="L.DeviceTargetNotice">Device Target Notice</sys:String>
   <sys:String x:Key="L.LivePreview">Live Preview</sys:String>
   <sys:String x:Key="L.FullUsage">Full Usage</sys:String>
+  <sys:String x:Key="L.CloseEditor">Close</sys:String>
   <sys:String x:Key="L.Cancel">Cancel</sys:String>
   <sys:String x:Key="L.Apply">Apply</sys:String>
+  <sys:String x:Key="L.AliasTemplateEmpty">Empty</sys:String>
+  <sys:String x:Key="L.AliasTemplateArg">With argument ($1)</sys:String>
+  <sys:String x:Key="L.AliasTemplateOn">Device target (on $1)</sys:String>
+  <sys:String x:Key="L.AliasTemplateTry">try / then / else</sys:String>
 </ResourceDictionary>

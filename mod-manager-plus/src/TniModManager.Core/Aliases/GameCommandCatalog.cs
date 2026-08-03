@@ -18,7 +18,45 @@ public enum AliasCompletionKind
 public sealed record AliasCompletionItem(
     string Name,
     AliasCompletionKind Kind,
-    string? Hint = null);
+    string? Hint = null,
+    string? UsageLine = null);
+
+/// <summary>Карточка справки по токену / выбранному completion.</summary>
+public sealed record AliasTokenManual(
+    string Name,
+    AliasCompletionKind Kind,
+    string? Summary,
+    IReadOnlyList<string> Usage,
+    IReadOnlyList<string> Examples)
+{
+    public string? PrimaryExample
+    {
+        get
+        {
+            foreach (var raw in Examples)
+            {
+                var normalized = NormalizeExample(raw);
+                if (!string.IsNullOrWhiteSpace(normalized))
+                    return normalized;
+            }
+
+            return Usage.FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+        }
+    }
+
+    public static string? NormalizeExample(string? example)
+    {
+        if (string.IsNullOrWhiteSpace(example))
+            return null;
+        var s = example.Trim();
+        if (s.StartsWith("e.g.:", StringComparison.OrdinalIgnoreCase))
+            s = s[5..].Trim();
+        else if (s.StartsWith("e.g.", StringComparison.OrdinalIgnoreCase))
+            s = s[4..].Trim().TrimStart(':').Trim();
+        s = s.Trim().Trim('\'', '"');
+        return string.IsNullOrWhiteSpace(s) ? null : s;
+    }
+}
 
 /// <summary>
 /// In-game terminal / program vocabulary for alias authoring helpers.
@@ -145,11 +183,13 @@ public sealed partial class GameCommandCatalog
     /// <summary>
     /// Suggest completions for the token at <paramref name="caretIndex"/> in <paramref name="text"/>.
     /// </summary>
+    /// <param name="allowEmptyPrefix">Если true — список даже без введённого префикса (Ctrl+Space).</param>
     public IReadOnlyList<AliasCompletionItem> Suggest(
         string? text,
         int caretIndex,
         int limit = 12,
-        IEnumerable<string>? userAliasNames = null)
+        IEnumerable<string>? userAliasNames = null,
+        bool allowEmptyPrefix = false)
     {
         text ??= "";
         if (caretIndex < 0) caretIndex = 0;
@@ -162,7 +202,7 @@ public sealed partial class GameCommandCatalog
         if (tokenStart > 0 && text[tokenStart - 1] == '$')
             return [];
 
-        if (prefix.Length < 1)
+        if (prefix.Length < 1 && !allowEmptyPrefix)
             return [];
 
         var before = text[..tokenStart];
@@ -193,13 +233,84 @@ public sealed partial class GameCommandCatalog
                         if (results.Count >= limit) break;
                         if (results.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
                             continue;
-                        results.Add(new AliasCompletionItem(name, AliasCompletionKind.UserAlias));
+                        results.Add(new AliasCompletionItem(name, AliasCompletionKind.UserAlias,
+                            Hint: "user alias"));
                     }
                 }
                 break;
         }
 
         return results;
+    }
+
+    /// <summary>Справка по токену под курсором или по первой команде сегмента (;).</summary>
+    public AliasTokenManual? ResolveTokenManual(string? text, int caretIndex)
+    {
+        text ??= "";
+        if (caretIndex < 0) caretIndex = 0;
+        if (caretIndex > text.Length) caretIndex = text.Length;
+
+        if (TryGetToken(text, caretIndex, out var tokenStart, out var token))
+        {
+            if (tokenStart >= 0 && tokenStart <= text.Length)
+            {
+                var end = tokenStart + token.Length;
+                while (end < text.Length && IsTokenChar(text[end])) end++;
+                token = text[tokenStart..end];
+            }
+
+            var byToken = ResolveNameManual(token);
+            if (byToken is not null)
+                return byToken;
+        }
+
+        var span = AliasAnalyzer.FindSpanAt(text, caretIndex);
+        if (span is null)
+            return null;
+
+        var first = AliasAnalyzer.FirstWord(span.Value.Text);
+        return ResolveNameManual(first);
+    }
+
+    public AliasTokenManual? ResolveNameManual(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
+        if (_commandsByName.TryGetValue(name, out var cmd))
+        {
+            return new AliasTokenManual(
+                cmd.Name,
+                AliasCompletionKind.Command,
+                cmd.Summary,
+                cmd.Usage,
+                cmd.Examples);
+        }
+
+        if (_programsByName.TryGetValue(name, out var prog))
+        {
+            var usage = prog.InstallTotal is int total
+                ? (IReadOnlyList<string>)[$"install size: {total}"]
+                : Array.Empty<string>();
+            return new AliasTokenManual(
+                prog.Name,
+                AliasCompletionKind.Program,
+                prog.Summary,
+                usage,
+                []);
+        }
+
+        if (Keywords.Any(k => k.Equals(name, StringComparison.OrdinalIgnoreCase)))
+        {
+            return new AliasTokenManual(
+                name,
+                AliasCompletionKind.Keyword,
+                KeywordHint(name),
+                [],
+                []);
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -260,62 +371,31 @@ public sealed partial class GameCommandCatalog
 
     public string? BuildContextHelp(string? text, int caretIndex)
     {
-        text ??= "";
-        if (caretIndex < 0) caretIndex = 0;
-        if (caretIndex > text.Length) caretIndex = text.Length;
-
-        if (!TryGetToken(text, caretIndex, out var tokenStart, out var token) && tokenStart >= 0)
-        {
-            // try token left of caret even if empty prefix — use completed word under/near caret
-        }
-
-        TryGetToken(text, caretIndex, out tokenStart, out token);
-        // If caret mid-word, extend full token
-        if (tokenStart >= 0 && tokenStart <= text.Length)
-        {
-            var end = tokenStart + token.Length;
-            while (end < text.Length && IsTokenChar(text[end])) end++;
-            token = text[tokenStart..end];
-        }
-
-        if (string.IsNullOrWhiteSpace(token))
+        var manual = ResolveTokenManual(text, caretIndex);
+        if (manual is null)
             return null;
 
-        if (_commandsByName.TryGetValue(token, out var cmd))
-        {
-            var lines = new List<string>();
-            if (!string.IsNullOrWhiteSpace(cmd.Summary))
-                lines.Add(cmd.Summary!);
-            foreach (var u in cmd.Usage.Take(3))
-                lines.Add(u);
-            foreach (var e in cmd.Examples.Take(2))
-                lines.Add(e);
-            return lines.Count > 0 ? string.Join(Environment.NewLine, lines) : null;
-        }
-
-        if (_programsByName.TryGetValue(token, out var prog))
-        {
-            var bits = new List<string>();
-            if (!string.IsNullOrWhiteSpace(prog.Summary))
-                bits.Add(prog.Summary!);
-            if (prog.InstallTotal is int total)
-                bits.Add($"install size: {total}");
-            return bits.Count > 0 ? string.Join(Environment.NewLine, bits) : null;
-        }
-
-        return null;
+        var lines = new List<string>();
+        if (!string.IsNullOrWhiteSpace(manual.Summary))
+            lines.Add(manual.Summary!);
+        foreach (var u in manual.Usage.Take(3))
+            lines.Add(u);
+        foreach (var e in manual.Examples.Take(2))
+            lines.Add(e);
+        return lines.Count > 0 ? string.Join(Environment.NewLine, lines) : null;
     }
 
     private void AddMatchingCommands(List<AliasCompletionItem> results, string prefix, int limit)
     {
-        foreach (var cmd in Commands)
+        foreach (var cmd in Commands.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
         {
             if (results.Count >= limit) break;
             if (!cmd.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
             var hint = !string.IsNullOrWhiteSpace(cmd.Summary)
-                ? cmd.Summary
+                ? Truncate(cmd.Summary, 90)
                 : cmd.Usage.FirstOrDefault();
-            results.Add(new AliasCompletionItem(cmd.Name, AliasCompletionKind.Command, hint));
+            var usage = cmd.Usage.FirstOrDefault();
+            results.Add(new AliasCompletionItem(cmd.Name, AliasCompletionKind.Command, hint, usage));
         }
     }
 
@@ -328,23 +408,34 @@ public sealed partial class GameCommandCatalog
             if (added >= limit) break;
             if (!kw.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
             if (results.Any(r => r.Name.Equals(kw, StringComparison.OrdinalIgnoreCase))) continue;
-            results.Add(new AliasCompletionItem(kw, AliasCompletionKind.Keyword));
+            results.Add(new AliasCompletionItem(kw, AliasCompletionKind.Keyword, KeywordHint(kw)));
             added++;
         }
     }
 
     private void AddMatchingPrograms(List<AliasCompletionItem> results, string prefix, int limit)
     {
-        foreach (var prog in Programs)
+        foreach (var prog in Programs.OrderBy(p => p.Name, StringComparer.OrdinalIgnoreCase))
         {
             if (results.Count >= limit) break;
             if (!prog.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) continue;
             var hint = prog.Summary;
             if (prog.InstallTotal is int total)
                 hint = string.IsNullOrWhiteSpace(hint) ? $"size {total}" : $"{Truncate(hint, 70)} · size {total}";
-            results.Add(new AliasCompletionItem(prog.Name, AliasCompletionKind.Program, hint));
+            results.Add(new AliasCompletionItem(prog.Name, AliasCompletionKind.Program, Truncate(hint, 90)));
         }
     }
+
+    private static string? KeywordHint(string kw) => kw.ToLowerInvariant() switch
+    {
+        "try" => "try <cmd> [then <ok>] [else <fail>]",
+        "then" => "runs if try succeeded",
+        "else" => "runs if try failed",
+        "on" => "target device address",
+        "using" => "debugger address",
+        "always" => "always on / always using defaults",
+        _ => "keyword"
+    };
 
     private static void AddMatchingStrings(
         List<AliasCompletionItem> results,

@@ -1,8 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using TniModManager.Core.Aliases;
 using TniModManager.ViewModels;
 
@@ -11,28 +13,61 @@ namespace TniModManager.Views;
 public partial class AliasesView : UserControl
 {
     private AliasesViewModel? _vm;
+    private bool _popupClosing;
 
     public AliasesView()
     {
         InitializeComponent();
         AliasEditorScroll.SizeChanged += (_, e) =>
         {
+            if (AliasEditorContent is null) return;
             AliasEditorContent.MaxWidth = e.NewSize.Width > 0 ? e.NewSize.Width : double.PositiveInfinity;
         };
         DataContextChanged += OnDataContextChanged;
+        AliasCommandBox.GotFocus += OnAliasCommandCaretChanged;
+        AliasCommandBox.PointerReleased += OnAliasCommandPointerReleased;
+        AliasCommandBox.LostFocus += OnAliasCommandLostFocus;
+        AliasCommandBox.TextChanged += OnAliasCommandTextChanged;
+        AliasCommandBox.KeyDown += OnAliasCommandKeyDown;
+        AliasCommandBox.KeyUp += OnAliasCommandKeyUp;
+        AliasCommandBox.PropertyChanged += OnAliasCommandBoxPropertyChanged;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         if (_vm is not null)
+        {
             _vm.LivePreviewSegments.CollectionChanged -= OnPreviewSegmentsChanged;
+            _vm.RequestCaretIndex -= OnRequestCaretIndex;
+        }
 
         _vm = DataContext as AliasesViewModel;
         if (_vm is null)
             return;
 
         _vm.LivePreviewSegments.CollectionChanged += OnPreviewSegmentsChanged;
+        _vm.RequestCaretIndex += OnRequestCaretIndex;
         RebuildLivePreviewInlines();
+    }
+
+    private void OnAliasCommandBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == TextBox.CaretIndexProperty)
+            SyncCaretFromBox();
+    }
+
+    private void OnRequestCaretIndex(int caretIndex)
+    {
+        try
+        {
+            AliasCommandBox.Focus();
+            AliasCommandBox.CaretIndex = Math.Clamp(caretIndex, 0, AliasCommandBox.Text?.Length ?? 0);
+            _vm?.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
+        }
+        catch
+        {
+            // TextBox может быть ещё не в дереве при смене DataContext.
+        }
     }
 
     private void OnPreviewSegmentsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
@@ -51,23 +86,47 @@ public partial class AliasesView : UserControl
     private void OnAliasCommandPointerReleased(object? sender, PointerReleasedEventArgs e) =>
         SyncCaretFromBox();
 
+    private void OnAliasCommandKeyUp(object? sender, KeyEventArgs e) =>
+        SyncCaretFromBox();
+
     private void OnAliasCommandLostFocus(object? sender, RoutedEventArgs e)
     {
-        // Дать DoubleTapped по списку сработать до закрытия.
         if (_vm is null) return;
-        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        Dispatcher.UIThread.Post(() =>
         {
-            if (_vm is { IsCompletionOpen: true } && CompletionList.IsFocused)
+            if (_vm is { IsCompletionOpen: true } && CompletionList is { IsFocused: true })
                 return;
-            _vm?.DismissCompletionCommand.Execute(null);
-        }, Avalonia.Threading.DispatcherPriority.Background);
+            SafeDismissCompletion();
+        }, DispatcherPriority.Background);
     }
 
     private void OnCompletionPopupClosed(object? sender, EventArgs e)
     {
-        // Light-dismiss закрывает Popup, не обновляя VM при OneWay — синхронизируем.
-        if (_vm is { IsCompletionOpen: true })
-            _vm.DismissCompletionCommand.Execute(null);
+        if (_popupClosing || _vm is not { IsCompletionOpen: true })
+            return;
+
+        _popupClosing = true;
+        try
+        {
+            // Отложить: иначе Closed → Clear Items → reentrancy в Popup Avalonia.
+            Dispatcher.UIThread.Post(SafeDismissCompletion, DispatcherPriority.Background);
+        }
+        finally
+        {
+            _popupClosing = false;
+        }
+    }
+
+    private void SafeDismissCompletion()
+    {
+        try
+        {
+            _vm?.DismissCompletionCommand.Execute(null);
+        }
+        catch
+        {
+            // Игнор: popup уже разобран.
+        }
     }
 
     private void OnAliasCommandKeyDown(object? sender, KeyEventArgs e)
@@ -92,14 +151,17 @@ public partial class AliasesView : UserControl
                     e.Handled = true;
                     return;
                 case Key.Escape:
-                    _vm.DismissCompletionCommand.Execute(null);
+                    SafeDismissCompletion();
                     e.Handled = true;
                     return;
             }
         }
 
-        // После обычных клавиш обновить caret на следующем тике.
-        Avalonia.Threading.Dispatcher.UIThread.Post(SyncCaretFromBox, Avalonia.Threading.DispatcherPriority.Input);
+        if (e.Key == Key.Space && e.KeyModifiers.HasFlag(KeyModifiers.Control))
+        {
+            _vm.OpenCompletionCommand.Execute(null);
+            e.Handled = true;
+        }
     }
 
     private void OnCompletionDoubleTapped(object? sender, TappedEventArgs e)
@@ -111,38 +173,62 @@ public partial class AliasesView : UserControl
     private void AcceptCompletionFromUi()
     {
         if (_vm?.SelectedCompletionItem is null) return;
-        _vm.AcceptCompletionCommand.Execute(_vm.SelectedCompletionItem);
-        AliasCommandBox.CaretIndex = _vm.AliasCommandCaretIndex;
-        _vm.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
+        try
+        {
+            _vm.AcceptCompletionCommand.Execute(_vm.SelectedCompletionItem);
+            AliasCommandBox.CaretIndex = _vm.AliasCommandCaretIndex;
+            _vm.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
+        }
+        catch
+        {
+            // Не ронять UI при сбое применения completion.
+        }
     }
 
     private void SyncCaretFromBox()
     {
         if (_vm is null || !_vm.ShouldSyncCaretFromView) return;
-        _vm.NotifyCommandCaret(AliasCommandBox.CaretIndex);
+        try
+        {
+            _vm.NotifyCommandCaret(AliasCommandBox.CaretIndex);
+        }
+        catch
+        {
+            // Защита от гонок при закрытии редактора.
+        }
     }
 
     private void RebuildLivePreviewInlines()
     {
-        var inlines = new InlineCollection();
-        if (_vm is not null)
-        {
-            foreach (var segment in _vm.LivePreviewSegments)
-            {
-                inlines.Add(new Run(segment.Text)
-                {
-                    Foreground = BrushFor(segment.Kind),
-                    FontWeight = segment.Kind is AliasPreviewTokenKind.Variable
-                        or AliasPreviewTokenKind.Keyword
-                        ? FontWeight.Bold
-                        : segment.Kind == AliasPreviewTokenKind.OnUsing
-                            ? FontWeight.SemiBold
-                            : FontWeight.Normal
-                });
-            }
-        }
+        if (LivePreviewText is null)
+            return;
 
-        LivePreviewText.Inlines = inlines;
+        try
+        {
+            var inlines = new InlineCollection();
+            if (_vm is not null)
+            {
+                foreach (var segment in _vm.LivePreviewSegments)
+                {
+                    inlines.Add(new Run(segment.Text)
+                    {
+                        Foreground = BrushFor(segment.Kind),
+                        FontWeight = segment.Kind is AliasPreviewTokenKind.Variable
+                            or AliasPreviewTokenKind.Keyword
+                            ? FontWeight.Bold
+                            : segment.Kind == AliasPreviewTokenKind.OnUsing
+                                ? FontWeight.SemiBold
+                                : FontWeight.Normal
+                    });
+                }
+            }
+
+            LivePreviewText.Inlines = inlines;
+        }
+        catch
+        {
+            // Ignore: контрол может быть в процессе разборки.
+        }
     }
 
     private static IBrush BrushFor(AliasPreviewTokenKind kind)
@@ -157,7 +243,6 @@ public partial class AliasesView : UserControl
             _ => "PreviewCommandBrush"
         };
 
-        // Копия цвета: DynamicResource-кисть не обновляет уже созданные Run при смене темы.
         var brush = ThemeBrushResolver.Get(key);
         return brush is ISolidColorBrush solid
             ? new SolidColorBrush(solid.Color)
