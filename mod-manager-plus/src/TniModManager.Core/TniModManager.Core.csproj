@@ -10,5 +10,7 @@
   <ItemGroup>
     <!-- Только embedded: отдельный json не копируется в publish/релиз -->
     <EmbeddedResource Include="..\..\mod-sources.json" LogicalName="TniModManager.Core.mod-sources.json" />
+    <EmbeddedResource Include="Aliases\alias_helper_catalog.json"
+                      LogicalName="TniModManager.Core.Aliases.alias_helper_catalog.json" />
   </ItemGroup>
 </Project>

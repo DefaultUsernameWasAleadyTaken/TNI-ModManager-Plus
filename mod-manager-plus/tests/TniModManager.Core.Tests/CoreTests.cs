@@ -116,6 +116,148 @@ public class ZipExtractTests
     }
 }
 
+public class GameCommandCatalogTests
+{
+    [Fact]
+    public void Embedded_LoadsCommandsAndPrograms()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.True(cat.Commands.Count >= 30);
+        Assert.True(cat.Programs.Count >= 50);
+        Assert.NotNull(cat.FindCommand("ping"));
+        Assert.NotNull(cat.FindProgram("dns-lite"));
+        Assert.Null(cat.FindCommand("placeholder"));
+    }
+
+    [Fact]
+    public void Suggest_CommandsAndProgramContext()
+    {
+        var cat = GameCommandCatalog.Default;
+        var ping = cat.Suggest("pi", 2);
+        Assert.Contains(ping, i => i.Name == "ping" && i.Kind == AliasCompletionKind.Command);
+        Assert.Contains(ping, i => i.Name == "ping" && !string.IsNullOrWhiteSpace(i.Hint));
+
+        var text = "program install dn";
+        var progs = cat.Suggest(text, text.Length);
+        Assert.Contains(progs, i => i.Name.StartsWith("dn", StringComparison.OrdinalIgnoreCase)
+                                    && i.Kind == AliasCompletionKind.Program);
+    }
+
+    [Fact]
+    public void Suggest_AllowEmptyPrefix_ReturnsCommands()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.Empty(cat.Suggest("", 0));
+        var open = cat.Suggest("", 0, allowEmptyPrefix: true);
+        Assert.NotEmpty(open);
+        Assert.Contains(open, i => i.Kind == AliasCompletionKind.Command);
+    }
+
+    [Fact]
+    public void ResolveTokenManual_PingHasUsage()
+    {
+        var cat = GameCommandCatalog.Default;
+        var manual = cat.ResolveTokenManual("ping 123", 2);
+        Assert.NotNull(manual);
+        Assert.Equal("ping", manual!.Name);
+        Assert.False(string.IsNullOrWhiteSpace(manual.Summary));
+        Assert.NotNull(AliasTokenManual.NormalizeExample("e.g.: ping 123 using 456"));
+    }
+
+    [Fact]
+    public void ResolveTokenManual_CompoundUsesSegmentUnderCaret()
+    {
+        var cat = GameCommandCatalog.Default;
+        const string cmd = "sftp ls on 123 using 456; scan devices using 123;";
+        var sftp = cat.ResolveTokenManual(cmd, 2);
+        Assert.Equal("sftp", sftp?.Name);
+
+        var scanPos = cmd.IndexOf("scan", StringComparison.Ordinal);
+        var scan = cat.ResolveTokenManual(cmd, scanPos + 2);
+        Assert.Equal("scan", scan?.Name);
+
+        // Caret на аргументах scan — всё равно справка по команде сегмента.
+        var afterScan = cat.ResolveTokenManual(cmd, scanPos + "scan devices".Length);
+        Assert.Equal("scan", afterScan?.Name);
+    }
+
+    [Fact]
+    public void FormatAndNormalizeCompound()
+    {
+        const string stored = "sftp ls on 1; scan devices using 2;";
+        var editor = AliasAnalyzer.FormatCompoundForEditor(stored);
+        Assert.Contains("\n", editor);
+        Assert.Equal(2, AliasAnalyzer.GetCommandSpans(editor).Count);
+
+        var again = AliasAnalyzer.NormalizeCompoundForStorage(editor);
+        Assert.DoesNotContain("\n", again);
+        Assert.Equal("sftp ls on 1; scan devices using 2", again);
+
+        Assert.Equal("firewall allow tcp/80 on $1", AliasAnalyzer.FormatSegmentLabel("firewall allow tcp/80 on $1"));
+    }
+
+    [Fact]
+    public void FindSpanAt_StartOfSegment_IsNotPrevious()
+    {
+        var editor = AliasAnalyzer.FormatCompoundForEditor(
+            "firewall allow icmp on $1; firewall allow tcp/23 on $1; firewall allow tcp/80 on $1;");
+        var spans = AliasAnalyzer.GetCommandSpans(editor);
+        Assert.Equal(3, spans.Count);
+
+        Assert.Equal(0, AliasAnalyzer.FindSpanAt(editor, spans[0].Start)?.Index);
+        Assert.Equal(1, AliasAnalyzer.FindSpanAt(editor, spans[1].Start)?.Index);
+        Assert.Equal(2, AliasAnalyzer.FindSpanAt(editor, spans[2].Start)?.Index);
+        // Caret на ';' после первого сегмента — ещё первый шаг.
+        Assert.Equal(0, AliasAnalyzer.FindSpanAt(editor, spans[1].Start - 1)?.Index);
+    }
+
+    [Fact]
+    public void GetCommandSpans_PreservesIndices()
+    {
+        const string cmd = "sftp ls; scan devices;";
+        var spans = AliasAnalyzer.GetCommandSpans(cmd);
+        Assert.Equal(2, spans.Count);
+        Assert.Equal("sftp ls", spans[0].Text);
+        Assert.Equal("scan devices", spans[1].Text);
+        Assert.Equal(spans[1].Text, cmd.Substring(spans[1].Start, spans[1].Length));
+    }
+
+    [Fact]
+    public void ApplyCompletion_ReplacesToken()
+    {
+        var (text, caret) = GameCommandCatalog.ApplyCompletion("pi $1", 2, "ping");
+        Assert.Equal("ping $1", text);
+        Assert.Equal(4, caret);
+    }
+
+    [Fact]
+    public void ReservedAndRequirements()
+    {
+        var cat = GameCommandCatalog.Default;
+        Assert.True(cat.IsReservedAliasName("ping"));
+        Assert.False(cat.IsReservedAliasName("myprobe"));
+        var notice = cat.GetRequirementNotice("scan devices");
+        Assert.NotNull(notice);
+        Assert.True(notice!.NeedUsing);
+    }
+
+    [Fact]
+    public void RequirementNotice_IsPerSegment()
+    {
+        var cat = GameCommandCatalog.Default;
+        // using только во втором сегменте не закрывает requires_using у scan
+        var notice = cat.GetRequirementNotice("scan devices; echo hi using 1");
+        Assert.NotNull(notice);
+        Assert.True(notice!.NeedUsing);
+
+        var ok = cat.GetRequirementNotice("scan devices using 1; echo hi");
+        Assert.Null(ok);
+
+        var always = cat.GetRequirementNotice("scan devices; always using");
+        Assert.Null(always);
+    }
+}
+
 public class AliasAnalyzerTests
 {
     [Fact]

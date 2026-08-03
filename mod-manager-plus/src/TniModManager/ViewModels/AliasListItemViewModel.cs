@@ -10,6 +10,7 @@ public partial class AliasListItemViewModel : ObservableObject
     [ObservableProperty] private string _name;
     [ObservableProperty] private string _command;
     [ObservableProperty] private string _kindLabel = "";
+    [ObservableProperty] private string _commandPreview = "";
     [ObservableProperty] private IBrush _kindBrush = Brushes.Gray;
 
     public AliasListItemViewModel(string name, string command)
@@ -18,6 +19,7 @@ public partial class AliasListItemViewModel : ObservableObject
         _command = command;
         RefreshBrush();
         RefreshLocalizedLabels();
+        RefreshCommandPreview();
     }
 
     public AliasKind Kind => AliasAnalyzer.Analyze(Command).Kind;
@@ -26,9 +28,16 @@ public partial class AliasListItemViewModel : ObservableObject
     {
         RefreshBrush();
         RefreshLocalizedLabels();
+        RefreshCommandPreview();
     }
 
     public void RefreshBrush() => KindBrush = ThemeBrushResolver.GetAlias(Kind);
 
     public void RefreshLocalizedLabels() => KindLabel = UiStrings.FormatAliasKind(Kind);
+
+    public void RefreshCommandPreview()
+    {
+        var text = Command.Replace('\r', ' ').Replace('\n', ' ').Trim();
+        CommandPreview = string.IsNullOrEmpty(text) ? UiStrings.EmptyPreview : text;
+    }
 }
