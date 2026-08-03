@@ -123,6 +123,16 @@ public static class UiStrings
             : $"'{name}' is reserved and cannot be used as an alias name.";
     public static string AliasNameDuplicate =>
         Ru ? "Имя алиаса уже используется." : "That alias name is already in use.";
+
+    public static string AliasStepLabel(int current, int total, string segment) =>
+        Ru ? $"Шаг {current}/{total} · {segment}" : $"Step {current}/{total} · {segment}";
+
+    public static string AliasHelpStepHeading(int current, int total) =>
+        Ru ? $"Справка · шаг {current}/{total}" : $"Manual · step {current}/{total}";
+
+    public static string AliasManualHeading =>
+        Ru ? "Справка" : "Manual";
+
     public static string AliasContextHelp =>
         Ru ? "Справка по токену" : "Token help";
     public static string AliasCompletion =>

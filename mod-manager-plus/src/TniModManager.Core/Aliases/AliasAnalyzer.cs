@@ -191,8 +191,9 @@ public static partial class AliasAnalyzer
         for (var i = 0; i < spans.Count; i++)
         {
             var span = spans[i];
-            var regionEnd = i + 1 < spans.Count ? spans[i + 1].Start : command.Length;
-            if (caretIndex >= span.Start && caretIndex <= regionEnd)
+            // Exclusive end: иначе caret на старте следующего сегмента ошибочно даёт предыдущий.
+            var exclusiveEnd = i + 1 < spans.Count ? spans[i + 1].Start : command.Length + 1;
+            if (caretIndex >= span.Start && caretIndex < exclusiveEnd)
                 return span;
         }
 
@@ -207,13 +208,54 @@ public static partial class AliasAnalyzer
         return m.Success ? m.Value : null;
     }
 
+    /// <summary>Для редактора: после каждого ';' — перевод строки.</summary>
+    public static string FormatCompoundForEditor(string? command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            return "";
+
+        var spans = GetCommandSpans(command);
+        if (spans.Count == 0)
+            return command.Trim();
+        if (spans.Count == 1)
+            return spans[0].Text;
+
+        return string.Join(";\n", spans.Select(s => s.Text));
+    }
+
+    /// <summary>Для settings.json: одна строка, сегменты через '; '.</summary>
+    public static string NormalizeCompoundForStorage(string? command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+            return "";
+
+        var spans = GetCommandSpans(command);
+        if (spans.Count == 0)
+            return command.Replace("\r\n", "\n").Replace('\r', '\n').Trim();
+        if (spans.Count == 1)
+            return spans[0].Text;
+
+        return string.Join("; ", spans.Select(s => s.Text));
+    }
+
+    /// <summary>Короткий лейбл сегмента для step bar (не только FirstWord).</summary>
+    public static string FormatSegmentLabel(string? segment, int maxLen = 42)
+    {
+        var text = (segment ?? "").Replace('\r', ' ').Replace('\n', ' ').Trim();
+        if (text.Length == 0)
+            return "…";
+        if (text.Length <= maxLen)
+            return text;
+        return text[..(maxLen - 1)].TrimEnd() + "…";
+    }
+
     public static IReadOnlyList<AliasPreviewSegment> BuildLivePreviewSegments(AliasInfo info, string command, string emptyPlaceholder)
     {
         if (string.IsNullOrWhiteSpace(command))
             return [new AliasPreviewSegment(emptyPlaceholder, AliasPreviewTokenKind.Placeholder)];
 
         if (!info.IsCompound || info.Commands.Count <= 1)
-            return HighlightCommand(command.Trim());
+            return HighlightCommand(command.Trim().Replace("\r\n", "\n").Replace('\n', ' '));
 
         var segments = new List<AliasPreviewSegment>();
         for (var i = 0; i < info.Commands.Count; i++)
@@ -221,7 +263,11 @@ public static partial class AliasAnalyzer
             if (i > 0)
                 segments.Add(new AliasPreviewSegment(Environment.NewLine, AliasPreviewTokenKind.Separator));
 
-            var prefix = i == 0 ? "  ┌─ " : "  └─ ";
+            var prefix = i == 0
+                ? "  ┌─ "
+                : i == info.Commands.Count - 1
+                    ? "  └─ "
+                    : "  ├─ ";
             segments.Add(new AliasPreviewSegment(prefix, AliasPreviewTokenKind.Separator));
             segments.AddRange(HighlightCommand(info.Commands[i]));
         }

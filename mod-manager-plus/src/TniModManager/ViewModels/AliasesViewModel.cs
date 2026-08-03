@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -16,6 +17,8 @@ public partial class AliasesViewModel : ViewModelBase
     private bool _suppressCompletion;
     private bool _suppressCaretSync;
     private bool _suppressListSync;
+    private string? _helpInsertText;
+    private bool _dismissingCompletion;
 
     public AliasesViewModel(GameSettingsStore settings, IAppShell shell, GameCommandCatalog? catalog = null)
     {
@@ -56,19 +59,20 @@ public partial class AliasesViewModel : ViewModelBase
     [ObservableProperty] private string _completionDetailTitle = "";
     [ObservableProperty] private string _completionDetailBody = "";
     [ObservableProperty] private bool _showCompletionDetail;
-    [ObservableProperty] private bool _showCommandSegments;
-    [ObservableProperty] private int _activeCommandSegmentIndex = -1;
-
-    private string? _helpInsertText;
-    private bool _dismissingCompletion;
+    [ObservableProperty] private bool _showActiveStepBar;
+    [ObservableProperty] private string _activeStepLabel = "";
+    [ObservableProperty] private int _activeStepIndex;
+    [ObservableProperty] private int _activeStepCount;
+    [ObservableProperty] private bool _canGoPrevStep;
+    [ObservableProperty] private bool _canGoNextStep;
+    [ObservableProperty] private string _aliasHelpHeading = "";
 
     public ObservableCollection<AliasListItemViewModel> Aliases { get; } = [];
     public ObservableCollection<AliasListItemViewModel> VisibleAliases { get; } = [];
     public ObservableCollection<AliasPreviewSegment> LivePreviewSegments { get; } = [];
     public ObservableCollection<AliasCompletionItem> CompletionItems { get; } = [];
-    public ObservableCollection<AliasSegmentChipViewModel> CommandSegments { get; } = [];
+    public ObservableCollection<AliasPreviewLineViewModel> PreviewLines { get; } = [];
 
-    /// <summary>View ставит CaretIndex на TextBox после программной вставки.</summary>
     public event Action<int>? RequestCaretIndex;
 
     public void Load() => ReloadAliases();
@@ -87,7 +91,7 @@ public partial class AliasesViewModel : ViewModelBase
         try
         {
             AliasName = value.Name;
-            AliasCommand = value.Command;
+            AliasCommand = AliasAnalyzer.FormatCompoundForEditor(value.Command);
         }
         finally
         {
@@ -124,7 +128,6 @@ public partial class AliasesViewModel : ViewModelBase
 
     partial void OnSelectedCompletionIndexChanged(int value) => UpdateCompletionDetail();
 
-    /// <summary>Параметр: empty | arg | on | try</summary>
     [RelayCommand]
     private void AddAlias(string? template = null)
     {
@@ -201,7 +204,10 @@ public partial class AliasesViewModel : ViewModelBase
 
         var aliases = Aliases
             .Where(alias => !string.IsNullOrWhiteSpace(alias.Name))
-            .ToDictionary(alias => alias.Name.Trim(), alias => alias.Command, StringComparer.Ordinal);
+            .ToDictionary(
+                alias => alias.Name.Trim(),
+                alias => AliasAnalyzer.NormalizeCompoundForStorage(alias.Command),
+                StringComparer.Ordinal);
         var keep = SelectedAlias?.Name.Trim();
         _settings.SaveAliases(aliases);
         _shell.SetStatus(UiStrings.AliasesSaved);
@@ -209,12 +215,22 @@ public partial class AliasesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CloseAliasEditor()
+    private void OpenAliasesFolder()
     {
-        FlushDraftToSelected(requireValidName: false);
-        SelectedAlias = null;
-        AliasEditorVisible = false;
-        ClearEditorFields();
+        try
+        {
+            var dir = _settings.GameDataPath;
+            Directory.CreateDirectory(dir);
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = dir,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
+        }
     }
 
     [RelayCommand]
@@ -224,7 +240,6 @@ public partial class AliasesViewModel : ViewModelBase
         if (item is null || !IsCompletionOpen)
             return;
 
-        // Держим suppress до FinishAcceptCompletionCaret — иначе TextChanged затрёт caret.
         _suppressCaretSync = true;
         _suppressCompletion = true;
         try
@@ -243,7 +258,6 @@ public partial class AliasesViewModel : ViewModelBase
         UpdateTokenHelp();
     }
 
-    /// <summary>Вызвать из view после установки CaretIndex на TextBox.</summary>
     public void FinishAcceptCompletionCaret(int caretIndex)
     {
         AliasCommandCaretIndex = Math.Clamp(caretIndex, 0, AliasCommand.Length);
@@ -253,10 +267,7 @@ public partial class AliasesViewModel : ViewModelBase
     public bool ShouldSyncCaretFromView => !_suppressCaretSync;
 
     [RelayCommand]
-    private void OpenCompletion()
-    {
-        RefreshCompletion(allowEmptyPrefix: true);
-    }
+    private void OpenCompletion() => RefreshCompletion(allowEmptyPrefix: true);
 
     [RelayCommand]
     private void InsertHelpExample()
@@ -275,7 +286,9 @@ public partial class AliasesViewModel : ViewModelBase
             }
             else
             {
-                var sep = AliasCommand.EndsWith(' ') || AliasCommand.EndsWith(';') ? "" : " ";
+                var sep = AliasCommand.EndsWith(' ') || AliasCommand.EndsWith(';') || AliasCommand.EndsWith('\n')
+                    ? ""
+                    : " ";
                 AliasCommand += sep + snippet;
                 AliasCommandCaretIndex = AliasCommand.Length;
             }
@@ -294,17 +307,83 @@ public partial class AliasesViewModel : ViewModelBase
     [RelayCommand]
     private void SelectCommandSegment(int index)
     {
-        if (index < 0 || index >= CommandSegments.Count)
+        var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
+        if (index < 0 || index >= spans.Count)
             return;
 
-        var chip = CommandSegments[index];
-        ActiveCommandSegmentIndex = index;
-        foreach (var c in CommandSegments)
-            c.IsActive = c.Index == index;
+        var span = spans[index];
+        _suppressCaretSync = true;
+        try
+        {
+            AliasCommandCaretIndex = span.Start;
+            RequestCaretIndex?.Invoke(span.Start);
+            // Явно фиксируем шаг — не полагаемся на caret-события после Focus.
+            UpdateActiveStepBarFromIndex(index, spans);
+            SyncPreviewLineActive();
+            UpdateTokenHelpKeepingStep(index);
+        }
+        finally
+        {
+            _suppressCaretSync = false;
+        }
+    }
 
-        AliasCommandCaretIndex = chip.CaretStart;
-        RequestCaretIndex?.Invoke(chip.CaretStart);
-        UpdateTokenHelp();
+    private void UpdateActiveStepBarFromIndex(int index, IReadOnlyList<AliasCommandSpan> spans)
+    {
+        ActiveStepCount = spans.Count;
+        ShowActiveStepBar = spans.Count > 1;
+        if (!ShowActiveStepBar)
+        {
+            ClearActiveStepBar();
+            if (spans.Count == 1)
+                ActiveStepIndex = 0;
+            return;
+        }
+
+        ActiveStepIndex = index;
+        ActiveStepLabel = UiStrings.AliasStepLabel(
+            index + 1,
+            ActiveStepCount,
+            AliasAnalyzer.FormatSegmentLabel(spans[index].Text));
+        CanGoPrevStep = index > 0;
+        CanGoNextStep = index + 1 < ActiveStepCount;
+    }
+
+    private void UpdateTokenHelpKeepingStep(int stepIndex)
+    {
+        AliasTokenManual? manual = null;
+        if (IsCompletionOpen && SelectedCompletionItem is { } selected)
+            manual = _catalog.ResolveNameManual(selected.Name)
+                     ?? new AliasTokenManual(
+                         selected.Name,
+                         selected.Kind,
+                         selected.Hint,
+                         string.IsNullOrWhiteSpace(selected.UsageLine) ? [] : [selected.UsageLine],
+                         []);
+
+        var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
+        if (manual is null && stepIndex >= 0 && stepIndex < spans.Count)
+        {
+            var first = AliasAnalyzer.FirstWord(spans[stepIndex].Text);
+            manual = _catalog.ResolveNameManual(first);
+        }
+
+        manual ??= _catalog.ResolveTokenManual(AliasCommand, AliasCommandCaretIndex);
+        ApplyManualToHelp(manual);
+    }
+
+    [RelayCommand]
+    private void SelectPrevSegment()
+    {
+        if (ActiveStepIndex > 0)
+            SelectCommandSegment(ActiveStepIndex - 1);
+    }
+
+    [RelayCommand]
+    private void SelectNextSegment()
+    {
+        if (ActiveStepIndex + 1 < ActiveStepCount)
+            SelectCommandSegment(ActiveStepIndex + 1);
     }
 
     [RelayCommand]
@@ -395,11 +474,7 @@ public partial class AliasesViewModel : ViewModelBase
         SelectedAlias.Command = AliasCommand;
         var name = AliasName.Trim();
         if (string.IsNullOrEmpty(name))
-        {
-            if (requireValidName)
-                return;
             return;
-        }
 
         if (_catalog.IsReservedAliasName(name))
             return;
@@ -416,7 +491,11 @@ public partial class AliasesViewModel : ViewModelBase
             SelectedAlias = null;
             Aliases.Clear();
             foreach (var (name, command) in _settings.CmdAliases.OrderBy(item => item.Key, StringComparer.Ordinal))
-                Aliases.Add(new AliasListItemViewModel(name, command));
+            {
+                var editorCmd = AliasAnalyzer.FormatCompoundForEditor(command);
+                Aliases.Add(new AliasListItemViewModel(name, editorCmd));
+            }
+
             ApplyFilter();
             if (!string.IsNullOrEmpty(keep))
                 SelectedAlias = Aliases.FirstOrDefault(a => a.Name == keep);
@@ -430,7 +509,7 @@ public partial class AliasesViewModel : ViewModelBase
         {
             AliasEditorVisible = true;
             AliasName = SelectedAlias.Name;
-            AliasCommand = SelectedAlias.Command;
+            AliasCommand = AliasAnalyzer.FormatCompoundForEditor(SelectedAlias.Command);
             UpdateAliasPreview();
             UpdateAliasNameValidation();
         }
@@ -470,8 +549,9 @@ public partial class AliasesViewModel : ViewModelBase
 
         foreach (var alias in Aliases)
         {
+            var normalized = AliasAnalyzer.NormalizeCompoundForStorage(alias.Command);
             if (!saved.TryGetValue(alias.Name.Trim(), out var command) ||
-                !string.Equals(command, alias.Command, StringComparison.Ordinal))
+                !string.Equals(command, normalized, StringComparison.Ordinal))
             {
                 HasUnsavedChanges = true;
                 return;
@@ -510,9 +590,8 @@ public partial class AliasesViewModel : ViewModelBase
         _suppressCompletion = false;
         DismissCompletion();
         LivePreviewSegments.Clear();
-        CommandSegments.Clear();
-        ShowCommandSegments = false;
-        ActiveCommandSegmentIndex = -1;
+        PreviewLines.Clear();
+        ClearActiveStepBar();
     }
 
     private void RefreshCompletion(bool allowEmptyPrefix = false)
@@ -528,7 +607,6 @@ public partial class AliasesViewModel : ViewModelBase
             userNames,
             allowEmptyPrefix);
 
-        // Не дёргать ListBox Clear→Add без нужды — источник вылетов Avalonia Popup.
         if (!allowEmptyPrefix
             && items.Count == 0
             && !IsCompletionOpen
@@ -556,56 +634,76 @@ public partial class AliasesViewModel : ViewModelBase
         UpdateCompletionDetail();
     }
 
-    private void RebuildCommandSegments(AliasInfo info)
+    private void RebuildPreviewLines()
     {
         var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
-        ShowCommandSegments = spans.Count > 1;
-        CommandSegments.Clear();
-        if (!ShowCommandSegments)
-        {
-            ActiveCommandSegmentIndex = spans.Count == 1 ? 0 : -1;
+        PreviewLines.Clear();
+        if (spans.Count == 0)
             return;
-        }
 
-        var active = AliasAnalyzer.FindSpanAt(AliasCommand, AliasCommandCaretIndex)?.Index ?? 0;
-        ActiveCommandSegmentIndex = active;
-        foreach (var span in spans)
+        for (var i = 0; i < spans.Count; i++)
         {
-            var first = AliasAnalyzer.FirstWord(span.Text) ?? span.Text;
-            if (first.Length > 18)
-                first = first[..17] + "…";
-            var title = $"{span.Index + 1}. {first}";
-            CommandSegments.Add(new AliasSegmentChipViewModel(
-                span.Index,
-                title,
-                span.Start,
+            var prefix = spans.Count == 1
+                ? ""
+                : i == 0
+                    ? "┌─ "
+                    : i == spans.Count - 1
+                        ? "└─ "
+                        : "├─ ";
+            PreviewLines.Add(new AliasPreviewLineViewModel(
+                spans[i].Index,
+                prefix,
+                spans[i].Text,
+                spans[i].Start,
                 SelectCommandSegmentCommand)
             {
-                IsActive = span.Index == active
+                IsActive = spans[i].Index == ActiveStepIndex
             });
         }
     }
 
-    private void SyncActiveSegmentFromCaret()
+    private void UpdateActiveStepBar()
     {
-        if (!ShowCommandSegments || CommandSegments.Count == 0)
+        var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
+        ActiveStepCount = spans.Count;
+        ShowActiveStepBar = spans.Count > 1;
+        if (!ShowActiveStepBar)
+        {
+            ClearActiveStepBar();
+            if (spans.Count == 1)
+                ActiveStepIndex = 0;
             return;
+        }
 
         var span = AliasAnalyzer.FindSpanAt(AliasCommand, AliasCommandCaretIndex);
-        var index = span?.Index ?? 0;
-        if (index == ActiveCommandSegmentIndex)
-            return;
+        ActiveStepIndex = span?.Index ?? 0;
+        var text = spans[ActiveStepIndex].Text;
+        ActiveStepLabel = UiStrings.AliasStepLabel(ActiveStepIndex + 1, ActiveStepCount, AliasAnalyzer.FormatSegmentLabel(text));
+        CanGoPrevStep = ActiveStepIndex > 0;
+        CanGoNextStep = ActiveStepIndex + 1 < ActiveStepCount;
+    }
 
-        ActiveCommandSegmentIndex = index;
-        foreach (var chip in CommandSegments)
-            chip.IsActive = chip.Index == index;
+    private void ClearActiveStepBar()
+    {
+        ShowActiveStepBar = false;
+        ActiveStepLabel = "";
+        ActiveStepIndex = -1;
+        ActiveStepCount = 0;
+        CanGoPrevStep = false;
+        CanGoNextStep = false;
+    }
+
+    private void SyncPreviewLineActive()
+    {
+        foreach (var line in PreviewLines)
+            line.IsActive = line.Index == ActiveStepIndex;
     }
 
     private void UpdateTokenHelp()
     {
-        SyncActiveSegmentFromCaret();
+        UpdateActiveStepBar();
+        SyncPreviewLineActive();
 
-        // Пока открыт completion — справка по выбранному пункту, иначе по сегменту/токену.
         AliasTokenManual? manual = null;
         if (IsCompletionOpen && SelectedCompletionItem is { } selected)
             manual = _catalog.ResolveNameManual(selected.Name)
@@ -689,6 +787,9 @@ public partial class AliasesViewModel : ViewModelBase
         ShowAliasHelp = !string.IsNullOrWhiteSpace(AliasHelpSummary)
                         || ShowAliasHelpUsage
                         || ShowAliasHelpExamples;
+        AliasHelpHeading = ShowActiveStepBar
+            ? UiStrings.AliasHelpStepHeading(ActiveStepIndex + 1, ActiveStepCount)
+            : UiStrings.AliasManualHeading;
     }
 
     private void ClearTokenHelp()
@@ -703,6 +804,7 @@ public partial class AliasesViewModel : ViewModelBase
         _helpInsertText = null;
         CanInsertHelpExample = false;
         ShowAliasHelp = false;
+        AliasHelpHeading = UiStrings.AliasManualHeading;
     }
 
     private void UpdateAliasNameValidation()
@@ -752,10 +854,9 @@ public partial class AliasesViewModel : ViewModelBase
             AliasFullUsageText = "";
             ShowAliasFullUsage = false;
             ClearTokenHelp();
-            CommandSegments.Clear();
-            ShowCommandSegments = false;
-            ActiveCommandSegmentIndex = -1;
+            ClearActiveStepBar();
             LivePreviewSegments.Clear();
+            PreviewLines.Clear();
             foreach (var segment in AliasAnalyzer.BuildLivePreviewSegments(info, AliasCommand, UiStrings.AliasPreviewPlaceholder))
                 LivePreviewSegments.Add(segment);
             SelectedAlias?.RefreshLocalizedLabels();
@@ -788,7 +889,8 @@ public partial class AliasesViewModel : ViewModelBase
         foreach (var segment in AliasAnalyzer.BuildLivePreviewSegments(info, AliasCommand, UiStrings.AliasPreviewPlaceholder))
             LivePreviewSegments.Add(segment);
 
-        RebuildCommandSegments(info);
+        UpdateActiveStepBar();
+        RebuildPreviewLines();
         UpdateTokenHelp();
         SelectedAlias?.RefreshLocalizedLabels();
         SelectedAlias?.RefreshCommandPreview();

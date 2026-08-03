@@ -1,11 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Threading;
-using TniModManager.Core.Aliases;
 using TniModManager.ViewModels;
 
 namespace TniModManager.Views;
@@ -18,36 +15,26 @@ public partial class AliasesView : UserControl
     public AliasesView()
     {
         InitializeComponent();
-        AliasEditorScroll.SizeChanged += (_, e) =>
-        {
-            if (AliasEditorContent is null) return;
-            AliasEditorContent.MaxWidth = e.NewSize.Width > 0 ? e.NewSize.Width : double.PositiveInfinity;
-        };
         DataContextChanged += OnDataContextChanged;
-        AliasCommandBox.GotFocus += OnAliasCommandCaretChanged;
-        AliasCommandBox.PointerReleased += OnAliasCommandPointerReleased;
+        AliasCommandBox.GotFocus += (_, _) => SyncCaretFromBox();
+        AliasCommandBox.PointerReleased += (_, _) => SyncCaretFromBox();
         AliasCommandBox.LostFocus += OnAliasCommandLostFocus;
         AliasCommandBox.TextChanged += OnAliasCommandTextChanged;
         AliasCommandBox.KeyDown += OnAliasCommandKeyDown;
-        AliasCommandBox.KeyUp += OnAliasCommandKeyUp;
+        AliasCommandBox.KeyUp += (_, _) => SyncCaretFromBox();
         AliasCommandBox.PropertyChanged += OnAliasCommandBoxPropertyChanged;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         if (_vm is not null)
-        {
-            _vm.LivePreviewSegments.CollectionChanged -= OnPreviewSegmentsChanged;
             _vm.RequestCaretIndex -= OnRequestCaretIndex;
-        }
 
         _vm = DataContext as AliasesViewModel;
         if (_vm is null)
             return;
 
-        _vm.LivePreviewSegments.CollectionChanged += OnPreviewSegmentsChanged;
         _vm.RequestCaretIndex += OnRequestCaretIndex;
-        RebuildLivePreviewInlines();
     }
 
     private void OnAliasCommandBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -60,18 +47,19 @@ public partial class AliasesView : UserControl
     {
         try
         {
-            AliasCommandBox.Focus();
-            AliasCommandBox.CaretIndex = Math.Clamp(caretIndex, 0, AliasCommandBox.Text?.Length ?? 0);
+            var clamped = Math.Clamp(caretIndex, 0, AliasCommandBox.Text?.Length ?? 0);
+            // Сначала caret, потом Focus: иначе GotFocus синкает старую позицию и сбивает шаг.
+            AliasCommandBox.CaretIndex = clamped;
+            if (!AliasCommandBox.IsFocused)
+                AliasCommandBox.Focus();
+            AliasCommandBox.CaretIndex = clamped;
             _vm?.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
         }
         catch
         {
-            // TextBox может быть ещё не в дереве при смене DataContext.
+            // TextBox может быть ещё не готов.
         }
     }
-
-    private void OnPreviewSegmentsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
-        RebuildLivePreviewInlines();
 
     private void OnAliasCommandTextChanged(object? sender, TextChangedEventArgs e)
     {
@@ -79,15 +67,6 @@ public partial class AliasesView : UserControl
             return;
         SyncCaretFromBox();
     }
-
-    private void OnAliasCommandCaretChanged(object? sender, GotFocusEventArgs e) =>
-        SyncCaretFromBox();
-
-    private void OnAliasCommandPointerReleased(object? sender, PointerReleasedEventArgs e) =>
-        SyncCaretFromBox();
-
-    private void OnAliasCommandKeyUp(object? sender, KeyEventArgs e) =>
-        SyncCaretFromBox();
 
     private void OnAliasCommandLostFocus(object? sender, RoutedEventArgs e)
     {
@@ -108,7 +87,6 @@ public partial class AliasesView : UserControl
         _popupClosing = true;
         try
         {
-            // Отложить: иначе Closed → Clear Items → reentrancy в Popup Avalonia.
             Dispatcher.UIThread.Post(SafeDismissCompletion, DispatcherPriority.Background);
         }
         finally
@@ -125,7 +103,7 @@ public partial class AliasesView : UserControl
         }
         catch
         {
-            // Игнор: popup уже разобран.
+            // Popup уже разобран.
         }
     }
 
@@ -181,7 +159,7 @@ public partial class AliasesView : UserControl
         }
         catch
         {
-            // Не ронять UI при сбое применения completion.
+            // Не ронять UI.
         }
     }
 
@@ -194,58 +172,7 @@ public partial class AliasesView : UserControl
         }
         catch
         {
-            // Защита от гонок при закрытии редактора.
+            // Гонка при закрытии редактора.
         }
-    }
-
-    private void RebuildLivePreviewInlines()
-    {
-        if (LivePreviewText is null)
-            return;
-
-        try
-        {
-            var inlines = new InlineCollection();
-            if (_vm is not null)
-            {
-                foreach (var segment in _vm.LivePreviewSegments)
-                {
-                    inlines.Add(new Run(segment.Text)
-                    {
-                        Foreground = BrushFor(segment.Kind),
-                        FontWeight = segment.Kind is AliasPreviewTokenKind.Variable
-                            or AliasPreviewTokenKind.Keyword
-                            ? FontWeight.Bold
-                            : segment.Kind == AliasPreviewTokenKind.OnUsing
-                                ? FontWeight.SemiBold
-                                : FontWeight.Normal
-                    });
-                }
-            }
-
-            LivePreviewText.Inlines = inlines;
-        }
-        catch
-        {
-            // Ignore: контрол может быть в процессе разборки.
-        }
-    }
-
-    private static IBrush BrushFor(AliasPreviewTokenKind kind)
-    {
-        var key = kind switch
-        {
-            AliasPreviewTokenKind.Variable => "AliasVariableBrush",
-            AliasPreviewTokenKind.Keyword => "AliasComplexBrush",
-            AliasPreviewTokenKind.OnUsing => "AliasCompoundBrush",
-            AliasPreviewTokenKind.Separator => "AliasConditionalBrush",
-            AliasPreviewTokenKind.Placeholder => "MutedBrush",
-            _ => "PreviewCommandBrush"
-        };
-
-        var brush = ThemeBrushResolver.Get(key);
-        return brush is ISolidColorBrush solid
-            ? new SolidColorBrush(solid.Color)
-            : brush;
     }
 }

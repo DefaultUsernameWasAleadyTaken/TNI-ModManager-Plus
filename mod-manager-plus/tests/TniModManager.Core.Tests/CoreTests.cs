@@ -182,6 +182,36 @@ public class GameCommandCatalogTests
     }
 
     [Fact]
+    public void FormatAndNormalizeCompound()
+    {
+        const string stored = "sftp ls on 1; scan devices using 2;";
+        var editor = AliasAnalyzer.FormatCompoundForEditor(stored);
+        Assert.Contains("\n", editor);
+        Assert.Equal(2, AliasAnalyzer.GetCommandSpans(editor).Count);
+
+        var again = AliasAnalyzer.NormalizeCompoundForStorage(editor);
+        Assert.DoesNotContain("\n", again);
+        Assert.Equal("sftp ls on 1; scan devices using 2", again);
+
+        Assert.Equal("firewall allow tcp/80 on $1", AliasAnalyzer.FormatSegmentLabel("firewall allow tcp/80 on $1"));
+    }
+
+    [Fact]
+    public void FindSpanAt_StartOfSegment_IsNotPrevious()
+    {
+        var editor = AliasAnalyzer.FormatCompoundForEditor(
+            "firewall allow icmp on $1; firewall allow tcp/23 on $1; firewall allow tcp/80 on $1;");
+        var spans = AliasAnalyzer.GetCommandSpans(editor);
+        Assert.Equal(3, spans.Count);
+
+        Assert.Equal(0, AliasAnalyzer.FindSpanAt(editor, spans[0].Start)?.Index);
+        Assert.Equal(1, AliasAnalyzer.FindSpanAt(editor, spans[1].Start)?.Index);
+        Assert.Equal(2, AliasAnalyzer.FindSpanAt(editor, spans[2].Start)?.Index);
+        // Caret на ';' после первого сегмента — ещё первый шаг.
+        Assert.Equal(0, AliasAnalyzer.FindSpanAt(editor, spans[1].Start - 1)?.Index);
+    }
+
+    [Fact]
     public void GetCommandSpans_PreservesIndices()
     {
         const string cmd = "sftp ls; scan devices;";

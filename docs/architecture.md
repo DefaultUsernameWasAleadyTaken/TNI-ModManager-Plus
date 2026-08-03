@@ -40,10 +40,8 @@ ui/ (Avalonia)  →  Core  →  Godot userdata + GitHub API
 `Views/ModsView.axaml` и `Views/AliasesView.axaml`. `MainViewModel` служит shell,
 а `ModsViewModel` и `AliasesViewModel` содержат логику вкладок. Вкладка Aliases
 (Alias Studio): список с поиском и превью команды, шаблоны при создании, автосинхрон
-черновика в список и один Save на диск. Редактор — аргументы `$n`, Live Preview
-(с подсветкой) + Full Usage в одной карточке, автодополнение с summary/usage и карточкой
-детали (Ctrl+Space), справка по токену из `alias_helper_catalog.json` с вставкой примера,
-проверка зарезервированных имён и предупреждения `on`/`using`.
+черновика в список; Save и «Открыть папку» слева. Редактор — многострочные сегменты `;`,
+компактный шаг N/M, сплит Live Preview | справка, автодополнение (Ctrl+Space).
 Цвета — Light/Dark `ThemeDictionaries` через динамические ресурсы; тема и язык
 (`en` / `ru`) в `mm_plus_ui.json`. Менеджер устанавливает, обновляет и удаляет
 управляемые моды, но не переносит их между enabled/disabled каталогами.
@@ -63,4 +61,4 @@ Self-update проверяет latest release форка
 
 ## English
 
-Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core ([ADR-003](decisions.md)). App releases on push to `main` when `Version.props` is newer ([ADR-006](decisions.md)). Successful GitHub catalog fetches are saved to `release_cache.json`; on API failure (including rate limit) the UI keeps the cached catalog instead of dropping to installed-only. The Aliases tab (Alias Studio) has search, create templates, draft auto-sync with a single Save, rich autocomplete (summary/usage, Ctrl+Space) and token manual with example insert from an embedded in-game command/program catalog (`alias_helper_catalog.json`).
+Mod Manager only ([ADR-002](decisions.md)): Avalonia UI + Core ([ADR-003](decisions.md)). App releases on push to `main` when `Version.props` is newer ([ADR-006](decisions.md)). Successful GitHub catalog fetches are saved to `release_cache.json`; on API failure (including rate limit) the UI keeps the cached catalog instead of dropping to installed-only. The Aliases tab (Alias Studio) has search, create templates, draft auto-sync, Save/Open-folder on the left list, multiline `;` editing, compact step bar, and a Preview|Manual split with rich autocomplete from `alias_helper_catalog.json`.

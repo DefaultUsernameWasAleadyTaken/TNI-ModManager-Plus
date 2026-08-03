@@ -3,22 +3,25 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace TniModManager.ViewModels;
 
-public partial class AliasSegmentChipViewModel : ObservableObject
+public partial class AliasPreviewLineViewModel : ObservableObject
 {
-    public AliasSegmentChipViewModel(
+    public AliasPreviewLineViewModel(
         int index,
-        string title,
+        string prefix,
+        string body,
         int caretStart,
         IRelayCommand<int> selectCommand)
     {
         Index = index;
-        Title = title;
+        Prefix = prefix;
+        Body = body;
         CaretStart = caretStart;
         SelectCommand = selectCommand;
     }
 
     public int Index { get; }
-    public string Title { get; }
+    public string Prefix { get; }
+    public string Body { get; }
     public int CaretStart { get; }
     public IRelayCommand<int> SelectCommand { get; }
     [ObservableProperty] private bool _isActive;
