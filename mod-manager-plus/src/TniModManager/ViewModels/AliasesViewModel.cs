@@ -217,18 +217,49 @@ public partial class AliasesViewModel : ViewModelBase
     {
         try
         {
-            var dir = _settings.GameDataPath;
+            // Алиасы игры — в settings.json (cmd_alias) в userdata Godot.
+            var settingsPath = _settings.SettingsPath;
+            var dir = Path.GetDirectoryName(settingsPath) ?? _settings.GameDataPath;
             Directory.CreateDirectory(dir);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = dir,
-                UseShellExecute = true
-            });
+            OpenGameDataInFileManager(dir, settingsPath);
         }
         catch (Exception ex)
         {
             _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
         }
+    }
+
+    /// <summary>Открыть userdata игры в проводнике / xdg-open (на Linux FileName=dir не работает).</summary>
+    private static void OpenGameDataInFileManager(string directory, string settingsPath)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            if (File.Exists(settingsPath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = "/select,\"" + settingsPath + "\"",
+                    UseShellExecute = true
+                });
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = "\"" + directory + "\"",
+                UseShellExecute = true
+            });
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "xdg-open",
+            ArgumentList = { directory },
+            UseShellExecute = false
+        });
     }
 
     [RelayCommand]
