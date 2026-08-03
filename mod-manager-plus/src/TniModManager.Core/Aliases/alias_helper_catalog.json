@@ -1,0 +1,806 @@
+{
+  "format": 1,
+  "commands": [
+    {
+      "name": "alias",
+      "summary": "use the terminal your way.",
+      "usage": [
+        "alias",
+        "alias <alias> <command>",
+        "alias <alias>"
+      ],
+      "examples": [
+        "e.g.: alias",
+        "e.g.: alias apt program"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "always",
+      "summary": "shell quality-of-life enhancements.",
+      "usage": [
+        "always using <debugger_addr>",
+        "always using",
+        "always not using"
+      ],
+      "examples": [
+        "e.g.: always using 456",
+        "e.g.: always using"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "botconf",
+      "summary": "manage bots on devices.",
+      "usage": [],
+      "examples": [
+        "e.g.: botconf show on 123 using 456",
+        "e.g.: botconf create visitor to 789 on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "clear",
+      "summary": "clear screen.",
+      "usage": [],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "cron",
+      "summary": "scheduled commands.",
+      "usage": [],
+      "examples": [
+        "e.g.: cron show",
+        "e.g.: cron add hourly ping 123"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "dhcp",
+      "summary": "show DHCP options on dhcp server.",
+      "usage": [
+        "dhcp show on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option dns <dns_addr> [<dns_addr2>] on <dhcp_srv_addr> using <debugger_addr>",
+        "dhcp option prefix <naddr_prefix> on <dhcp_srv_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: 'dhcp show on @mydhcp using @mydebug",
+        "e.g.: 'dhcp option dns @mydns on @mydhcp using @mydebug"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "dns",
+      "summary": "test resolving a domain.",
+      "usage": [
+        "dns lookup <domain> [on <dns_addr>] using <debugger_addr>",
+        "dns map <domain> as <address> [on <dns_addr>] using <debugger_addr>",
+        "dns unmap <domain> [on <dns_addr>] using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: 'dns lookup abc.xyz using 456",
+        "e.g.: 'dns map readnews.com as 123 using 456"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "dstat",
+      "summary": "view device status through a remote debugger.",
+      "usage": [
+        "dstat <address> using <debugger_address>",
+        "dstat clear <address> using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: dstat 123 using 456",
+        "e.g.: dstat clear 123 using 456"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "echo",
+      "summary": "send multiplayer message (visible on everyone's terminal).",
+      "usage": [
+        "echo <msg>"
+      ],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "firewall",
+      "summary": "manage rules on firewalls.",
+      "usage": [
+        "firewall show on <firewall_addr> using <debugger_addr>",
+        "firewall <allow/deny> [<traffic_type>] [from <src_addr>] [to <dst_addr>] on <firewall_addr> using <debugger_addr>",
+        "firewall remove #<num> on <firewall_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: firewall allow from @alice to @bob on 123 using 456",
+        "e.g.: firewall allow udp/53 to @dns on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "god",
+      "summary": "pressing UP arrow will cycle previous commands.",
+      "usage": [],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "haconf",
+      "summary": "manage high-availability setup on devices.",
+      "usage": [
+        "haconf show on <dev_addr> using <debugger_addr>",
+        "haconf group <portid> [<portid> ...] on <dev_addr> using <debugger_addr>",
+        "haconf ungroup #<num> on <dev_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: haconf show on 123 using 456",
+        "e.g.: haconf group port0 port1 on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "lstdbg",
+      "summary": "list debuggers for remote access.",
+      "usage": [
+        "lstdbg"
+      ],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "man",
+      "summary": "usage manual/help routine.",
+      "usage": [],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "middlebox",
+      "summary": "manage middlebox configuration on devices.",
+      "usage": [],
+      "examples": [
+        "e.g.: middlebox show on 123 using 456",
+        "e.g.: middlebox translate dst broadcast to @unicast on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "net",
+      "summary": "network address must begin with a '@' and may only consist of digits 0-9, alphabets a-z, '_' underscore, '-' dash and '/' slash characters.",
+      "usage": [
+        "net timeout request set <seconds> on <target_addr> using <debugger_addr>",
+        "net address set @<network_addr> on <target_addr> using <debugger_addr>",
+        "net address clear on <target_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: @1234-5678",
+        "e.g.: @foobar/1"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "notify",
+      "summary": "sends an on-screen notification.",
+      "usage": [
+        "notify <msg...>"
+      ],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "pcap",
+      "summary": "starts traffic capture on a network tap.",
+      "usage": [
+        "pcap [dump] [exclude] [=<traffic_type>] on <tap_address> using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: pcap on 123 using 456",
+        "e.g.: pcap =udp/520 on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "ping",
+      "summary": "ping a device from the debugger.",
+      "usage": [
+        "ping <address1> using <debugger_address>",
+        "ping <address1> [with <traffic_type>] using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: ping 123 using 456",
+        "e.g.: ping 123 with tcp/80 using 456"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "power",
+      "summary": "remote device power management.",
+      "usage": [
+        "power wake|suspend [on <dev_addr>|broadcast]"
+      ],
+      "examples": [
+        "e.g.: power suspend on 123 using 456",
+        "e.g.: power wake on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "program",
+      "summary": "list available programs to install.",
+      "usage": [
+        "program list",
+        "program describe <program_name>",
+        "program view [installed/running] on <device_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: program view installed on 123 using 456",
+        "e.g.: program start dns-lite on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "quit",
+      "summary": null,
+      "usage": [],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "rip",
+      "summary": "configure auto route discovery on routers.",
+      "usage": [
+        "rip show on <router_addr> using <debugger_addr>",
+        "rip [stop] advertise [via <port_id>] on <router_addr> using <debugger_addr>",
+        "rip [listen/ignore] on <router_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: rip show on 123 using 456",
+        "e.g.: rip advertise on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "route",
+      "summary": "manage routes on routers.",
+      "usage": [
+        "route show on <router_addr> using <debugger_addr>",
+        "route default [via <port_id>] [drop] on <router_addr> using <debugger_addr>",
+        "route add [<dst_addr>] [traffic <traffic_type>] [from <port_id:src_addr>] via <port_id> on <router_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: route show on 123 using 456",
+        "e.g.: route default via port0 on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "scan",
+      "summary": "scan and list devices that are accessible via a broadcast.",
+      "usage": [
+        "scan [device_type] [noex] [from <source>] [with <traffic_type>] using <debugger_address>",
+        "scan [device_type] [from <source>] [with <traffic_type>] using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: 'scan devices using 123",
+        "e.g.: 'scan d"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "sftp",
+      "summary": "remote tool for file backup/migration.",
+      "usage": [],
+      "examples": [
+        "e.g.: sftp ls on 123 using 456",
+        "e.g.: sftp cp %s on 123 to 789 rename backup1"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "sleep",
+      "summary": "delay execution for N seconds.",
+      "usage": [],
+      "examples": [],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "stp",
+      "summary": "configure spanning tree protocol on managed switches.",
+      "usage": [
+        "stp show on <mngedsw> using <debugger_addr>",
+        "stp enable/disable on <mngedsw> using <debugger_addr>",
+        "stp priority <value> on <mngedsw> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: stp show on 123 using 456",
+        "e.g.: stp enable on 123 using 456"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "trace",
+      "summary": "trace network traversal from a device to another device.",
+      "usage": [
+        "trace <address1> from <address2> using <debugger_address>",
+        "trace <address1> from <address2> [with <traffic_type>] using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: trace 123 using 789",
+        "e.g.: trace 123 from 456 using 789"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    },
+    {
+      "name": "try",
+      "summary": "try a command, run another if failed.",
+      "usage": [
+        "try <cmd1> [then <cmd2>] [else <cmd3>]"
+      ],
+      "examples": [
+        "e.g.: try ping 1234 else notify 1234 is down"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "vlan",
+      "summary": "manage virtual local area networks.",
+      "usage": [
+        "vlan show on <msw_addr> using <debugger_addr>",
+        "vlan tag <portid> [<portid> ...] with #<tag> [#<tag> ...] on <msw_addr> using <debugger_addr>",
+        "vlan untag <portid> [<portid> ...] [with #<tag>] on <msw_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: 'vlan show on @mysw1 using @mydebug",
+        "e.g.: 'vlan tag port1 with #vlan1 on @mysw"
+      ],
+      "requires_on": true,
+      "requires_using": true
+    },
+    {
+      "name": "vmconf",
+      "summary": "manage virtual machines.",
+      "usage": [
+        "vmconf show on <srv_addr> using <debugger_addr>",
+        "vmconf create <cpu> <memory> <storage> [netaddr <nwaddr>] on <srv_addr> using <debugger_addr>"
+      ],
+      "examples": [
+        "e.g.: 'vmconf show on @mysrv using @mydebug",
+        "e.g.: 'vmconf create 2 1 1 on @mysrv"
+      ],
+      "requires_on": false,
+      "requires_using": false
+    },
+    {
+      "name": "watch",
+      "summary": "watch the device information/programs through a remote debugger.",
+      "usage": [
+        "watch <address> using <debugger_address>",
+        "watch using <debugger_address>"
+      ],
+      "examples": [
+        "e.g.: watch using 123",
+        "e.g.: watch 123 using 456"
+      ],
+      "requires_on": false,
+      "requires_using": true
+    }
+  ],
+  "programs": [
+    {
+      "name": "bladeos",
+      "summary": "Network switch firmware."
+    },
+    {
+      "name": "blobdb",
+      "summary": "General blob storage server. Stores media files.",
+      "install_total": 8
+    },
+    {
+      "name": "cctv_edge",
+      "summary": "cctv camera firmware"
+    },
+    {
+      "name": "complaint-lite",
+      "summary": "Lightweight complaint server which allows customers to submit complaints and customer service to manage and respond to t",
+      "install_total": 2
+    },
+    {
+      "name": "complaint-server2",
+      "summary": "Allows customers to submit complaints and customer service to manage and respond to tickets.\nRequires access to a runnin",
+      "install_total": 12
+    },
+    {
+      "name": "decentro-collector",
+      "summary": "Collects decentro currencies over the network and accumulate them on the installed device."
+    },
+    {
+      "name": "decentro-node",
+      "summary": "Authenticate Decentro transactions. Decentro peers can connect to this program to perform peer-to-peer transactions. You",
+      "install_total": 18
+    },
+    {
+      "name": "decentro-wallet",
+      "summary": "Safeguards your decentro currencies from power loss or unscheduled shutdown events.",
+      "install_total": 4
+    },
+    {
+      "name": "dns-lite",
+      "summary": "Replies network-addresses to DNS queries."
+    },
+    {
+      "name": "dns-server",
+      "summary": "Replies network-addresses to DNS queries.\nRequires access to a running text storage program.",
+      "install_total": 5
+    },
+    {
+      "name": "dnsmasq",
+      "summary": "Automatically assigns network addresses and designated DNS server to network devices."
+    },
+    {
+      "name": "dnsspam",
+      "summary": "DNS load test software."
+    },
+    {
+      "name": "firewatcher",
+      "summary": "Firewall operating system; performs packet filtering."
+    },
+    {
+      "name": "gitcoffee",
+      "summary": "open-source software repository. Supports software-updates requests.",
+      "install_total": 6
+    },
+    {
+      "name": "hakernel",
+      "summary": "HA-enabled port grouping kernel.",
+      "install_total": 2
+    },
+    {
+      "name": "hypervisor-server",
+      "summary": "Provisions and allocates virtual compute resources for monitoring and scaling.\nRequires access to a running text storage",
+      "install_total": 18
+    },
+    {
+      "name": "kea",
+      "summary": "Automatically assigns network addresses and designated DNS server to network devices.\n\nRequires access to a running text",
+      "install_total": 11
+    },
+    {
+      "name": "lbrr",
+      "summary": "Round-robin network load balancer."
+    },
+    {
+      "name": "log-lite",
+      "summary": "Lightweight event log storage. Records and searches system activity.",
+      "install_total": 3
+    },
+    {
+      "name": "log-server",
+      "summary": "Event log storage. Records and searches system activity.\nRequires access to a running text storage program.",
+      "install_total": 25
+    },
+    {
+      "name": "mailer",
+      "summary": "Provides exchange email usages to users.",
+      "install_total": 9
+    },
+    {
+      "name": "maintenance-server",
+      "summary": "Serve to manages physical asset maintenance schedules and fault history.\nCoordinates field work orders for grid equipmen",
+      "install_total": 12
+    },
+    {
+      "name": "mbox",
+      "summary": "Network middlebox program. Configure with the \"middlebox\" command.\n\nAllows packet mangling/translation. Install on a dev"
+    },
+    {
+      "name": "netpeeker",
+      "summary": "Remote debugger."
+    },
+    {
+      "name": "nop",
+      "summary": "Generic program."
+    },
+    {
+      "name": "oauth-serv",
+      "summary": "Allows staff to login to internal portal.",
+      "install_total": 9
+    },
+    {
+      "name": "padu_v1",
+      "summary": "Primary aggregation data unit. Supports text and image storage.",
+      "install_total": 6
+    },
+    {
+      "name": "padu_v2",
+      "summary": "Primary aggregation data unit. Supports text, image and audio storage.\n\nImproved disk handling algorithm.",
+      "install_total": 12
+    },
+    {
+      "name": "padu_v3",
+      "summary": "Primary aggregation data unit. Supports text, image, audio and video storage.\n\nImproved disk handling algorithm.",
+      "install_total": 18
+    },
+    {
+      "name": "poems-db",
+      "summary": "Based text-based database. Supports text storage usage.",
+      "install_total": 10
+    },
+    {
+      "name": "print-server",
+      "summary": "Support printing services.\nAllows printer to be connected to produce print-text and print-image uses.",
+      "install_total": 4
+    },
+    {
+      "name": "print-server2",
+      "summary": "Support printing services.\n\nAllows printer to be connected to produce print-text and print-image uses.",
+      "install_total": 8
+    },
+    {
+      "name": "printer_edge",
+      "summary": "printer firmware."
+    },
+    {
+      "name": "riserswfirm",
+      "summary": "Riser switch firmware."
+    },
+    {
+      "name": "rtkernel",
+      "summary": "Packet routing program."
+    },
+    {
+      "name": "rtsp-diva-r",
+      "summary": "Support surveillance monitoring services.\n\nAllows surveillance accessories to be connected to produce stream-live-video ",
+      "install_total": 14
+    },
+    {
+      "name": "san-server",
+      "summary": "Mounts remote storage from a SAN.\n\nFetches raw blocks over the network and serves them as text or image storage on this ",
+      "install_total": 20
+    },
+    {
+      "name": "san-storage",
+      "summary": "The storage array's operating system.\n\nExposes their capacity as raw blocks (store-block) to the network.",
+      "install_total": 15
+    },
+    {
+      "name": "sun-dns",
+      "summary": "Enterprise grade DNS server.\nRequires access to a running text storage program.",
+      "install_total": 14
+    },
+    {
+      "name": "ten-anomaly-server",
+      "summary": "Serve as advanced nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid offic",
+      "install_total": 12
+    },
+    {
+      "name": "ten-bill-server",
+      "summary": "Enables Billing Staff to generate and post invoices to residents based on recorded consumption data.\nRequires meter read",
+      "install_total": 12
+    },
+    {
+      "name": "ten-public-lite",
+      "summary": "Publishes outage updates and company news for public viewing."
+    },
+    {
+      "name": "ten-public-portal",
+      "summary": "Publishes outage updates and company news for public viewing.\nRequires access to a running text and image storage progra",
+      "install_total": 7
+    },
+    {
+      "name": "ten-scada-server",
+      "summary": "Serve as real-time supervisory control and data acquisition system for grid operations.\nRequires access to a running log",
+      "install_total": 12
+    },
+    {
+      "name": "tena-calc-server",
+      "summary": "Serve as nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid officer to per",
+      "install_total": 12
+    },
+    {
+      "name": "tena-calc-server2",
+      "summary": "Serve as advanced nuclear plant calculation application. Engineers run simulations and save models.\nRequiring grid offic",
+      "install_total": 12
+    },
+    {
+      "name": "tena-employee-db",
+      "summary": "Stores employee data.\nRequires access to a running text and image storage program.",
+      "install_total": 15
+    },
+    {
+      "name": "tena-gis-server",
+      "summary": "Serve as Geographic information system. Maps grid infrastructure, customer zones, and candidate sites for expansion.\nReq",
+      "install_total": 12
+    },
+    {
+      "name": "tena-mail",
+      "summary": "Provides exchange email usages to users.",
+      "install_total": 9
+    },
+    {
+      "name": "tena-meter-db",
+      "summary": "Allow meter reader to stores meter reading data.\nRequires access to a running text and image storage program.",
+      "install_total": 9
+    },
+    {
+      "name": "tena-staff-portal",
+      "summary": "Serve landing page for staff internally for company resources and announcement.\nRequires access to a running text or ima",
+      "install_total": 12
+    },
+    {
+      "name": "tmp-collabpoint0",
+      "summary": "Allows media sharing among staff.",
+      "install_total": 2
+    },
+    {
+      "name": "tmp-collabpoint1",
+      "summary": "Allows media sharing among staff.\nRequires access to a running text and image storage program.",
+      "install_total": 12
+    },
+    {
+      "name": "tnbmon",
+      "summary": "Power meter firmware."
+    },
+    {
+      "name": "ubbt",
+      "summary": "Analyzes user traffic behavior from a network tap to support botnet operations.\n\nRequires access to a network tap with u",
+      "install_total": 10
+    },
+    {
+      "name": "vlanfirm",
+      "summary": "Managed switch firmware.",
+      "install_total": 2
+    },
+    {
+      "name": "voip-server",
+      "summary": "Supports Voice over Internet Protocol for streaming voice messages phones.\n\nAllows voip phones to be connected to produc",
+      "install_total": 7
+    },
+    {
+      "name": "vonet_edge",
+      "summary": "VOIP phone firmware."
+    },
+    {
+      "name": "vrout3",
+      "summary": "Packet routing with VLAN subinterfaces.",
+      "install_total": 2
+    },
+    {
+      "name": "wirerat",
+      "summary": "Packet monitoring system.",
+      "install_total": 2
+    }
+  ],
+  "keywords": [
+    {
+      "name": "try",
+      "kind": "keyword"
+    },
+    {
+      "name": "then",
+      "kind": "keyword"
+    },
+    {
+      "name": "else",
+      "kind": "keyword"
+    },
+    {
+      "name": "on",
+      "kind": "keyword"
+    },
+    {
+      "name": "using",
+      "kind": "keyword"
+    },
+    {
+      "name": "always",
+      "kind": "keyword"
+    }
+  ],
+  "reserved": [
+    "alias",
+    "always",
+    "and",
+    "any",
+    "botconf",
+    "clear",
+    "cron",
+    "dhcp",
+    "dns",
+    "dstat",
+    "echo",
+    "else",
+    "end",
+    "firewall",
+    "from",
+    "god",
+    "haconf",
+    "lstdbg",
+    "man",
+    "middlebox",
+    "net",
+    "notify",
+    "pcap",
+    "ping",
+    "power",
+    "program",
+    "quit",
+    "rip",
+    "route",
+    "scan",
+    "set",
+    "sftp",
+    "sleep",
+    "stp",
+    "then",
+    "trace",
+    "try",
+    "using",
+    "via",
+    "vlan",
+    "vmconf",
+    "watch"
+  ],
+  "scan_device_types": [
+    "devices",
+    "dhcp",
+    "dhcp-servers",
+    "dns",
+    "dns-servers",
+    "firewalls",
+    "link",
+    "routers",
+    "switches",
+    "taps",
+    "tower-links",
+    "users"
+  ],
+  "traffic_examples": [
+    "broadcast",
+    "tcp/22",
+    "tcp/23",
+    "tcp/3306",
+    "tcp/443",
+    "tcp/5432",
+    "tcp/7*9",
+    "tcp/80",
+    "udp/0",
+    "udp/23",
+    "udp/5060",
+    "udp/520",
+    "udp/53",
+    "udp/67"
+  ]
+}

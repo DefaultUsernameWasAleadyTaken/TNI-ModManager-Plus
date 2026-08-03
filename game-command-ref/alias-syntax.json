@@ -1,0 +1,104 @@
+{
+  "format": 2,
+  "generated_at": "2026-08-02T19:09:36Z",
+  "purpose": "cmd_alias grammar for Mod Manager alias helpers",
+  "storage": {
+    "file": "game userdata settings.json",
+    "key": "cmd_alias",
+    "shape": "object: alias_name -> command_string"
+  },
+  "parameters": {
+    "forms": [
+      "$1",
+      "$2",
+      "${1}",
+      "${2}"
+    ],
+    "note": "Both $n and ${n} appear in in-game alias examples."
+  },
+  "targeting": {
+    "on": "device / router target suffix",
+    "using": "debugger address (required by many commands)",
+    "always_on": "player default device target",
+    "always_using": "player default debugger"
+  },
+  "control_flow": {
+    "try_then_else": "try <cmd1> [then <cmd2>] [else <cmd3>]",
+    "compound_separator": ";",
+    "example": "try ping 1234 else notify 1234 is down"
+  },
+  "builtin_alias_command": {
+    "summary": "use the terminal your way.",
+    "usage": [
+      "alias",
+      "alias <alias> <command>",
+      "alias <alias>"
+    ],
+    "examples": [
+      "e.g.: alias",
+      "e.g.: alias apt program",
+      "e.g.: alias telnet always using",
+      "e.g.: alias apt",
+      "e.g.: alias tr trace ${1} from @dbg; tr 123"
+    ]
+  },
+  "reserved_keywords": [
+    "alias",
+    "always",
+    "and",
+    "any",
+    "botconf",
+    "clear",
+    "cron",
+    "dhcp",
+    "dns",
+    "dstat",
+    "echo",
+    "else",
+    "end",
+    "firewall",
+    "from",
+    "god",
+    "haconf",
+    "lstdbg",
+    "man",
+    "middlebox",
+    "net",
+    "notify",
+    "pcap",
+    "ping",
+    "power",
+    "program",
+    "quit",
+    "rip",
+    "route",
+    "scan",
+    "set",
+    "sftp",
+    "sleep",
+    "stp",
+    "then",
+    "trace",
+    "try",
+    "using",
+    "via",
+    "vlan",
+    "vmconf",
+    "watch"
+  ],
+  "syntax_keywords": [
+    "try",
+    "then",
+    "else",
+    "on",
+    "using",
+    "always"
+  ],
+  "mod_manager_kinds": [
+    "Plain",
+    "Variable",
+    "Compound",
+    "Conditional",
+    "Complex"
+  ]
+}

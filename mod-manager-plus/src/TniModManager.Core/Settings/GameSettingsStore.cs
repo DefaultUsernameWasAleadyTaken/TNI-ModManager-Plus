@@ -15,6 +15,9 @@ public sealed class GameSettingsStore
 
     public Dictionary<string, string> CmdAliases { get; private set; } = new(StringComparer.Ordinal);
 
+    public string GameDataPath => _paths.GameDataPath;
+    public string SettingsPath => _paths.SettingsPath;
+
     public void Load()
     {
         CmdAliases = new Dictionary<string, string>(StringComparer.Ordinal);

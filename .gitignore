@@ -24,3 +24,11 @@ mod-manager-plus/dist/
 *.user
 *.exe
 *.zip
+
+# Local decrypted game extract / caches
+data/game-terminal/**
+!data/game-terminal/
+!data/game-terminal/README.md
+
+# Maintainer-only harvest tooling (local extract layout)
+game-command-ref/tools/
