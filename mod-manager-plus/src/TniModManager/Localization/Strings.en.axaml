@@ -41,7 +41,6 @@
   <sys:String x:Key="L.AliasManual">Manual</sys:String>
   <sys:String x:Key="L.AliasUsage">Usage</sys:String>
   <sys:String x:Key="L.AliasExamples">Examples</sys:String>
-  <sys:String x:Key="L.InsertExample">Insert example</sys:String>
   <sys:String x:Key="L.AliasContextHelp">Token help</sys:String>
   <sys:String x:Key="L.ArgsRequired">Arguments Required</sys:String>
   <sys:String x:Key="L.DeviceTargetNotice">Device Target Notice</sys:String>

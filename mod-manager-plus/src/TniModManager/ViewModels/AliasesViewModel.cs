@@ -17,7 +17,6 @@ public partial class AliasesViewModel : ViewModelBase
     private bool _suppressCompletion;
     private bool _suppressCaretSync;
     private bool _suppressListSync;
-    private string? _helpInsertText;
     private bool _dismissingCompletion;
 
     public AliasesViewModel(GameSettingsStore settings, IAppShell shell, GameCommandCatalog? catalog = null)
@@ -48,7 +47,6 @@ public partial class AliasesViewModel : ViewModelBase
     [ObservableProperty] private bool _showAliasHelp;
     [ObservableProperty] private bool _showAliasHelpUsage;
     [ObservableProperty] private bool _showAliasHelpExamples;
-    [ObservableProperty] private bool _canInsertHelpExample;
     [ObservableProperty] private string _aliasNameErrorText = "";
     [ObservableProperty] private bool _showAliasNameError;
     [ObservableProperty] private bool _isCompletionOpen;
@@ -268,41 +266,6 @@ public partial class AliasesViewModel : ViewModelBase
 
     [RelayCommand]
     private void OpenCompletion() => RefreshCompletion(allowEmptyPrefix: true);
-
-    [RelayCommand]
-    private void InsertHelpExample()
-    {
-        if (string.IsNullOrWhiteSpace(_helpInsertText))
-            return;
-
-        var snippet = _helpInsertText.Trim();
-        _suppressCompletion = true;
-        try
-        {
-            if (string.IsNullOrWhiteSpace(AliasCommand))
-            {
-                AliasCommand = snippet;
-                AliasCommandCaretIndex = AliasCommand.Length;
-            }
-            else
-            {
-                var sep = AliasCommand.EndsWith(' ') || AliasCommand.EndsWith(';') || AliasCommand.EndsWith('\n')
-                    ? ""
-                    : " ";
-                AliasCommand += sep + snippet;
-                AliasCommandCaretIndex = AliasCommand.Length;
-            }
-        }
-        finally
-        {
-            _suppressCompletion = false;
-        }
-
-        DismissCompletion();
-        UpdateAliasPreview();
-        UpdateTokenHelp();
-        RequestCaretIndex?.Invoke(AliasCommandCaretIndex);
-    }
 
     [RelayCommand]
     private void SelectCommandSegment(int index)
@@ -782,8 +745,6 @@ public partial class AliasesViewModel : ViewModelBase
         AliasHelpExamplesText = string.Join(Environment.NewLine, manual.Examples.Take(3));
         ShowAliasHelpUsage = !string.IsNullOrWhiteSpace(AliasHelpUsageText);
         ShowAliasHelpExamples = !string.IsNullOrWhiteSpace(AliasHelpExamplesText);
-        _helpInsertText = manual.PrimaryExample;
-        CanInsertHelpExample = !string.IsNullOrWhiteSpace(_helpInsertText);
         ShowAliasHelp = !string.IsNullOrWhiteSpace(AliasHelpSummary)
                         || ShowAliasHelpUsage
                         || ShowAliasHelpExamples;
@@ -801,8 +762,6 @@ public partial class AliasesViewModel : ViewModelBase
         AliasHelpExamplesText = "";
         ShowAliasHelpUsage = false;
         ShowAliasHelpExamples = false;
-        _helpInsertText = null;
-        CanInsertHelpExample = false;
         ShowAliasHelp = false;
         AliasHelpHeading = UiStrings.AliasManualHeading;
     }
