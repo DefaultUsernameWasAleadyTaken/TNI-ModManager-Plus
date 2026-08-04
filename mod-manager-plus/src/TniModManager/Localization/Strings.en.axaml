@@ -32,6 +32,9 @@
   <sys:String x:Key="L.NewAlias">New alias</sys:String>
   <sys:String x:Key="L.Delete">Delete</sys:String>
   <sys:String x:Key="L.SaveAliases">Save aliases</sys:String>
+  <sys:String x:Key="L.UnsavedChanges">Unsaved changes</sys:String>
+  <sys:String x:Key="L.AliasesSavedState">All changes saved</sys:String>
+  <sys:String x:Key="L.SearchMods">Search mods…</sys:String>
   <sys:String x:Key="L.SearchAliases">Search aliases…</sys:String>
   <sys:String x:Key="L.PickAlias">Pick an alias to edit its command.</sys:String>
   <sys:String x:Key="L.Editor">Editor</sys:String>
@@ -51,6 +54,12 @@
   <sys:String x:Key="L.AliasHelpEmpty">Place the caret on a command to see its manual.</sys:String>
   <sys:String x:Key="L.Cancel">Cancel</sys:String>
   <sys:String x:Key="L.Apply">Apply</sys:String>
+  <sys:String x:Key="L.Confirm">Confirm</sys:String>
+  <sys:String x:Key="L.BrandSubtitle">Tower Networking Inc</sys:String>
+  <sys:String x:Key="L.AppTitle">Mod Manager Plus</sys:String>
+  <sys:String x:Key="L.Help">Help</sys:String>
+  <sys:String x:Key="L.Preview">Preview</sys:String>
+  <sys:String x:Key="L.BusyOverlay">Working…</sys:String>
   <sys:String x:Key="L.AliasTemplateEmpty">Empty</sys:String>
   <sys:String x:Key="L.AliasTemplateArg">With argument ($1)</sys:String>
   <sys:String x:Key="L.AliasTemplateOn">Device target (on $1)</sys:String>

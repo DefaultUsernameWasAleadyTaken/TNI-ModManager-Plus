@@ -32,6 +32,9 @@
   <sys:String x:Key="L.NewAlias">Новый алиас</sys:String>
   <sys:String x:Key="L.Delete">Удалить</sys:String>
   <sys:String x:Key="L.SaveAliases">Сохранить алиасы</sys:String>
+  <sys:String x:Key="L.UnsavedChanges">Есть несохранённые изменения</sys:String>
+  <sys:String x:Key="L.AliasesSavedState">Все изменения сохранены</sys:String>
+  <sys:String x:Key="L.SearchMods">Поиск модов…</sys:String>
   <sys:String x:Key="L.SearchAliases">Поиск алиасов…</sys:String>
   <sys:String x:Key="L.PickAlias">Выберите алиас, чтобы изменить команду.</sys:String>
   <sys:String x:Key="L.Editor">Редактор</sys:String>
@@ -51,6 +54,12 @@
   <sys:String x:Key="L.AliasHelpEmpty">Поставьте курсор на команду, чтобы увидеть справку.</sys:String>
   <sys:String x:Key="L.Cancel">Отмена</sys:String>
   <sys:String x:Key="L.Apply">Применить</sys:String>
+  <sys:String x:Key="L.Confirm">Подтвердить</sys:String>
+  <sys:String x:Key="L.BrandSubtitle">Tower Networking Inc</sys:String>
+  <sys:String x:Key="L.AppTitle">Mod Manager Plus</sys:String>
+  <sys:String x:Key="L.Help">Справка</sys:String>
+  <sys:String x:Key="L.Preview">Просмотр</sys:String>
+  <sys:String x:Key="L.BusyOverlay">Выполняется…</sys:String>
   <sys:String x:Key="L.AliasTemplateEmpty">Пустой</sys:String>
   <sys:String x:Key="L.AliasTemplateArg">С аргументом ($1)</sys:String>
   <sys:String x:Key="L.AliasTemplateOn">Цель устройства (on $1)</sys:String>

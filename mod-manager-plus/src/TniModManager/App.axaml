@@ -13,6 +13,15 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://TNI-ModManager-Plus/Themes/AppTheme.axaml"/>
       </ResourceDictionary.MergedDictionaries>
+      <!-- Spacing / radius tokens -->
+      <x:Double x:Key="SpaceXs">4</x:Double>
+      <x:Double x:Key="SpaceSm">8</x:Double>
+      <x:Double x:Key="SpaceMd">12</x:Double>
+      <x:Double x:Key="SpaceLg">16</x:Double>
+      <x:Double x:Key="SpaceXl">24</x:Double>
+      <CornerRadius x:Key="RadiusSm">6</CornerRadius>
+      <CornerRadius x:Key="RadiusMd">10</CornerRadius>
+      <CornerRadius x:Key="RadiusLg">12</CornerRadius>
     </ResourceDictionary>
   </Application.Resources>
 
@@ -36,7 +45,7 @@
     </Style>
 
     <Style Selector="TextBlock.title">
-      <Setter Property="FontSize" Value="22"/>
+      <Setter Property="FontSize" Value="18"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
 
@@ -49,8 +58,19 @@
       <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
       <Setter Property="ClipToBounds" Value="True"/>
+    </Style>
+
+    <Style Selector="Border.toast">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+    </Style>
+    <Style Selector="Border.toast.error">
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBgBrush}"/>
     </Style>
 
     <Style Selector="Button">
@@ -128,6 +148,46 @@
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
+    <!-- Destructive без заливки: рядом с secondary не спорит цветом -->
+    <Style Selector="Button.danger-outline">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.danger-outline:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBgBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+    </Style>
+
+    <Style Selector="Border.dirty-banner">
+      <Setter Property="Background" Value="{DynamicResource WarnSurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WarnBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+      <Setter Property="Padding" Value="10"/>
+    </Style>
+    <Style Selector="Border.saved-banner">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+      <Setter Property="Padding" Value="10,8"/>
+    </Style>
+    <Style Selector="Border.notice-strip">
+      <Setter Property="Background" Value="{DynamicResource WarnSurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WarnBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+      <Setter Property="Padding" Value="10,8"/>
+    </Style>
+    <Style Selector="Border.help-panel">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+    </Style>
+
     <Style Selector="Button.ghost">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
@@ -139,15 +199,15 @@
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
     </Style>
 
-    <!-- Кнопки шапки: заметный фон/рамка в тёмной теме -->
+    <!-- Кнопки шапки: компактнее -->
     <Style Selector="Button.header">
       <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="Padding" Value="12,0"/>
-      <Setter Property="Height" Value="40"/>
-      <Setter Property="MinHeight" Value="40"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="MinHeight" Value="36"/>
       <Setter Property="FontSize" Value="13"/>
       <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -157,11 +217,10 @@
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
-    <!-- Одинаковая высота для цветных кнопок в шапке (Launch / Update) -->
     <Style Selector="Button.toolbar">
       <Setter Property="Padding" Value="14,0"/>
-      <Setter Property="Height" Value="40"/>
-      <Setter Property="MinHeight" Value="40"/>
+      <Setter Property="Height" Value="36"/>
+      <Setter Property="MinHeight" Value="36"/>
       <Setter Property="FontSize" Value="13"/>
       <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -184,14 +243,17 @@
     </Style>
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0"/>
-      <Setter Property="Margin" Value="0,0,0,4"/>
+      <Setter Property="Margin" Value="0,0,0,2"/>
       <Setter Property="Background" Value="Transparent"/>
-      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}"/>
     </Style>
-    <!-- Список алиасов: чуть просторнее строки -->
+    <Style Selector="ListBox.dense-list ListBoxItem">
+      <Setter Property="Margin" Value="0,0,0,2"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}"/>
+    </Style>
     <Style Selector="ListBox.alias-list ListBoxItem">
-      <Setter Property="Margin" Value="0,0,0,4"/>
-      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Margin" Value="0,0,0,2"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}"/>
     </Style>
     <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter">
       <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
@@ -200,7 +262,7 @@
       <Setter Property="Background" Value="{DynamicResource ListSelectedBrush}"/>
     </Style>
     <Style Selector="ListBoxItem:selected:pointerover /template/ ContentPresenter">
-      <Setter Property="Background" Value="{DynamicResource ListSelectedBrush}"/>
+      <Setter Property="Background" Value="{DynamicResource ListSelectedHoverBrush}"/>
     </Style>
 
     <Style Selector="TabControl">
@@ -222,7 +284,35 @@
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
     </Style>
 
-    <!-- Компактные «чипы» фильтра: маленький radio; ширина задаётся сеткой панели -->
+    <!-- Segmented shell tabs -->
+    <Style Selector="TabControl.segmented">
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="TabControl.segmented > TabItem">
+      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusSm}"/>
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="TabControl.segmented > TabItem:pointerover">
+      <Setter Property="Background" Value="{DynamicResource ListHoverBrush}"/>
+    </Style>
+    <Style Selector="TabControl.segmented > TabItem:selected">
+      <Setter Property="Background" Value="{DynamicResource ListSelectedBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    </Style>
+
+    <!-- Compact workspace tabs (Preview / Help) -->
+    <Style Selector="TabControl.workspace > TabItem">
+      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Margin" Value="0,0,4,0"/>
+    </Style>
+
+    <!-- Компактные «чипы» фильтра: ширина по тексту (не Stretch на всю ячейку) -->
     <Style Selector="RadioButton.filter">
       <Setter Property="Padding" Value="10,7"/>
       <Setter Property="Margin" Value="0"/>
@@ -234,8 +324,8 @@
       <Setter Property="FontSize" Value="12"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="MinHeight" Value="0"/>
-      <Setter Property="HorizontalAlignment" Value="Stretch"/>
-      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
       <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="Template">
         <ControlTemplate>
@@ -243,12 +333,9 @@
                   BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}"
                   CornerRadius="{TemplateBinding CornerRadius}"
-                  Padding="{TemplateBinding Padding}"
-                  HorizontalAlignment="Stretch">
+                  Padding="{TemplateBinding Padding}">
             <StackPanel Orientation="Horizontal" Spacing="7"
-                        HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                         VerticalAlignment="Center">
-              <!-- Точка: равный Margin со всех сторон = геометрический центр без Stroke-сдвига -->
               <Grid Width="12" Height="12" VerticalAlignment="Center"
                     UseLayoutRounding="False">
                 <Ellipse x:Name="Outer"
@@ -262,6 +349,7 @@
               </Grid>
               <TextBlock Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
                          TextWrapping="NoWrap"
+                         TextTrimming="None"
                          Foreground="{TemplateBinding Foreground}"
                          FontSize="{TemplateBinding FontSize}"
                          FontWeight="{TemplateBinding FontWeight}"

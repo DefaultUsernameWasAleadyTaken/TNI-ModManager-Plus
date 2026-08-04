@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using TniModManager.Localization;
 using TniModManager.ViewModels;
 
 namespace TniModManager.Views;
@@ -16,6 +17,9 @@ public partial class AliasesView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        AliasSidebarActions.LayoutUpdated += (_, _) => SyncSidebarWidth();
+        AttachedToVisualTree += OnAttached;
+        DetachedFromVisualTree += OnDetached;
         AliasCommandBox.GotFocus += (_, _) => SyncCaretFromBox();
         AliasCommandBox.PointerReleased += (_, _) => SyncCaretFromBox();
         AliasCommandBox.LostFocus += OnAliasCommandLostFocus;
@@ -25,16 +29,99 @@ public partial class AliasesView : UserControl
         AliasCommandBox.PropertyChanged += OnAliasCommandBoxPropertyChanged;
     }
 
+    private void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        LocalizationManager.LanguageChanged += OnLanguageChanged;
+        SyncSidebarWidth();
+    }
+
+    private void OnDetached(object? sender, VisualTreeAttachmentEventArgs e) =>
+        LocalizationManager.LanguageChanged -= OnLanguageChanged;
+
+    private void OnLanguageChanged() =>
+        Dispatcher.UIThread.Post(SyncSidebarWidth, DispatcherPriority.Loaded);
+
+    /// <summary>Ширина сайдбара по нижнему блоку кнопок (Save / New / Delete).</summary>
+    private void SyncSidebarWidth()
+    {
+        AliasSidebarActions.Measure(Size.Infinity);
+        var width = AliasSidebarActions.DesiredSize.Width;
+        if (width < 1)
+            width = AliasSidebarActions.Bounds.Width;
+        if (width < 1)
+            return;
+
+        if (double.IsNaN(SidebarRoot.Width) || Math.Abs(SidebarRoot.Width - width) > 0.5)
+            SidebarRoot.Width = width;
+    }
+
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         if (_vm is not null)
+        {
             _vm.RequestCaretIndex -= OnRequestCaretIndex;
+            _vm.RequestSegmentSelection -= OnRequestSegmentSelection;
+            _vm.PropertyChanged -= OnViewModelPropertyChanged;
+        }
 
         _vm = DataContext as AliasesViewModel;
         if (_vm is null)
             return;
 
         _vm.RequestCaretIndex += OnRequestCaretIndex;
+        _vm.RequestSegmentSelection += OnRequestSegmentSelection;
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnRequestSegmentSelection(int start, int length)
+    {
+        try
+        {
+            var textLen = AliasCommandBox.Text?.Length ?? 0;
+            var clampedStart = Math.Clamp(start, 0, textLen);
+            var clampedEnd = Math.Clamp(start + Math.Max(length, 0), clampedStart, textLen);
+            AliasCommandBox.Focus();
+            AliasCommandBox.CaretIndex = clampedStart;
+            AliasCommandBox.SelectionStart = clampedStart;
+            AliasCommandBox.SelectionEnd = clampedEnd;
+            _vm?.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
+        }
+        catch
+        {
+            // TextBox может быть ещё не готов.
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(AliasesViewModel.SelectedAlias)
+            or nameof(AliasesViewModel.AliasEditorVisible))
+            TryFocusCommandEditor();
+    }
+
+    /// <summary>После выбора алиаса с уже заданным именем — сразу правим команду.</summary>
+    private void TryFocusCommandEditor()
+    {
+        if (_vm is not { AliasEditorVisible: true })
+            return;
+        if (string.IsNullOrWhiteSpace(_vm.AliasName))
+            return;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_vm is not { AliasEditorVisible: true })
+                return;
+            if (string.IsNullOrWhiteSpace(_vm.AliasName))
+                return;
+            try
+            {
+                AliasCommandBox.Focus();
+            }
+            catch
+            {
+                // TextBox ещё не в дереве.
+            }
+        }, DispatcherPriority.Loaded);
     }
 
     private void OnAliasCommandBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
