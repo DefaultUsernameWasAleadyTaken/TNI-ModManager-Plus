@@ -47,6 +47,7 @@ public partial class ModsViewModel : ViewModelBase
     public bool IsFilterAvailable => FilterMode == "Available";
 
     [ObservableProperty] private string _filterMode = "All";
+    [ObservableProperty] private string _modFilter = "";
     [ObservableProperty] private ModListItemViewModel? _selectedModItem;
     [ObservableProperty] private bool _hasSelectedMod;
     [ObservableProperty] private string _modNameText = "";
@@ -88,6 +89,8 @@ public partial class ModsViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsFilterAvailable));
         RebuildVisibleMods();
     }
+
+    partial void OnModFilterChanged(string value) => RebuildVisibleMods();
 
     [RelayCommand]
     private void SetFilter(string? mode)
@@ -139,15 +142,22 @@ public partial class ModsViewModel : ViewModelBase
     private Task UpdateSelectedAsync() => DownloadSelectedAsync();
 
     [RelayCommand]
-    private void RemoveSelected()
+    private async Task RemoveSelectedAsync()
     {
         var mod = SelectedModItem?.Mod;
         if (mod?.FolderPath is null || mod.FolderId is null)
             return;
 
+        var confirmed = await _shell.ConfirmAsync(
+            UiStrings.ConfirmRemoveTitle,
+            UiStrings.ConfirmRemoveMessage(mod.Name),
+            UiStrings.Remove).ConfigureAwait(true);
+        if (!confirmed)
+            return;
+
         _install.RemoveDownloaded(mod.FolderPath, mod.FolderId);
-        _shell.SetStatus(UiStrings.Removed(mod.Name));
-        LoadModsLocalOnly();
+        _shell.Notify(UiStrings.Removed(mod.Name));
+        LoadModsLocalOnly(preserveStatus: true);
     }
 
     [RelayCommand]
@@ -163,7 +173,7 @@ public partial class ModsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
+            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message), isError: true);
         }
     }
 
@@ -176,9 +186,11 @@ public partial class ModsViewModel : ViewModelBase
 
         var entry = Path.Combine(mod.FolderPath, GamePaths.ConfigFileName);
         var values = ParameterRows.ToDictionary(row => row.Name, row => row.GetValue(), StringComparer.Ordinal);
-        _shell.SetStatus(EntryLuaConfig.Write(entry, values)
-            ? UiStrings.ConfigSaved
-            : UiStrings.ConfigSaveFailed);
+        var ok = EntryLuaConfig.Write(entry, values);
+        if (ok)
+            _shell.Notify(UiStrings.ConfigSaved);
+        else
+            _shell.SetStatus(UiStrings.ConfigSaveFailed, isError: true);
     }
 
     [RelayCommand]
@@ -220,12 +232,12 @@ public partial class ModsViewModel : ViewModelBase
         try
         {
             await _install.InstallFromReleaseAsync(release, progress).ConfigureAwait(true);
-            _shell.SetStatus(UiStrings.ModInstalled(release.ModId, release.Version));
+            _shell.Notify(UiStrings.ModInstalled(release.ModId, release.Version));
             LoadModsLocalOnly(preserveStatus: true);
         }
         catch (Exception ex)
         {
-            _shell.SetStatus(UiStrings.DownloadFailed(ex.Message));
+            _shell.SetStatus(UiStrings.DownloadFailed(ex.Message), isError: true);
         }
         finally
         {
@@ -276,7 +288,8 @@ public partial class ModsViewModel : ViewModelBase
 
             _shell.SetStatus(_releases.Count > 0
                 ? UiStrings.GitHubUnavailableCached(ex.Message, _releases.Count)
-                : UiStrings.GitHubUnavailable(ex.Message));
+                : UiStrings.GitHubUnavailable(ex.Message),
+                isError: true);
         }
 
         _allMods = _discovery.MergeWithReleases(installed, _releases);
@@ -291,6 +304,15 @@ public partial class ModsViewModel : ViewModelBase
             "Available" => _allMods.Where(mod => mod.Source == ModSource.Available),
             _ => _allMods
         };
+
+        if (!string.IsNullOrWhiteSpace(ModFilter))
+        {
+            var query = ModFilter.Trim();
+            mods = mods.Where(mod =>
+                mod.Name.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                mod.Author.Contains(query, StringComparison.OrdinalIgnoreCase) ||
+                mod.Id.Contains(query, StringComparison.OrdinalIgnoreCase));
+        }
 
         var selectedId = SelectedModItem?.Mod.Id;
         VisibleMods.Clear();

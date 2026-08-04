@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -14,6 +15,7 @@ using TniModManager.Core.Paths;
 using TniModManager.Core.Settings;
 using TniModManager.Core.Util;
 using TniModManager.Localization;
+using TniModManager.Views;
 
 namespace TniModManager.ViewModels;
 
@@ -68,6 +70,11 @@ public partial class MainViewModel : ViewModelBase, IAppShell
     [ObservableProperty] private string _languageCode = "en";
     [ObservableProperty] private bool _showAppUpdate;
     [ObservableProperty] private string _appUpdateVersion = "";
+    [ObservableProperty] private string _toastText = "";
+    [ObservableProperty] private bool _isToastVisible;
+    [ObservableProperty] private bool _isToastError;
+
+    private CancellationTokenSource? _toastCts;
 
     public async Task InitializeAsync()
     {
@@ -82,7 +89,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         }
         catch (Exception ex)
         {
-            SetStatus(UiStrings.StartupError(ex.Message));
+            SetStatus(UiStrings.StartupError(ex.Message), isError: true);
         }
     }
 
@@ -150,7 +157,7 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         }
         catch (Exception ex)
         {
-            SetStatus(UiStrings.AutoUpdateFailed(ex.Message));
+            SetStatus(UiStrings.AutoUpdateFailed(ex.Message), isError: true);
             OpenLatestReleasePage();
         }
         finally
@@ -170,27 +177,110 @@ public partial class MainViewModel : ViewModelBase, IAppShell
         }
         catch (Exception ex)
         {
-            SetStatus(UiStrings.LaunchFailed(ex.Message));
+            SetStatus(UiStrings.LaunchFailed(ex.Message), isError: true);
         }
     }
+
+    [RelayCommand]
+    private void DismissToast() => RunOnUiThread(() => IsToastVisible = false);
 
     [RelayCommand]
     private static void ExitApp() =>
         (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 
-    public void SetStatus(string text) => RunOnUiThread(() => StatusText = text);
+    public void SetStatus(string text, bool isError = false) => RunOnUiThread(() =>
+    {
+        StatusText = text;
+        // Toast только для ошибок и явных уведомлений (не каждый статус в footer).
+        if (isError)
+            ShowToast(text, isError: true);
+    });
+
+    public void Notify(string text) => RunOnUiThread(() =>
+    {
+        StatusText = text;
+        ShowToast(text, isError: false);
+    });
 
     public bool TryEnterBusy()
     {
         if (!Dispatcher.UIThread.CheckAccess())
             return Dispatcher.UIThread.InvokeAsync(TryEnterBusy).GetAwaiter().GetResult();
         if (IsBusy)
+        {
+            Notify(UiStrings.BusyPleaseWait);
             return false;
+        }
+
         IsBusy = true;
         return true;
     }
 
     public void ExitBusy() => RunOnUiThread(() => IsBusy = false);
+
+    public async Task<bool> ConfirmAsync(
+        string title,
+        string message,
+        string? confirmLabel = null,
+        bool isDanger = true)
+    {
+        var lifetime = Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
+        var owner = lifetime?.MainWindow;
+        if (owner is null)
+            return true;
+
+        if (!Dispatcher.UIThread.CheckAccess())
+        {
+            return await Dispatcher.UIThread.InvokeAsync(() =>
+                ConfirmAsync(title, message, confirmLabel, isDanger)).ConfigureAwait(true);
+        }
+
+        return await ConfirmDialogWindow.ShowAsync(
+            owner,
+            title,
+            message,
+            confirmLabel ?? UiStrings.Confirm,
+            UiStrings.Cancel,
+            isDanger).ConfigureAwait(true);
+    }
+
+    /// <summary>Запрос перед закрытием окна при несохранённых алиасах.</summary>
+    public async Task<bool> ConfirmCloseAsync()
+    {
+        if (!Aliases.HasUnsavedChanges)
+            return true;
+
+        return await ConfirmAsync(
+            UiStrings.ConfirmDiscardAliasesTitle,
+            UiStrings.ConfirmDiscardAliasesMessage,
+            UiStrings.Confirm,
+            isDanger: true).ConfigureAwait(true);
+    }
+
+    private void ShowToast(string text, bool isError)
+    {
+        _toastCts?.Cancel();
+        _toastCts = new CancellationTokenSource();
+        var token = _toastCts.Token;
+        ToastText = text;
+        IsToastError = isError;
+        IsToastVisible = true;
+        _ = HideToastAfterDelayAsync(token);
+    }
+
+    private async Task HideToastAfterDelayAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(4200, token).ConfigureAwait(true);
+            if (!token.IsCancellationRequested)
+                IsToastVisible = false;
+        }
+        catch (OperationCanceledException)
+        {
+            // новый toast сменил таймер
+        }
+    }
 
     public void BeginProgress(string statusText) => RunOnUiThread(() =>
     {

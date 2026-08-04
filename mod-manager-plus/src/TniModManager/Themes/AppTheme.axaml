@@ -77,42 +77,42 @@
       <SolidColorBrush x:Key="AliasComplexBrush" Color="{StaticResource AliasComplex}"/>
     </ResourceDictionary>
 
-    <!-- Light: приглушённые акценты + тёмный текст на кнопках/бейджах (как в Dark) -->
+    <!-- Light: светлее canvas, сильнее selected -->
     <ResourceDictionary x:Key="Light">
-      <Color x:Key="BgColor">#D8DEE8</Color>
+      <Color x:Key="BgColor">#EEF2F7</Color>
       <Color x:Key="SurfaceColor">#FFFFFF</Color>
-      <Color x:Key="Surface2Color">#E8EEF5</Color>
-      <Color x:Key="BorderColor">#B8C4D4</Color>
+      <Color x:Key="Surface2Color">#F3F6FA</Color>
+      <Color x:Key="BorderColor">#C5D0DE</Color>
       <Color x:Key="TextColor">#0B1220</Color>
-      <Color x:Key="MutedColor">#3F4B5C</Color>
-      <Color x:Key="AccentColor">#5B8BC7</Color>
-      <Color x:Key="AccentHoverColor">#4A78B0</Color>
-      <Color x:Key="SuccessColor">#5A9A72</Color>
-      <Color x:Key="SuccessHoverColor">#4D8863</Color>
-      <Color x:Key="DangerColor">#C87878</Color>
-      <Color x:Key="DangerHoverColor">#B86868</Color>
-      <Color x:Key="WarnColor">#C49A5A</Color>
+      <Color x:Key="MutedColor">#4A5568</Color>
+      <Color x:Key="AccentColor">#4F7FB8</Color>
+      <Color x:Key="AccentHoverColor">#3F6FA6</Color>
+      <Color x:Key="SuccessColor">#4F8F68</Color>
+      <Color x:Key="SuccessHoverColor">#427A58</Color>
+      <Color x:Key="DangerColor">#C07070</Color>
+      <Color x:Key="DangerHoverColor">#B06060</Color>
+      <Color x:Key="WarnColor">#B88948</Color>
       <Color x:Key="OnAccentColor">#0B1220</Color>
       <Color x:Key="OnSuccessColor">#0B1220</Color>
-      <Color x:Key="SourceDownloaded">#5B8BC7</Color>
-      <Color x:Key="SourceManual">#5A9A72</Color>
+      <Color x:Key="SourceDownloaded">#4F7FB8</Color>
+      <Color x:Key="SourceManual">#4F8F68</Color>
       <Color x:Key="SourceAvailable">#8B95A5</Color>
-      <Color x:Key="ListHoverColor">#D0D9E6</Color>
-      <Color x:Key="ListSelectedColor">#C7DBF7</Color>
-      <Color x:Key="ListSelectedHoverColor">#B3CFF3</Color>
-      <Color x:Key="DangerBorderColor">#F0C8C8</Color>
-      <Color x:Key="DangerHoverBgColor">#F8E4E4</Color>
-      <Color x:Key="WarnSurfaceColor">#FFF7ED</Color>
-      <Color x:Key="WarnBorderColor">#E8C48A</Color>
+      <Color x:Key="ListHoverColor">#E2EAF4</Color>
+      <Color x:Key="ListSelectedColor">#C5DBF5</Color>
+      <Color x:Key="ListSelectedHoverColor">#B0CFF0</Color>
+      <Color x:Key="DangerBorderColor">#E8B8B8</Color>
+      <Color x:Key="DangerHoverBgColor">#F8E8E8</Color>
+      <Color x:Key="WarnSurfaceColor">#FFF8EE</Color>
+      <Color x:Key="WarnBorderColor">#E5C48A</Color>
       <Color x:Key="WarnMutedColor">#8A6A30</Color>
       <Color x:Key="UpdateBadgeBgColor">#F0E0B8</Color>
-      <Color x:Key="CodeSurfaceColor">#E2E8F0</Color>
+      <Color x:Key="CodeSurfaceColor">#E8EEF5</Color>
       <Color x:Key="PreviewCommandColor">#1E293B</Color>
       <Color x:Key="AliasPlain">#8B95A5</Color>
-      <Color x:Key="AliasVariable">#C49A5A</Color>
-      <Color x:Key="AliasCompound">#5A9A72</Color>
-      <Color x:Key="AliasConditional">#5B8BC7</Color>
-      <Color x:Key="AliasComplex">#C87878</Color>
+      <Color x:Key="AliasVariable">#B88948</Color>
+      <Color x:Key="AliasCompound">#4F8F68</Color>
+      <Color x:Key="AliasConditional">#4F7FB8</Color>
+      <Color x:Key="AliasComplex">#C07070</Color>
 
       <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}"/>
       <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>

@@ -36,6 +36,8 @@ public partial class AliasesViewModel : ViewModelBase
     [ObservableProperty] private bool _showAliasArgsSummary;
     [ObservableProperty] private string _aliasDeviceNoticeText = "";
     [ObservableProperty] private bool _showAliasDeviceNotice;
+
+    public bool ShowAliasNotices => ShowAliasArgsSummary || ShowAliasDeviceNotice;
     [ObservableProperty] private string _aliasFullUsageText = "";
     [ObservableProperty] private bool _showAliasFullUsage;
     [ObservableProperty] private bool _aliasEditorVisible;
@@ -72,6 +74,8 @@ public partial class AliasesViewModel : ViewModelBase
     public ObservableCollection<AliasPreviewLineViewModel> PreviewLines { get; } = [];
 
     public event Action<int>? RequestCaretIndex;
+    /// <summary>Выделить сегмент в TextBox (start, length) — визуальная замена Preview.</summary>
+    public event Action<int, int>? RequestSegmentSelection;
 
     public void Load() => ReloadAliases();
 
@@ -150,9 +154,17 @@ public partial class AliasesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void DeleteAlias()
+    private async Task DeleteAliasAsync()
     {
         if (SelectedAlias is null)
+            return;
+
+        var name = SelectedAlias.Name;
+        var confirmed = await _shell.ConfirmAsync(
+            UiStrings.ConfirmDeleteAliasTitle,
+            UiStrings.ConfirmDeleteAliasMessage(name),
+            UiStrings.Delete).ConfigureAwait(true);
+        if (!confirmed)
             return;
 
         Aliases.Remove(SelectedAlias);
@@ -162,19 +174,19 @@ public partial class AliasesViewModel : ViewModelBase
         RefreshDirty();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasUnsavedChanges))]
     private void SaveAliases()
     {
         FlushDraftToSelected(requireValidName: true);
         if (SelectedAlias is not null && ShowAliasNameError)
         {
-            _shell.SetStatus(AliasNameErrorText);
+            _shell.SetStatus(AliasNameErrorText, isError: true);
             return;
         }
 
         if (SelectedAlias is not null && string.IsNullOrWhiteSpace(AliasName))
         {
-            _shell.SetStatus(UiStrings.AliasNameRequired);
+            _shell.SetStatus(UiStrings.AliasNameRequired, isError: true);
             return;
         }
 
@@ -182,13 +194,13 @@ public partial class AliasesViewModel : ViewModelBase
         {
             if (_catalog.IsReservedAliasName(alias.Name))
             {
-                _shell.SetStatus(UiStrings.AliasNameReserved(alias.Name));
+                _shell.SetStatus(UiStrings.AliasNameReserved(alias.Name), isError: true);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(alias.Name))
             {
-                _shell.SetStatus(UiStrings.AliasNameRequired);
+                _shell.SetStatus(UiStrings.AliasNameRequired, isError: true);
                 return;
             }
         }
@@ -196,7 +208,7 @@ public partial class AliasesViewModel : ViewModelBase
         var names = Aliases.Select(a => a.Name.Trim()).ToList();
         if (names.Count != names.Distinct(StringComparer.Ordinal).Count())
         {
-            _shell.SetStatus(UiStrings.AliasNameDuplicate);
+            _shell.SetStatus(UiStrings.AliasNameDuplicate, isError: true);
             return;
         }
 
@@ -208,7 +220,7 @@ public partial class AliasesViewModel : ViewModelBase
                 StringComparer.Ordinal);
         var keep = SelectedAlias?.Name.Trim();
         _settings.SaveAliases(aliases);
-        _shell.SetStatus(UiStrings.AliasesSaved);
+        _shell.Notify(UiStrings.AliasesSaved);
         ReloadAliases(keep);
     }
 
@@ -217,18 +229,49 @@ public partial class AliasesViewModel : ViewModelBase
     {
         try
         {
-            var dir = _settings.GameDataPath;
+            // Алиасы игры — в settings.json (cmd_alias) в userdata Godot.
+            var settingsPath = _settings.SettingsPath;
+            var dir = Path.GetDirectoryName(settingsPath) ?? _settings.GameDataPath;
             Directory.CreateDirectory(dir);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = dir,
-                UseShellExecute = true
-            });
+            OpenGameDataInFileManager(dir, settingsPath);
         }
         catch (Exception ex)
         {
-            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
+            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message), isError: true);
         }
+    }
+
+    /// <summary>Открыть userdata игры в проводнике / xdg-open (на Linux FileName=dir не работает).</summary>
+    private static void OpenGameDataInFileManager(string directory, string settingsPath)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            if (File.Exists(settingsPath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = "/select,\"" + settingsPath + "\"",
+                    UseShellExecute = true
+                });
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = "\"" + directory + "\"",
+                UseShellExecute = true
+            });
+            return;
+        }
+
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "xdg-open",
+            ArgumentList = { directory },
+            UseShellExecute = false
+        });
     }
 
     [RelayCommand]
@@ -280,9 +323,9 @@ public partial class AliasesViewModel : ViewModelBase
         {
             AliasCommandCaretIndex = span.Start;
             RequestCaretIndex?.Invoke(span.Start);
+            RequestSegmentSelection?.Invoke(span.Start, Math.Max(span.Length, 0));
             // Явно фиксируем шаг — не полагаемся на caret-события после Focus.
             UpdateActiveStepBarFromIndex(index, spans);
-            SyncPreviewLineActive();
             UpdateTokenHelpKeepingStep(index);
         }
         finally
@@ -524,6 +567,15 @@ public partial class AliasesViewModel : ViewModelBase
         HasUnsavedChanges = false;
     }
 
+    partial void OnHasUnsavedChangesChanged(bool value) =>
+        SaveAliasesCommand.NotifyCanExecuteChanged();
+
+    partial void OnShowAliasArgsSummaryChanged(bool value) =>
+        OnPropertyChanged(nameof(ShowAliasNotices));
+
+    partial void OnShowAliasDeviceNoticeChanged(bool value) =>
+        OnPropertyChanged(nameof(ShowAliasNotices));
+
     private void ClearEditorFields()
     {
         _suppressListSync = true;
@@ -601,24 +653,19 @@ public partial class AliasesViewModel : ViewModelBase
     {
         var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
         PreviewLines.Clear();
-        if (spans.Count == 0)
+        if (spans.Count <= 1)
             return;
 
         for (var i = 0; i < spans.Count; i++)
         {
-            var prefix = spans.Count == 1
-                ? ""
-                : i == 0
-                    ? "┌─ "
-                    : i == spans.Count - 1
-                        ? "└─ "
-                        : "├─ ";
+            var label = $"{i + 1}. {AliasAnalyzer.FormatSegmentLabel(spans[i].Text, maxLen: 28)}";
             PreviewLines.Add(new AliasPreviewLineViewModel(
                 spans[i].Index,
-                prefix,
-                spans[i].Text,
+                "",
+                label,
                 spans[i].Start,
-                SelectCommandSegmentCommand)
+                SelectCommandSegmentCommand,
+                fullText: spans[i].Text)
             {
                 IsActive = spans[i].Index == ActiveStepIndex
             });
