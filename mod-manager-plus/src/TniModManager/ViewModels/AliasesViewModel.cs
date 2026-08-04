@@ -36,6 +36,8 @@ public partial class AliasesViewModel : ViewModelBase
     [ObservableProperty] private bool _showAliasArgsSummary;
     [ObservableProperty] private string _aliasDeviceNoticeText = "";
     [ObservableProperty] private bool _showAliasDeviceNotice;
+
+    public bool ShowAliasNotices => ShowAliasArgsSummary || ShowAliasDeviceNotice;
     [ObservableProperty] private string _aliasFullUsageText = "";
     [ObservableProperty] private bool _showAliasFullUsage;
     [ObservableProperty] private bool _aliasEditorVisible;
@@ -565,6 +567,12 @@ public partial class AliasesViewModel : ViewModelBase
 
     partial void OnHasUnsavedChangesChanged(bool value) =>
         SaveAliasesCommand.NotifyCanExecuteChanged();
+
+    partial void OnShowAliasArgsSummaryChanged(bool value) =>
+        OnPropertyChanged(nameof(ShowAliasNotices));
+
+    partial void OnShowAliasDeviceNoticeChanged(bool value) =>
+        OnPropertyChanged(nameof(ShowAliasNotices));
 
     private void ClearEditorFields()
     {

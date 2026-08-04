@@ -58,13 +58,49 @@ public partial class AliasesView : UserControl
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
         if (_vm is not null)
+        {
             _vm.RequestCaretIndex -= OnRequestCaretIndex;
+            _vm.PropertyChanged -= OnViewModelPropertyChanged;
+        }
 
         _vm = DataContext as AliasesViewModel;
         if (_vm is null)
             return;
 
         _vm.RequestCaretIndex += OnRequestCaretIndex;
+        _vm.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(AliasesViewModel.SelectedAlias)
+            or nameof(AliasesViewModel.AliasEditorVisible))
+            TryFocusCommandEditor();
+    }
+
+    /// <summary>После выбора алиаса с уже заданным именем — сразу правим команду.</summary>
+    private void TryFocusCommandEditor()
+    {
+        if (_vm is not { AliasEditorVisible: true })
+            return;
+        if (string.IsNullOrWhiteSpace(_vm.AliasName))
+            return;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (_vm is not { AliasEditorVisible: true })
+                return;
+            if (string.IsNullOrWhiteSpace(_vm.AliasName))
+                return;
+            try
+            {
+                AliasCommandBox.Focus();
+            }
+            catch
+            {
+                // TextBox ещё не в дереве.
+            }
+        }, DispatcherPriority.Loaded);
     }
 
     private void OnAliasCommandBoxPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
