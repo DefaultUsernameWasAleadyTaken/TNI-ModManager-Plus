@@ -170,7 +170,7 @@ public partial class AliasesViewModel : ViewModelBase
         RefreshDirty();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(HasUnsavedChanges))]
     private void SaveAliases()
     {
         FlushDraftToSelected(requireValidName: true);
@@ -562,6 +562,9 @@ public partial class AliasesViewModel : ViewModelBase
 
         HasUnsavedChanges = false;
     }
+
+    partial void OnHasUnsavedChangesChanged(bool value) =>
+        SaveAliasesCommand.NotifyCanExecuteChanged();
 
     private void ClearEditorFields()
     {

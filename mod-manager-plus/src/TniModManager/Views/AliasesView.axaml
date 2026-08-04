@@ -43,11 +43,12 @@
           </ListBox.ItemTemplate>
         </ListBox>
 
-        <StackPanel x:Name="AliasSidebarActions" Grid.Row="3" Spacing="8" Margin="0,10,0,0"
-                    HorizontalAlignment="Left">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Button Content="{DynamicResource L.NewAlias}" Classes="success"
-                    HorizontalAlignment="Left">
+        <StackPanel x:Name="AliasSidebarActions" Grid.Row="3" Spacing="10" Margin="0,12,0,0"
+                    HorizontalAlignment="Left" MinWidth="280">
+          <!-- Инструменты списка: одинаковый вес, без «светофора» success/danger -->
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Button Grid.Column="0" Classes="secondary" HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center">
               <Button.Flyout>
                 <MenuFlyout Placement="TopEdgeAlignedLeft">
                   <MenuItem Header="{DynamicResource L.AliasTemplateEmpty}"
@@ -60,22 +61,68 @@
                             Command="{Binding AddAliasCommand}" CommandParameter="try"/>
                 </MenuFlyout>
               </Button.Flyout>
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Width="12" Height="12" Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                <TextBlock Text="{DynamicResource L.NewAlias}" FontSize="13" VerticalAlignment="Center"/>
+              </StackPanel>
             </Button>
-            <Button Content="{DynamicResource L.Delete}" Classes="danger"
-                    HorizontalAlignment="Left"
-                    Command="{Binding DeleteAliasCommand}"/>
-          </StackPanel>
-          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <Ellipse Width="8" Height="8" VerticalAlignment="Center"
-                     Fill="{DynamicResource WarnBrush}"
-                     IsVisible="{Binding HasUnsavedChanges}"/>
-            <Button Grid.Column="1" Content="{DynamicResource L.SaveAliases}" Classes="primary"
-                    HorizontalAlignment="Stretch"
-                    Command="{Binding SaveAliasesCommand}"/>
+            <Button Grid.Column="1" Classes="danger-outline" HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    Command="{Binding DeleteAliasCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <PathIcon Width="12" Height="12"
+                          Foreground="{DynamicResource DangerBrush}"
+                          Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                <TextBlock Text="{DynamicResource L.Delete}" FontSize="13"
+                           Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Button>
           </Grid>
-          <Button Content="{DynamicResource L.OpenAliasesFolder}" Classes="secondary"
-                  HorizontalAlignment="Stretch"
-                  Command="{Binding OpenAliasesFolderCommand}"/>
+
+          <!-- Dirty: явный баннер + Save; clean: спокойный статус -->
+          <Border Classes="dirty-banner" IsVisible="{Binding HasUnsavedChanges}">
+            <StackPanel Spacing="8">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                         Fill="{DynamicResource WarnBrush}"/>
+                <TextBlock Text="{DynamicResource L.UnsavedChanges}"
+                           Foreground="{DynamicResource WarnBrush}"
+                           FontSize="12" FontWeight="SemiBold"
+                           TextWrapping="Wrap" VerticalAlignment="Center"/>
+              </StackPanel>
+              <Button Classes="warn" HorizontalAlignment="Stretch"
+                      Command="{Binding SaveAliasesCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8"
+                            HorizontalAlignment="Center">
+                  <PathIcon Width="14" Height="14"
+                            Data="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+                  <TextBlock Text="{DynamicResource L.SaveAliases}" FontSize="13"
+                             VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="saved-banner" IsVisible="{Binding !HasUnsavedChanges}">
+            <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+              <PathIcon Width="14" Height="14"
+                        Foreground="{DynamicResource MutedBrush}"
+                        Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"/>
+              <TextBlock Text="{DynamicResource L.AliasesSavedState}" Classes="muted"
+                         FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+
+          <Button Classes="ghost" HorizontalAlignment="Stretch"
+                  Command="{Binding OpenAliasesFolderCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+              <PathIcon Width="12" Height="12"
+                        Foreground="{DynamicResource MutedBrush}"
+                        Data="M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z"/>
+              <TextBlock Text="{DynamicResource L.OpenAliasesFolder}" Classes="muted"
+                         FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
         </StackPanel>
       </Grid>
     </controls:MasterDetailPanel.SidebarContent>

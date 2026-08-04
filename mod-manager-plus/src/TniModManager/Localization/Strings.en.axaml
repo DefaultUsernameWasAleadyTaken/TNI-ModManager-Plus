@@ -32,6 +32,8 @@
   <sys:String x:Key="L.NewAlias">New alias</sys:String>
   <sys:String x:Key="L.Delete">Delete</sys:String>
   <sys:String x:Key="L.SaveAliases">Save aliases</sys:String>
+  <sys:String x:Key="L.UnsavedChanges">Unsaved changes</sys:String>
+  <sys:String x:Key="L.AliasesSavedState">All changes saved</sys:String>
   <sys:String x:Key="L.SearchMods">Search mods…</sys:String>
   <sys:String x:Key="L.SearchAliases">Search aliases…</sys:String>
   <sys:String x:Key="L.PickAlias">Pick an alias to edit its command.</sys:String>

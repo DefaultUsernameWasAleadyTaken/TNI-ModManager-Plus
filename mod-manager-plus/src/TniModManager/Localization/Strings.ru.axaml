@@ -32,6 +32,8 @@
   <sys:String x:Key="L.NewAlias">Новый алиас</sys:String>
   <sys:String x:Key="L.Delete">Удалить</sys:String>
   <sys:String x:Key="L.SaveAliases">Сохранить алиасы</sys:String>
+  <sys:String x:Key="L.UnsavedChanges">Есть несохранённые изменения</sys:String>
+  <sys:String x:Key="L.AliasesSavedState">Все изменения сохранены</sys:String>
   <sys:String x:Key="L.SearchMods">Поиск модов…</sys:String>
   <sys:String x:Key="L.SearchAliases">Поиск алиасов…</sys:String>
   <sys:String x:Key="L.PickAlias">Выберите алиас, чтобы изменить команду.</sys:String>

@@ -148,6 +148,33 @@
       <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
+    <!-- Destructive без заливки: рядом с secondary не спорит цветом -->
+    <Style Selector="Button.danger-outline">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.danger-outline:pointerover /template/ ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource DangerHoverBgBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+    </Style>
+
+    <Style Selector="Border.dirty-banner">
+      <Setter Property="Background" Value="{DynamicResource WarnSurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource WarnBorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+      <Setter Property="Padding" Value="10"/>
+    </Style>
+    <Style Selector="Border.saved-banner">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+      <Setter Property="Padding" Value="10,8"/>
+    </Style>
+
     <Style Selector="Button.ghost">
       <Setter Property="Background" Value="Transparent"/>
       <Setter Property="BorderThickness" Value="0"/>
