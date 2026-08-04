@@ -60,6 +60,7 @@ public partial class AliasesView : UserControl
         if (_vm is not null)
         {
             _vm.RequestCaretIndex -= OnRequestCaretIndex;
+            _vm.RequestSegmentSelection -= OnRequestSegmentSelection;
             _vm.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
@@ -68,7 +69,27 @@ public partial class AliasesView : UserControl
             return;
 
         _vm.RequestCaretIndex += OnRequestCaretIndex;
+        _vm.RequestSegmentSelection += OnRequestSegmentSelection;
         _vm.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnRequestSegmentSelection(int start, int length)
+    {
+        try
+        {
+            var textLen = AliasCommandBox.Text?.Length ?? 0;
+            var clampedStart = Math.Clamp(start, 0, textLen);
+            var clampedEnd = Math.Clamp(start + Math.Max(length, 0), clampedStart, textLen);
+            AliasCommandBox.Focus();
+            AliasCommandBox.CaretIndex = clampedStart;
+            AliasCommandBox.SelectionStart = clampedStart;
+            AliasCommandBox.SelectionEnd = clampedEnd;
+            _vm?.FinishAcceptCompletionCaret(AliasCommandBox.CaretIndex);
+        }
+        catch
+        {
+            // TextBox может быть ещё не готов.
+        }
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)

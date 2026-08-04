@@ -74,6 +74,8 @@ public partial class AliasesViewModel : ViewModelBase
     public ObservableCollection<AliasPreviewLineViewModel> PreviewLines { get; } = [];
 
     public event Action<int>? RequestCaretIndex;
+    /// <summary>Выделить сегмент в TextBox (start, length) — визуальная замена Preview.</summary>
+    public event Action<int, int>? RequestSegmentSelection;
 
     public void Load() => ReloadAliases();
 
@@ -321,9 +323,9 @@ public partial class AliasesViewModel : ViewModelBase
         {
             AliasCommandCaretIndex = span.Start;
             RequestCaretIndex?.Invoke(span.Start);
+            RequestSegmentSelection?.Invoke(span.Start, Math.Max(span.Length, 0));
             // Явно фиксируем шаг — не полагаемся на caret-события после Focus.
             UpdateActiveStepBarFromIndex(index, spans);
-            SyncPreviewLineActive();
             UpdateTokenHelpKeepingStep(index);
         }
         finally
@@ -651,24 +653,19 @@ public partial class AliasesViewModel : ViewModelBase
     {
         var spans = AliasAnalyzer.GetCommandSpans(AliasCommand);
         PreviewLines.Clear();
-        if (spans.Count == 0)
+        if (spans.Count <= 1)
             return;
 
         for (var i = 0; i < spans.Count; i++)
         {
-            var prefix = spans.Count == 1
-                ? ""
-                : i == 0
-                    ? "┌─ "
-                    : i == spans.Count - 1
-                        ? "└─ "
-                        : "├─ ";
+            var label = $"{i + 1}. {AliasAnalyzer.FormatSegmentLabel(spans[i].Text, maxLen: 28)}";
             PreviewLines.Add(new AliasPreviewLineViewModel(
                 spans[i].Index,
-                prefix,
-                spans[i].Text,
+                "",
+                label,
                 spans[i].Start,
-                SelectCommandSegmentCommand)
+                SelectCommandSegmentCommand,
+                fullText: spans[i].Text)
             {
                 IsActive = spans[i].Index == ActiveStepIndex
             });

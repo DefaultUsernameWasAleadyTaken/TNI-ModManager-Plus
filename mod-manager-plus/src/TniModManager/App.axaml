@@ -181,6 +181,12 @@
       <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
       <Setter Property="Padding" Value="10,8"/>
     </Style>
+    <Style Selector="Border.help-panel">
+      <Setter Property="Background" Value="{DynamicResource Surface2Brush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="{DynamicResource RadiusMd}"/>
+    </Style>
 
     <Style Selector="Button.ghost">
       <Setter Property="Background" Value="Transparent"/>
