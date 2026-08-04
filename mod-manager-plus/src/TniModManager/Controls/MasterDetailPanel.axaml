@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:TniModManager.Controls"
+             x:Class="TniModManager.Controls.MasterDetailPanel"
+             x:Name="Root"
+             x:DataType="controls:MasterDetailPanel">
+
+  <!-- Auto: ширина сайдбара по содержимому; без GridSplitter -->
+  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" ClipToBounds="True">
+    <Border Classes="panel"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Left"
+            MinWidth="{Binding SidebarMinWidth, ElementName=Root}">
+      <ContentPresenter Content="{Binding SidebarContent, ElementName=Root}"/>
+    </Border>
+
+    <Border Grid.Column="1"
+            Classes="panel"
+            ClipToBounds="True"
+            VerticalAlignment="Stretch">
+      <ContentPresenter Content="{Binding DetailContent, ElementName=Root}"/>
+    </Border>
+  </Grid>
+</UserControl>

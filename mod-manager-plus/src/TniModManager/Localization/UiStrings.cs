@@ -68,6 +68,28 @@ public static class UiStrings
             : "Note: luajit-support not installed — Lua mods need it.";
 
     public static string RefreshingMods => Ru ? "Обновление списка модов…" : "Refreshing mods...";
+    public static string BusyPleaseWait =>
+        Ru ? "Подождите — выполняется другая операция…" : "Please wait — another operation is in progress...";
+    public static string Cancel => Ru ? "Отмена" : "Cancel";
+    public static string Confirm => Ru ? "Подтвердить" : "Confirm";
+    public static string Remove => Ru ? "Удалить" : "Remove";
+    public static string Delete => Ru ? "Удалить" : "Delete";
+    public static string ConfirmRemoveTitle => Ru ? "Удалить мод?" : "Remove mod?";
+    public static string ConfirmRemoveMessage(string name) =>
+        Ru
+            ? $"Мод «{name}» будет удалён с диска. Это действие нельзя отменить."
+            : $"Mod \"{name}\" will be removed from disk. This cannot be undone.";
+    public static string ConfirmDeleteAliasTitle => Ru ? "Удалить алиас?" : "Delete alias?";
+    public static string ConfirmDeleteAliasMessage(string name) =>
+        Ru
+            ? $"Алиас «{name}» будет удалён из списка. Сохраните алиасы, чтобы записать изменение на диск."
+            : $"Alias \"{name}\" will be removed from the list. Save aliases to write the change to disk.";
+    public static string ConfirmDiscardAliasesTitle =>
+        Ru ? "Несохранённые алиасы" : "Unsaved aliases";
+    public static string ConfirmDiscardAliasesMessage =>
+        Ru
+            ? "Есть несохранённые изменения алиасов. Закрыть без сохранения?"
+            : "You have unsaved alias changes. Close without saving?";
     public static string Removed(string name) => Ru ? $"Удалён {name}" : $"Removed {name}";
     public static string ConfigSaved => Ru ? "Конфигурация сохранена!" : "Configuration saved!";
     public static string ConfigSaveFailed => Ru ? "Не удалось сохранить конфигурацию." : "Failed to save configuration.";

@@ -15,25 +15,67 @@
         Icon="/Assets/app.ico"
         Title="{Binding WindowTitle}">
 
-  <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" ClipToBounds="True">
-    <controls:AppHeader Grid.Row="0"/>
+  <Panel ClipToBounds="True">
+    <Grid Margin="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12" ClipToBounds="True">
+      <controls:AppHeader Grid.Row="0"/>
 
-    <StackPanel Grid.Row="1" Spacing="6" IsVisible="{Binding IsProgressVisible}">
-      <ProgressBar Minimum="0" Maximum="100" Value="{Binding DownloadProgress}"/>
-      <TextBlock Text="{Binding DownloadStatusText}" Classes="muted" FontSize="11"/>
-    </StackPanel>
+      <StackPanel Grid.Row="1" Spacing="6" IsVisible="{Binding IsProgressVisible}">
+        <ProgressBar Minimum="0" Maximum="100" Value="{Binding DownloadProgress}"/>
+        <TextBlock Text="{Binding DownloadStatusText}" Classes="muted" FontSize="11"/>
+      </StackPanel>
 
-    <TabControl Grid.Row="2" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
-      <TabItem Header="{DynamicResource L.TabMods}">
-        <Grid ClipToBounds="True">
-          <views:ModsView DataContext="{Binding Mods}"/>
-        </Grid>
-      </TabItem>
-      <TabItem Header="{DynamicResource L.TabAliases}">
-        <Grid ClipToBounds="True">
-          <views:AliasesView DataContext="{Binding Aliases}"/>
-        </Grid>
-      </TabItem>
-    </TabControl>
-  </Grid>
+      <TabControl Grid.Row="2" Classes="segmented"
+                  HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                  IsEnabled="{Binding !IsBusy}">
+        <TabItem Header="{DynamicResource L.TabMods}">
+          <Grid ClipToBounds="True">
+            <views:ModsView DataContext="{Binding Mods}"/>
+          </Grid>
+        </TabItem>
+        <TabItem Header="{DynamicResource L.TabAliases}">
+          <Grid ClipToBounds="True">
+            <views:AliasesView DataContext="{Binding Aliases}"/>
+          </Grid>
+        </TabItem>
+      </TabControl>
+
+      <Border Grid.Row="3"
+              Background="{DynamicResource SurfaceBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              CornerRadius="{DynamicResource RadiusMd}" Padding="12,8">
+        <TextBlock Text="{Binding StatusText}" Classes="muted" FontSize="12"
+                   TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+      </Border>
+    </Grid>
+
+    <!-- Toast: info / error -->
+    <Border HorizontalAlignment="Right" VerticalAlignment="Bottom"
+            Margin="0,0,28,64" MaxWidth="420" ZIndex="50"
+            IsVisible="{Binding IsToastVisible}"
+            Classes="toast"
+            Classes.error="{Binding IsToastError}"
+            Padding="14,12">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+        <TextBlock Text="{Binding ToastText}" TextWrapping="Wrap" FontSize="13"
+                   VerticalAlignment="Center" MaxWidth="340"/>
+        <Button Grid.Column="1" Classes="ghost" Padding="6,2" FontSize="12"
+                Content="✕" Command="{Binding DismissToastCommand}"
+                VerticalAlignment="Top"/>
+      </Grid>
+    </Border>
+
+    <Border Background="#66000000" IsVisible="{Binding IsBusy}" ZIndex="100"
+            IsHitTestVisible="True">
+      <Border Background="{DynamicResource SurfaceBrush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              CornerRadius="{DynamicResource RadiusMd}" Padding="20,16"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="8" HorizontalAlignment="Center">
+          <ProgressBar IsIndeterminate="True" Width="180"/>
+          <TextBlock Text="{DynamicResource L.BusyOverlay}" Classes="muted"
+                     HorizontalAlignment="Center"/>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Panel>
 </Window>

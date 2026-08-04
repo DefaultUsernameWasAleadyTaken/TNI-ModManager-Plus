@@ -5,23 +5,21 @@
              x:DataType="vm:MainViewModel">
 
   <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-    <StackPanel Grid.Column="0" Spacing="4">
-      <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <TextBlock Text="Mod Manager Plus" Classes="title"/>
-        <Border Background="{DynamicResource Surface2Brush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                CornerRadius="6" Padding="8,3" VerticalAlignment="Center">
-          <TextBlock Text="{Binding AppVersionBadgeText}" Classes="muted"
-                     FontSize="11" FontWeight="SemiBold"/>
-        </Border>
-      </StackPanel>
-      <TextBlock Text="Tower Networking Inc" Classes="muted"/>
-      <TextBlock Text="{Binding StatusText}" Classes="muted" Margin="0,2,0,0"/>
+    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+      <TextBlock Text="{DynamicResource L.AppTitle}" Classes="title" FontSize="18"
+                 VerticalAlignment="Center"/>
+      <Border Background="{DynamicResource Surface2Brush}"
+              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+              CornerRadius="{DynamicResource RadiusSm}" Padding="8,3" VerticalAlignment="Center"
+              ToolTip.Tip="{DynamicResource L.BrandSubtitle}">
+        <TextBlock Text="{Binding AppVersionBadgeText}" Classes="muted"
+                   FontSize="11" FontWeight="SemiBold"/>
+      </Border>
     </StackPanel>
 
     <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8"
-                VerticalAlignment="Center">
-      <!-- Тема: PNG с прозрачным фоном — солнце в тёмной, луна в светлой -->
+                VerticalAlignment="Center"
+                IsEnabled="{Binding !IsBusy}">
       <Button Classes="header" Command="{Binding ToggleThemeCommand}"
               ToolTip.Tip="{Binding ThemeToggleTooltip}" MinWidth="40">
         <Panel Width="20" Height="20" Background="Transparent">
@@ -36,7 +34,6 @@
 
       <Button Classes="header" ToolTip.Tip="{DynamicResource L.Language}">
         <Button.Flyout>
-          <!-- Left: меню под кнопкой языка, не уезжает под тему -->
           <MenuFlyout Placement="BottomEdgeAlignedLeft">
             <MenuItem Command="{Binding SelectLanguageCommand}" CommandParameter="en">
               <MenuItem.Header>

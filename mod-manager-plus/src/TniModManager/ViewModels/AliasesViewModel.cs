@@ -150,9 +150,17 @@ public partial class AliasesViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void DeleteAlias()
+    private async Task DeleteAliasAsync()
     {
         if (SelectedAlias is null)
+            return;
+
+        var name = SelectedAlias.Name;
+        var confirmed = await _shell.ConfirmAsync(
+            UiStrings.ConfirmDeleteAliasTitle,
+            UiStrings.ConfirmDeleteAliasMessage(name),
+            UiStrings.Delete).ConfigureAwait(true);
+        if (!confirmed)
             return;
 
         Aliases.Remove(SelectedAlias);
@@ -168,13 +176,13 @@ public partial class AliasesViewModel : ViewModelBase
         FlushDraftToSelected(requireValidName: true);
         if (SelectedAlias is not null && ShowAliasNameError)
         {
-            _shell.SetStatus(AliasNameErrorText);
+            _shell.SetStatus(AliasNameErrorText, isError: true);
             return;
         }
 
         if (SelectedAlias is not null && string.IsNullOrWhiteSpace(AliasName))
         {
-            _shell.SetStatus(UiStrings.AliasNameRequired);
+            _shell.SetStatus(UiStrings.AliasNameRequired, isError: true);
             return;
         }
 
@@ -182,13 +190,13 @@ public partial class AliasesViewModel : ViewModelBase
         {
             if (_catalog.IsReservedAliasName(alias.Name))
             {
-                _shell.SetStatus(UiStrings.AliasNameReserved(alias.Name));
+                _shell.SetStatus(UiStrings.AliasNameReserved(alias.Name), isError: true);
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(alias.Name))
             {
-                _shell.SetStatus(UiStrings.AliasNameRequired);
+                _shell.SetStatus(UiStrings.AliasNameRequired, isError: true);
                 return;
             }
         }
@@ -196,7 +204,7 @@ public partial class AliasesViewModel : ViewModelBase
         var names = Aliases.Select(a => a.Name.Trim()).ToList();
         if (names.Count != names.Distinct(StringComparer.Ordinal).Count())
         {
-            _shell.SetStatus(UiStrings.AliasNameDuplicate);
+            _shell.SetStatus(UiStrings.AliasNameDuplicate, isError: true);
             return;
         }
 
@@ -208,7 +216,7 @@ public partial class AliasesViewModel : ViewModelBase
                 StringComparer.Ordinal);
         var keep = SelectedAlias?.Name.Trim();
         _settings.SaveAliases(aliases);
-        _shell.SetStatus(UiStrings.AliasesSaved);
+        _shell.Notify(UiStrings.AliasesSaved);
         ReloadAliases(keep);
     }
 
@@ -225,7 +233,7 @@ public partial class AliasesViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message));
+            _shell.SetStatus(UiStrings.OpenUrlFailed(ex.Message), isError: true);
         }
     }
 

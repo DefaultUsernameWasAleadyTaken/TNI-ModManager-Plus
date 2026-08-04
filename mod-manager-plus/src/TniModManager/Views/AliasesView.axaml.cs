@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using TniModManager.Localization;
 using TniModManager.ViewModels;
 
 namespace TniModManager.Views;
@@ -16,6 +17,9 @@ public partial class AliasesView : UserControl
     {
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
+        AliasSidebarActions.LayoutUpdated += (_, _) => SyncSidebarWidth();
+        AttachedToVisualTree += OnAttached;
+        DetachedFromVisualTree += OnDetached;
         AliasCommandBox.GotFocus += (_, _) => SyncCaretFromBox();
         AliasCommandBox.PointerReleased += (_, _) => SyncCaretFromBox();
         AliasCommandBox.LostFocus += OnAliasCommandLostFocus;
@@ -23,6 +27,32 @@ public partial class AliasesView : UserControl
         AliasCommandBox.KeyDown += OnAliasCommandKeyDown;
         AliasCommandBox.KeyUp += (_, _) => SyncCaretFromBox();
         AliasCommandBox.PropertyChanged += OnAliasCommandBoxPropertyChanged;
+    }
+
+    private void OnAttached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        LocalizationManager.LanguageChanged += OnLanguageChanged;
+        SyncSidebarWidth();
+    }
+
+    private void OnDetached(object? sender, VisualTreeAttachmentEventArgs e) =>
+        LocalizationManager.LanguageChanged -= OnLanguageChanged;
+
+    private void OnLanguageChanged() =>
+        Dispatcher.UIThread.Post(SyncSidebarWidth, DispatcherPriority.Loaded);
+
+    /// <summary>Ширина сайдбара по нижнему блоку кнопок (Save / New / Delete).</summary>
+    private void SyncSidebarWidth()
+    {
+        AliasSidebarActions.Measure(Size.Infinity);
+        var width = AliasSidebarActions.DesiredSize.Width;
+        if (width < 1)
+            width = AliasSidebarActions.Bounds.Width;
+        if (width < 1)
+            return;
+
+        if (double.IsNaN(SidebarRoot.Width) || Math.Abs(SidebarRoot.Width - width) > 0.5)
+            SidebarRoot.Width = width;
     }
 
     private void OnDataContextChanged(object? sender, EventArgs e)
