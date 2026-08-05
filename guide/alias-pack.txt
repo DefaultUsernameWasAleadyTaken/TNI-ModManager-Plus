@@ -1,0 +1,120 @@
+# Alias pack for TNI (copy into netshell or Alias Studio)
+
+Each alias starts with `echo usage: ...` then `;` and the real command(s).
+Requires: matching unlocks for sftp / cron / try where noted.
+Do not name aliases after reserved words (route, firewall, echo, …).
+
+## Core
+
+alias setdbg echo usage: setdbg DEBUGGER_ADDR; always using $1
+alias nca echo usage: nca NETADDR DEVICE; net address set $1 on $2
+alias ncdns echo usage: ncdns DNS_ADDR DEVICE; net dns set $1 on $2
+alias nodhcp echo usage: nodhcp DEVICE; net dhcp disable on $1
+alias ncall echo usage: ncall NETADDR DNS_ADDR DEVICE; net address set $1 on $3; net dns set $2 on $3; net dhcp disable on $3
+alias rsh echo usage: rsh ROUTER; route show on $1
+alias fsh echo usage: fsh FIREWALL; firewall show on $1
+alias dsh echo usage: dsh DNS; dns show on $1
+alias wdev echo usage: wdev ADDR; watch $1
+alias pdev echo usage: pdev ADDR; ping $1
+alias trc echo usage: trc DEST from SRC; trace $1 from $2
+
+## Routes
+
+alias rca echo usage: rca DEST_OR_PREFIX PORTNUM ROUTER; route add $1 via port$2 on $3
+alias rcat echo usage: rcat TRAFFIC PORTNUM ROUTER; route add traffic $1 via port$2 on $3
+alias rcd echo usage: rcd PORTNUM ROUTER; route default via port$1 on $2
+alias rcdo echo usage: rcdo ROUTER; route default drop on $1
+alias rcb echo usage: rcb ROUTER; route enable broadcast on $1
+alias rr echo usage: rr HASHNUM ROUTER - pass #0 style; route remove $1 on $2
+alias rcl echo usage: rcl ROUTER; route clear on $1
+alias ra echo usage: ra then rest of route add args; route add
+alias rrm echo usage: rrm then rest of route remove args; route remove
+
+## DNS
+
+alias dmap echo usage: dmap DOMAIN TARGET DNS; dns map $1 as $2 on $3
+alias dmapd echo usage: dmapd DOMAIN TARGET; dns map $1 as $2
+alias dunmap echo usage: dunmap DOMAIN DNS; dns unmap $1 on $2
+alias dlook echo usage: dlook DOMAIN; dns lookup $1
+
+## DHCP
+
+alias dhs echo usage: dhs DHCP; dhcp show on $1
+alias dhprefix echo usage: dhprefix PREFIX DHCP; dhcp option prefix $1 on $2
+alias dhdns echo usage: dhdns DNS DHCP; dhcp option dns $1 on $2
+alias dhdns2 echo usage: dhdns2 DNS1 DNS2 DHCP; dhcp option dns $1 $2 on $3
+alias dhbind echo usage: dhbind HWADDR NETADDR DHCP; dhcp option bind $1 as $2 on $3
+alias dhunbind echo usage: dhunbind HWADDR DHCP; dhcp option unbind $1 on $2
+alias dhlease echo usage: dhlease SECONDS DHCP; dhcp option lease $1 on $2
+
+## Firewall
+
+alias fcclear echo usage: fcclear FIREWALL; firewall clear on $1
+alias fcdefa echo usage: fcdefa FIREWALL; firewall default allow on $1
+alias fcdefd echo usage: fcdefd FIREWALL; firewall default deny on $1
+alias fcadbug echo usage: fcadbug FIREWALL; firewall allow tcp/23 on $1
+alias fcadns echo usage: fcadns FIREWALL; firewall allow udp/53 on $1
+alias fcadhcp echo usage: fcadhcp FIREWALL; firewall allow udp/67 on $1
+alias fcavoip echo usage: fcavoip FIREWALL; firewall allow udp/5060 on $1
+alias fcacam echo usage: fcacam FIREWALL; firewall allow udp/554 on $1
+alias fcaicmp echo usage: fcaicmp FIREWALL; firewall allow icmp on $1
+alias fcastore echo usage: fcastore FIREWALL; firewall allow tcp/80 on $1
+alias fcaupdate echo usage: fcaupdate FIREWALL; firewall allow tcp/443 on $1
+alias fcainstruct echo usage: fcainstruct FIREWALL; firewall allow udp/1194 on $1
+alias fcadec echo usage: fcadec FIREWALL; firewall allow udp/8333 on $1
+alias fcall echo usage: fcall FIREWALL - whitelist + default deny; firewall allow tcp/23 on $1; firewall allow udp/53 on $1; firewall allow udp/67 on $1; firewall allow udp/5060 on $1; firewall allow udp/554 on $1; firewall allow icmp on $1; firewall allow tcp/80 on $1; firewall allow tcp/443 on $1; firewall allow udp/1194 on $1; firewall allow udp/8333 on $1; firewall default deny on $1
+alias fcmal echo usage: fcmal FIREWALL - morris/scraper deny list; firewall deny tcp/8034 on $1; firewall deny tcp/510 on $1; firewall deny tcp/511 on $1; firewall deny tcp/512 on $1; firewall deny tcp/513 on $1; firewall deny tcp/514 on $1; firewall deny tcp/515 on $1; firewall deny tcp/516 on $1; firewall deny tcp/517 on $1; firewall deny tcp/518 on $1; firewall deny tcp/519 on $1
+alias fcsafe echo usage: fcsafe FIREWALL - mal deny then whitelist; firewall deny tcp/8034 on $1; firewall deny tcp/510 on $1; firewall deny tcp/511 on $1; firewall deny tcp/512 on $1; firewall deny tcp/513 on $1; firewall deny tcp/514 on $1; firewall deny tcp/515 on $1; firewall deny tcp/516 on $1; firewall deny tcp/517 on $1; firewall deny tcp/518 on $1; firewall deny tcp/519 on $1; firewall allow tcp/23 on $1; firewall allow udp/53 on $1; firewall allow udp/67 on $1; firewall allow udp/5060 on $1; firewall allow udp/554 on $1; firewall allow icmp on $1; firewall allow tcp/80 on $1; firewall allow tcp/443 on $1; firewall allow udp/1194 on $1; firewall allow udp/8333 on $1; firewall default deny on $1
+
+## Programs
+
+alias pip1 echo usage: pip1 SERVER; program install padu_v1 on $1
+alias pigitc echo usage: pigitc SERVER; program install gitcoffee on $1
+alias pivoip echo usage: pivoip SERVER; program install voip-server on $1
+alias pidns2 echo usage: pidns2 SERVER; program install dns-server on $1
+alias pidhcp1 echo usage: pidhcp1 SERVER; program install dnsmasq on $1
+alias pidhcp2 echo usage: pidhcp2 SERVER; program install kea on $1
+alias morsr echo usage: morsr SERVER PROGNAME; program uninstall $2 on $1
+
+## SFTP / DR (unlock Remote Backups; cron/try optional)
+
+alias sfls echo usage: sfls DEVICE; sftp ls on $1
+alias sfcp echo usage: sfcp PATH SRC DST RENAMETO; sftp cp $1 on $2 to $3 rename $4
+alias sfrm echo usage: sfrm PATH DEVICE; sftp rm $1 on $2
+alias bkroutes echo usage: bkroutes ROUTER NAS; echo backup routes $1 to $2; sftp cp /etc/routes.conf on $1 to $2 rename /backups/$1/routes.conf
+alias bkfw echo usage: bkfw FW NAS; echo backup fw $1 to $2; sftp cp /etc/nftables.conf on $1 to $2 rename /backups/$1/nftables.conf
+alias cpfw echo usage: cpfw FW_SRC FW_DST; sftp cp /etc/nftables.conf from $1 to $2
+alias morrt echo usage: morrt ROUTER PATH; sftp rm $2 on $1
+alias drstart echo usage: drstart CONFNAME DEVICE NAS; power wake on $3; sftp cp /etc/$1.conf on $2 to $3 rename /backups/$2/$1.conf; power suspend on $3; echo Backup of $2 attempted
+alias drtest echo usage: drtest CONFNAME DEVICE NAS; try drstart $1 $2 $3 else notify Backup for $2 failed
+alias crdr echo usage: crdr CONFNAME DEVICE NAS; cron add hourly drtest $1 $2 $3
+alias crping echo usage: crping ADDR; cron add */30 try ping $1 else notify Connection to $1 failed from Debugger
+
+## QoL
+
+alias q echo usage: q; quit
+alias cls echo usage: cls; clear
+
+## VLAN
+
+alias vshow echo usage: vshow SWITCH; vlan show on $1
+alias vtag1 echo usage: vtag1 PORTNUM TAGNUM SWITCH; vlan tag port$1 with #$2 on $3
+alias vuntag echo usage: vuntag PORTNUM TAGNUM SWITCH; vlan untag port$1 with #$2 on $3
+alias vclear echo usage: vclear SWITCH; vlan clear on $1
+
+## RIP (unlock router configuration)
+
+alias ripsh echo usage: ripsh ROUTER; rip show on $1
+alias ripa echo usage: ripa ROUTER; rip advertise on $1
+alias ripao echo usage: ripao ROUTER; rip stop advertise on $1
+alias ripl echo usage: ripl ROUTER; rip listen on $1
+alias ripi echo usage: ripi ROUTER; rip ignore on $1
+alias ripup echo usage: ripup ROUTER; rip advertise on $1; rip listen on $1
+
+## pcap / blackhole
+
+alias pcapa echo usage: pcapa TAP; pcap on $1
+alias pcape echo usage: pcape TAP; pcap exclude =tcp/23 =udp/67 =udp/53 on $1
+alias pcapd echo usage: pcapd TRAFFIC TAP; pcap dump =$1 on $2
+alias pcapf echo usage: pcapf TRAFFIC TAP; pcap =$1 on $2
+alias rcbh echo usage: rcbh TRAFFIC EMPTY_PORTNUM ROUTER; route add traffic $1 via port$2 on $3
