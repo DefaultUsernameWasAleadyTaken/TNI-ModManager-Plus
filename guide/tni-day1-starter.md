@@ -1289,8 +1289,9 @@ alias rcbh echo usage: rcbh TRAFFIC EMPTY_PORTNUM ROUTER; route add traffic $1 v
 
 ## Источники
 
+- [tni-unofficial-docs](https://avril112113.github.io/tni-unofficial-docs/) ([GitHub](https://github.com/Avril112113/tni-unofficial-docs))
 - Steam: [Hitchhiker's Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=3651464033)
 - Steam: [Firewalls - Basics](https://steamcommunity.com/sharedfiles/filedetails/?id=3548511586)
-- Локально: [`tni-floor-connectivity.md`](./tni-floor-connectivity.md)
+- Локально: [`tni-floor-connectivity.md`](./tni-floor-connectivity.md), [`tni-newbie.md`](./tni-newbie.md)
 
 Сверяй `man` на своей сборке: команды и пути файлов слегка плавают между патчами.

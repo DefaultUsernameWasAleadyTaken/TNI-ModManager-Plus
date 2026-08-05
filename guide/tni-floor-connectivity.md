@@ -1241,10 +1241,11 @@ rcbh tcp/510 5 @c1/b1
 
 ## Источники
 
+- [tni-unofficial-docs](https://avril112113.github.io/tni-unofficial-docs/) ([GitHub](https://github.com/Avril112113/tni-unofficial-docs)) — сген. данные устройств/доки (часто beta)
 - Steam: [Hitchhiker's Guide](https://steamcommunity.com/sharedfiles/filedetails/?id=3651464033) (DHCP, DR/sftp/Morris, RIP, VOIP/phone, VLAN aliases, Tower Link)
 - Steam: [Firewalls - Basics and Traffic Types](https://steamcommunity.com/sharedfiles/filedetails/?id=3548511586) (Datawiper, nftables copy)
 - Steam discussions: VLAN trunk / router-on-a-stick (dev)
 - Pocosia roadmap: warranty, sftp, RIP, power events
-- HackMD Aliases / device-tables; tutorial Riser Setup Across Floors
+- HackMD Aliases / [device-tables](https://hackmd.io/@tower-network/device-tables); tutorial Riser Setup Across Floors
 
 Сверяй `man route`, `man net`, `man dns`, `man dhcp`, `man firewall`, `man sftp`, `man rip`, `man vlan`, `man pcap` на своей сборке.
