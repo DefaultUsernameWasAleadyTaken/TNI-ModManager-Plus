@@ -70,7 +70,7 @@ Tower Networking Inc. Песочница для обучения сети.
 | 4–5 | DNS / DHCP | Boulder+ ×2 | `@c1/dns`, `@c1/dhcp` | к **Milli** красным |
 | 6 | Питание | Tenabolt + Ultrabolt | — | — |
 | 7 | Розетка | **Fiber** | — | этаж ↔ ЦОД |
-| — | Debugger | — | `@me` | к **Micro** port4 (ок на edge; на Milli переносить не обязательно) |
+| — | Debugger | — | `@debug` | на **Milli** для `init_dc` (исторически был Micro :4) |
 
 ### Провода
 
@@ -82,7 +82,7 @@ Tower Networking Inc. Песочница для обучения сети.
                                            @c1 Milli
                                               ├── красный → @c1/dns
                                               └── красный → @c1/dhcp
-Debugger ──фиолет──► Micro port4
+Debugger ──фиолет──► Milli (для init_dc)
 ```
 
 ### Порты Micro `@c1/b1` (факт)
@@ -107,6 +107,9 @@ Debugger ──фиолет──► Micro port4
 | **0** | ← FW port1 |
 | **1** | → `@c1/dns` port**0** (красный) |
 | **2** | → `@c1/dhcp` port**0** (красный) |
+| **3?** | Debugger (если переткнул сюда для разведки) |
+
+HW: Micro **43060**, FW **10054**, Milli **85182**, Debugger **98662**.
 
 ```mermaid
 flowchart TB
@@ -130,10 +133,8 @@ flowchart TB
 
 ### Порядок сейчас
 
-1. ~~Оптика на Micro port9~~ · ~~Debugger на Micro port4~~ · ~~Micro:0→FW:0~~ · ~~Milli запитан~~.  
-2. FW port1 → Milli; красные Milli → DNS/DHCP.  
-3. Имена + программы + `fcmal`.  
-4. На этаже 1 — парная optical + Tower Link.
+1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.  
+2. Этаж 1 — парная optical + Tower Link.
 
 ---
 
@@ -174,11 +175,12 @@ flowchart TB
 - [x] Пресет Lab  
 - [x] Три стойки назначены (ЦОД / f1 / f2)  
 - [x] В ЦОД: Micro, **Milli**, FW-24e, Boulder+ ×2, Tenabolt, Ultrabolt  
-- [x] Micro port**9** → optical; port**4** → Debugger; port**0** → FW port**0**  
-- [x] **Disco Milli** запитан; FW:1→Milli:0; Milli:1→DNS:0; Milli:2→DHCP:0  
-- [ ] Имена + программы + `fcmal` + маршруты  
+- [x] Micro port**9** → optical; port**0** → FW; Debugger на **Milli**  
+
+- [x] Патч ЦОД + `@debug` (HW 98662, `always using`)  
+- [x] `init_dc` — ядро + edge (имена, DNS/DHCP, routes, fcmal)  
 - [ ] Железо на этажах + TL  
-- [ ] ping / trace  
+- [ ] ping / trace с этажа  
 
 ### Факт со стойки ЦОД (со скрина)
 
@@ -190,17 +192,15 @@ flowchart TB
 | **Ultrabolt EX6** | разветвитель питания | — |
 | **Boulder+** ×2 | внизу, оба горят | `@c1/dns`, `@c1/dhcp` |
 | **Tenabolt** 800 W | сверху, Load ~551 W | — |
-| Debugger | рядом с ИБП | `@me` |
+| Debugger | рядом с ИБП | `@debug` |
 
-На Micro сетевые порты **пока свободны** — «занятые» на скрине были **провода питания**, не Ethernet.  
+На Micro «занятые» на раннем скрине были **провода питания**, не Ethernet.  
 Этажи 2–3: Tenabolt + Ultrabolt пока **без** роутеров — ок, не трогаем.
 
 ### Следующий шаг
 
-1. Купить **Disco Milli** = ядро `@c1`.  
-2. Micro = edge `@c1/b1` (оптика с этажа).  
-3. Розетки **optical**.  
-4. Патч + имена + программы.
+1. ~~Патч + `adebug` + `init_dc`~~ — ЦОД готов.  
+2. Этаж 1: железо + optical TL на Micro port9.
 
 ---
 
@@ -234,22 +234,13 @@ flowchart TB
 
 ### Программы
 
+Всё это делает **`init_dc`** — вручную не нужно. Для справки:
+
 | Сервер | Install + start |
 |--------|-----------------|
 | `@c1/dns` | `padu_v1`, `dns-server` |
-| `@c1/dhcp` | `dnsmasq` → `dhprefix @c1/`, `dhdns @c1/dns` |
-
-```text
-pip1 @c1/dns
-pidns2 @c1/dns
-program start padu_v1 on @c1/dns
-program start dns-server on @c1/dns
-pidhcp1 @c1/dhcp
-program start dnsmasq on @c1/dhcp
-dhprefix @c1/ @c1/dhcp
-dhdns @c1/dns @c1/dhcp
-fcmal @c1/b1/fw
-```
+| `@c1/dhcp` | `dnsmasq` + bind/prefix/dns |
+| `@c1/b1/fw` | Morris/scraper deny (`fcmal`) |
 
 ### Схема проводов (цвета)
 
@@ -258,7 +249,7 @@ fcmal @c1/b1/fw
 | **Оптика** | этаж ↔ розетка ↔ **Micro port9** |
 | **Оранжевый/жёлтый медь** | Micro → **FW** → Milli |
 | **Красный** | Milli → DNS, Milli → DHCP |
-| **Фиолетовый** | Debugger → **Micro port4** |
+| **Фиолетовый** | Debugger → **Milli** (для `init_dc`; был Micro :4) |
 | Питание | Tenabolt / Ultrabolt — не Ethernet |
 
 ```text
@@ -269,7 +260,7 @@ fcmal @c1/b1/fw
                                       @c1 Milli
                                          ├── красный → @c1/dns
                                          └── красный → @c1/dhcp
-Debugger ──фиолет──► Micro :4
+Debugger ──фиолет──► Milli (для init_dc)
 ```
 
 Таблица патча:
@@ -277,7 +268,7 @@ Debugger ──фиолет──► Micro :4
 | # | Среда | От | Port | К | Port | Статус |
 |---|-------|----|------|---|------|--------|
 | 1 | Оптика | розетка этажа | — | `@c1/b1` Micro | **9** | **есть** |
-| 2 | Фиолетовый | Debugger | — | `@c1/b1` Micro | **4** | **есть** |
+| 2 | Фиолетовый | Debugger | — | `@c1` Milli | любой свободный | **переткнуть** |
 | 3 | Медь | `@c1/b1` Micro | **0** | `@c1/b1/fw` | **0** | **есть** |
 | 4 | Медь | `@c1/b1/fw` | **1** | `@c1` Milli | **0** | **есть** |
 | 5 | Красный | `@c1` Milli | **1** | `@c1/dns` | **0** | **есть** |
@@ -285,41 +276,72 @@ Debugger ──фиолет──► Micro :4
 
 ### Порядок сейчас
 
-1. ~~Весь патч ЦОД~~ (optical9, dbg4, Micro0→FW0→FW1→Milli0, Milli1→DNS, Milli2→DHCP).  
-2. **Сейчас:** netshell — имена, `rca`, программы, `fcmal`.  
-3. Этажи — потом.
+1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.  
+2. Этажи — потом.
 
-### Следующий шаг — netshell (имена + routes + ПО)
+### Netshell — канон после патча
 
-FW прозрачен (как свитч). Маршруты только на роутерах:
+Стойка собрана и кабели вставлены → дальше только:
+
+1. `adebug HW` (дебаггер на **Milli**)
+2. `init_dc …` — одной командой имена, DNS/DHCP, routes, Morris-deny на FW
+
+`ncall` / `nca` **не нужны** (есть в `alias-pack` на разовые правки). Поштучные `rca` / `pip1` / `fcmal` тоже не копируй вручную — это уже внутри `init_dc`.
+
+#### 1. Дебаггер = `@debug`
+
+В usage алиаса **нельзя** `[…]` — скобки ломают текст (`[lb]`/`[rb]`).
 
 ```text
-ncall @c1 @c1/dns HW
-ncall @c1/b1 @c1/dns HW
-ncall @c1/b1/fw @c1/dns HW
-ncall @c1/dns @c1/dns HW_DNS
-ncall @c1/dhcp @c1/dns HW_DHCP
-
-rca @c1/b1 0 @c1
-rca @c1/dns 1 @c1
-rca @c1/dhcp 2 @c1
-rca @c1 0 @c1/b1
-
-pip1 @c1/dns
-pidns2 @c1/dns
-program start padu_v1 on @c1/dns
-program start dns-server on @c1/dns
-pidhcp1 @c1/dhcp
-program start dnsmasq on @c1/dhcp
-dhprefix @c1/ @c1/dhcp
-dhdns @c1/dns @c1/dhcp
-fcmal @c1/b1/fw
+alias adebug echo usage: adebug DEVICE_HW; net address set @debug on $1; net dhcp disable on $1; always using @debug
+adebug 98662
 ```
 
-На Micro позже: `rca` на port9 к этажу, когда будет TL.  
-Если `ncall` ругается до DNS — сначала install/start, потом имена.
+#### 2. HW этого сейва (на новой игре — свои)
 
-> Старые варианты «один Micro + медь» / «FW в стороне» **отменены** — не используй.
+| Устройство | HW | Имя |
+|------------|-----|-----|
+| Debugger | **98662** | `@debug` |
+| Milli | **85182** | `@c1` |
+| Micro | **43060** | `@c1/b1` |
+| FW | **10054** | `@c1/b1/fw` |
+| DNS | **57440** | `@c1/dns` |
+| DHCP | **26997** | `@c1/dhcp` |
+
+#### 3. `init_dc`
+
+Если `alias` уже показывает `adebug` и `init_dc` — **не переопределяй**, сразу вызывай. Ниже — тот же текст, что в игре / [`alias-pack.txt`](./alias-pack.txt) (на новую игру или другой сейв).
+
+Аргументы: `HW_R PORT_DHCP PORT_DNS PORT_FW HW_DHCP HW_DNS HW_FW HW_MICRO PREFIX`
+
+| $ | Смысл | Пример |
+|---|--------|--------|
+| $1 | HW Milli | 85182 |
+| $2 | порт → DHCP | 2 |
+| $3 | порт → DNS | 1 |
+| $4 | порт → FW | 0 |
+| $5 | HW DHCP | 26997 |
+| $6 | HW DNS | 57440 |
+| $7 | HW FW | 10054 |
+| $8 | HW Micro | 43060 |
+| $9 | префикс | @c1 |
+
+```text
+alias init_dc echo usage: init_dc HW_R PORT_DHCP PORT_DNS PORT_FW HW_DHCP HW_DNS HW_FW HW_MICRO PREFIX - example init_dc 85182 2 1 0 26997 57440 10054 43060 @c1; route enable broadcast on $1; try ping $1 else echo fail router; route add traffic udp/53 via port$3 on $1; route add traffic udp/67 via port$2 on $1; route default via port$2 on $1; try ping $5 else echo fail dhcp; try program install dnsmasq on $5 else echo skip dhcp install; program start dnsmasq on $5; dhcp option bind $5 as $9/dhcp on $5; dhcp option bind $6 as $9/dns on $5; dhcp option bind $1 as $9 on $5; dhcp option bind $7 as $9/b1/fw on $5; dhcp option bind $8 as $9/b1 on $5; dhcp option dns $9/dns on $5; dhcp option prefix $9/u- on $5; net dhcp request on $1; net dhcp request on $5; route default via port$3 on $1; try ping $6 else echo fail dns; net dhcp request on $6; try program install dns-server on $6 else echo skip dns; try program install padu_v1 on $6 else echo skip padu; program start dns-server on $6; program start padu_v1 on $6; route default via port$4 on $1; try ping $7 else echo fail fw; net dhcp request on $7; try ping $8 else echo fail micro; net dhcp request on $8; route default drop on $1; route add $9/dns via port$3 on $1; route add $9/dhcp via port$2 on $1; route add $9/b1 via port$4 on $1; route add $9 via port0 on $8; net dns set $9/dns on $7; net dns set $9/dns on $8; net dns set $9/dns on @debug; firewall deny tcp/8034 on $7; firewall deny tcp/510 on $7; firewall deny tcp/511 on $7; firewall deny tcp/512 on $7; firewall deny tcp/513 on $7; firewall deny tcp/514 on $7; firewall deny tcp/515 on $7; firewall deny tcp/516 on $7; firewall deny tcp/517 on $7; firewall deny tcp/518 on $7; firewall deny tcp/519 on $7; route show on $1
+```
+
+Запуск (этот сейв):
+
+```text
+adebug 98662
+init_dc 85182 2 1 0 26997 57440 10054 43060 @c1
+```
+
+**Уже прогнано — успех.** Prefix в логе может стать `c1/u-` без `@`; при необходимости: `dhcp option prefix @c1/u- on @c1/dhcp`.
+
+Проверка: `ping @c1/dns` · `net show on @c1/b1` · `route show on @c1`.
+
+Дальше — этаж 1 (TL с Micro port9).
 
 ---
 
