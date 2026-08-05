@@ -9,6 +9,7 @@
   <sys:String x:Key="L.TabAliases">Алиасы</sys:String>
   <sys:String x:Key="L.Library">Библиотека</sys:String>
   <sys:String x:Key="L.Refresh">Обновить</sys:String>
+  <sys:String x:Key="L.RefreshAliasesTip">Перечитать cmd_alias из settings.json игры</sys:String>
   <sys:String x:Key="L.FilterAll">Все</sys:String>
   <sys:String x:Key="L.FilterInstalled">Установленные</sys:String>
   <sys:String x:Key="L.FilterAvailable">Доступные</sys:String>

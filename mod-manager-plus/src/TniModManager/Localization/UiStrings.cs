@@ -17,6 +17,7 @@ public static class UiStrings
     public static string ThemeToLight => Ru ? "Переключить на светлую тему" : "Switch to light theme";
     public static string ThemeToDark => Ru ? "Переключить на тёмную тему" : "Switch to dark theme";
     public static string Loading => Ru ? "Загрузка…" : "Loading...";
+    public static string Refresh => Ru ? "Обновить" : "Refresh";
     public static string StartupError(string message) =>
         Ru ? $"Ошибка запуска: {message}" : $"Startup error: {message}";
 
@@ -90,6 +91,18 @@ public static class UiStrings
         Ru
             ? "Есть несохранённые изменения алиасов. Закрыть без сохранения?"
             : "You have unsaved alias changes. Close without saving?";
+    public static string ConfirmDiscardAliasesRefreshMessage =>
+        Ru
+            ? "Есть несохранённые изменения. Перезагрузить алиасы из игры и отбросить правки?"
+            : "You have unsaved changes. Reload aliases from the game and discard edits?";
+    public static string AliasesReloaded(int count) =>
+        Ru
+            ? $"Алиасы загружены из игры ({count})."
+            : $"Aliases loaded from the game ({count}).";
+    public static string AliasesReloadFailed(string message) =>
+        Ru
+            ? $"Не удалось загрузить алиасы: {message}"
+            : $"Failed to load aliases: {message}";
     public static string Removed(string name) => Ru ? $"Удалён {name}" : $"Removed {name}";
     public static string ConfigSaved => Ru ? "Конфигурация сохранена!" : "Configuration saved!";
     public static string ConfigSaveFailed => Ru ? "Не удалось сохранить конфигурацию." : "Failed to save configuration.";

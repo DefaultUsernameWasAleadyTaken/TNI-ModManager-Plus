@@ -114,6 +114,18 @@
           </Border>
 
           <Button Classes="ghost" HorizontalAlignment="Stretch"
+                  Command="{Binding RefreshAliasesCommand}"
+                  ToolTip.Tip="{DynamicResource L.RefreshAliasesTip}">
+            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+              <PathIcon Width="12" Height="12"
+                        Foreground="{DynamicResource MutedBrush}"
+                        Data="M12,5V1L7,6L12,11V7A6,6 0 0,1 18,13A6,6 0 0,1 12,19A6,6 0 0,1 6,13H4A8,8 0 0,0 12,21A8,8 0 0,0 20,13A8,8 0 0,0 12,5Z"/>
+              <TextBlock Text="{DynamicResource L.Refresh}" Classes="muted"
+                         FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Button>
+
+          <Button Classes="ghost" HorizontalAlignment="Stretch"
                   Command="{Binding OpenAliasesFolderCommand}">
             <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
               <PathIcon Width="12" Height="12"

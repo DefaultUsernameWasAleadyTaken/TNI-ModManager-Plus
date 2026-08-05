@@ -225,6 +225,35 @@ public partial class AliasesViewModel : ViewModelBase
     }
 
     [RelayCommand]
+    private async Task RefreshAliasesAsync()
+    {
+        FlushDraftToSelected(requireValidName: false);
+        RefreshDirty();
+
+        if (HasUnsavedChanges)
+        {
+            var confirmed = await _shell.ConfirmAsync(
+                UiStrings.ConfirmDiscardAliasesTitle,
+                UiStrings.ConfirmDiscardAliasesRefreshMessage,
+                UiStrings.Refresh).ConfigureAwait(true);
+            if (!confirmed)
+                return;
+        }
+
+        try
+        {
+            var keep = SelectedAlias?.Name.Trim();
+            _settings.Load();
+            ReloadAliases(keep);
+            _shell.SetStatus(UiStrings.AliasesReloaded(Aliases.Count));
+        }
+        catch (Exception ex)
+        {
+            _shell.SetStatus(UiStrings.AliasesReloadFailed(ex.Message), isError: true);
+        }
+    }
+
+    [RelayCommand]
     private void OpenAliasesFolder()
     {
         try

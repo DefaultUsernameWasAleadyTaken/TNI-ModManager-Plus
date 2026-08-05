@@ -9,6 +9,7 @@
   <sys:String x:Key="L.TabAliases">Aliases</sys:String>
   <sys:String x:Key="L.Library">Library</sys:String>
   <sys:String x:Key="L.Refresh">Refresh</sys:String>
+  <sys:String x:Key="L.RefreshAliasesTip">Reload cmd_alias from the game settings.json</sys:String>
   <sys:String x:Key="L.FilterAll">All</sys:String>
   <sys:String x:Key="L.FilterInstalled">Installed</sys:String>
   <sys:String x:Key="L.FilterAvailable">Available</sys:String>
