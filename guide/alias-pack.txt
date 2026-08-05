@@ -71,9 +71,13 @@ alias fcsafe echo usage: fcsafe FIREWALL - mal deny then whitelist; firewall den
 alias pip1 echo usage: pip1 SERVER; program install padu_v1 on $1
 alias pigitc echo usage: pigitc SERVER; program install gitcoffee on $1
 alias pivoip echo usage: pivoip SERVER; program install voip-server on $1
-alias pidns2 echo usage: pidns2 SERVER; program install dns-server on $1
+alias pidns1 echo usage: pidns1 SERVER - dns-lite; program install dns-lite on $1
+alias pidns2 echo usage: pidns2 SERVER - dns-server needs padu; program install dns-server on $1
+alias pstart echo usage: pstart PROG ADDR; program start $1 on $2
+alias pview echo usage: pview installed/running ADDR; program view $1 on $2
 alias pidhcp1 echo usage: pidhcp1 SERVER; program install dnsmasq on $1
 alias pidhcp2 echo usage: pidhcp2 SERVER; program install kea on $1
+alias dhdns2 echo usage: dhdns2 DNS1 DNS2 DHCP; dhcp option dns $1 $2 on $3
 alias morsr echo usage: morsr SERVER PROGNAME; program uninstall $2 on $1
 
 ## SFTP / DR (unlock Remote Backups; cron/try optional)

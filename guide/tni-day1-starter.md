@@ -2,7 +2,7 @@
 
 Tower Networking Inc. Гайд для человека, **который никогда не играл**.  
 Стартовая ситуация: **ЦОД (floor 0) + 3 этажа**.  
-Схема: блоки по 3; на каждом этаже роутер + **FW на down**; в ЦОД — edge/FW/money; на **f1 блока** — DNS+DHCP; на f2/f3 — свой DNS; DHCP с f1 на весь блок.  
+Схема: блоки по 3; роутер+FW на этажах; в ЦОД — edge/FW/money + **корневой DNS+DHCP**; на f1 блока — DNS+DHCP блока; на f2/f3 — dns-lite; клиенты: DNS блока, затем DNS ЦОД.  
 Пресет: без авто-DNS/авто-DHCP, **нужны сетевые адреса**, **реальная ПС**, без автозапуска программ.
 
 Связанные файлы:
@@ -46,9 +46,10 @@ Tower Networking Inc. Гайд для человека, **который ник�
 ```text
 Клиенты → Blade → этажный роутер
                 ↕ вверх/вниз (Tower Link)
-Низ блока → ЦОД: edge → FW → ядро → svc → money (VOIP/Git)
-На f1 блока: DNS + DHCP всего блока
-На f2/f3 блока: свой DNS (DHCP нет — берут с f1)
+Низ блока → ЦОД: edge → FW → ядро → svc → money
+                 + корневой DNS (@c1/dns) + DHCP ЦОД (@c1/dhcp)
+На f1 блока: DNS блока + DHCP блока (dns → блок, потом @c1/dns)
+На f2/f3: свой dns-lite (DHCP с f1)
 ```
 
 **Блок** = ~3 этажа в **цепочке этажных роутеров**. Сейчас `b1` = этажи 1–3. Этажи 4–6 = `b2` со **своими** DNS/DHCP на своём f1 — не продолжай up с этажа 3.
@@ -69,16 +70,16 @@ Tower Networking Inc. Гайд для человека, **который ник�
 
 Клиенты **не** висят напрямую на Tower Link: `клиенты → Blade → этажный роутер → линк вниз/вверх`.
 
-**Серверы и защита на этажах блока:**
+**Серверы DNS/DHCP и защита:**
 
-| Этаж блока | DNS | DHCP | Firewall этажа |
-|------------|-----|------|----------------|
-| **f1** (первый / низ) | `@c1/b1/dns` | `@c1/b1/dhcp` (на весь блок) | `@c1/b1/f1/fw` — на **down** к ЦОД |
-| **f2** | `@c1/b1/f2/dns` | нет | `@c1/b1/f2/fw` — на **down** к f1 |
-| **f3** (последний) | `@c1/b1/f3/dns` | нет | `@c1/b1/f3/fw` — на **down** к f2 |
+| Место | DNS | DHCP | FW |
+|-------|-----|------|-----|
+| **ЦОД** | `@c1/dns` (**dns-server**+padu) | `@c1/dhcp` (**dnsmasq**, prefix `@c1/`) | `@c1/b1/fw` |
+| **f1 блока** | `@c1/b1/dns` (**dns-lite**) | `@c1/b1/dhcp` (**dnsmasq**, prefix `@c1/b1/`, dns → блок **и** `@c1/dns`) | `@c1/b1/f1/fw` |
+| **f2** | `@c1/b1/f2/dns` (**dns-lite**) | нет | `@c1/b1/f2/fw` |
+| **f3** | `@c1/b1/f3/dns` (**dns-lite**) | нет | `@c1/b1/f3/fw` |
 
-DHCP на f1 кормит весь блок. Money (**VOIP/Git**) — только в ЦОД.  
-Этажный FW режет Morris/scraper **до** того, как зараза пойдёт вниз по цепочке; в ЦОД остаётся ещё `@c1/b1/fw` на стволе блока→ядро.
+Money voip/git — только ЦОД. Клиенты блока: `dhcp option dns @c1/b1/dns @c1/dns` (сначала блок, потом корень).
 
 ```mermaid
 flowchart TB
@@ -86,24 +87,28 @@ flowchart TB
     edge["@c1/b1 edge"]
     fw["@c1/b1/fw"]
     core["@c1"]
+    rootdns["@c1/dns dns-server+padu"]
+    rootdhcp["@c1/dhcp dnsmasq"]
     svc["@c1/svc + voip/git"]
     edge --> fw --> core --> svc
+    core --> rootdns
+    core --> rootdhcp
   end
   subgraph f1 [Этаж 1]
     sw1["Blade"] --> r1["@c1/b1/f1"]
-    dns1["dns+dhcp"] --> r1
+    dns1["dns-lite + dnsmasq"] --> r1
     fw1["@c1/b1/f1/fw"]
     r1 -->|down| fw1
   end
   subgraph f2 [Этаж 2]
     sw2["Blade"] --> r2["@c1/b1/f2"]
-    dns2["dns"] --> r2
+    dns2["dns-lite"] --> r2
     fw2["@c1/b1/f2/fw"]
     r2 -->|down| fw2
   end
   subgraph f3 [Этаж 3]
     sw3["Blade"] --> r3["@c1/b1/f3"]
-    dns3["dns"] --> r3
+    dns3["dns-lite"] --> r3
     fw3["@c1/b1/f3/fw"]
     r3 -->|down| fw3
   end
@@ -116,22 +121,13 @@ flowchart TB
 
 ```text
 ЦОД:   @c1/b1 → @c1/b1/fw → @c1 → svc → voip/git
+       + @c1/dns (dns-server+padu) + @c1/dhcp (dnsmasq)
 
-Этаж1: Blade → router f1 ← dns + dhcp
-                 │ down
-              f1/fw → TL → ЦОД
-                 │ up (без FW или как решишь)
-              → этаж 2
+Этаж1: Blade → router f1 ← dns-lite + dnsmasq(блок)
+                 │ down → f1/fw → TL → ЦОД
+                 │ up → этаж 2
 
-Этаж2: Blade → router f2 ← dns
-                 │ down
-              f2/fw → TL → up-порт f1
-                 │ up
-              → этаж 3
-
-Этаж3: Blade → router f3 ← dns
-                 │ down only
-              f3/fw → TL → up-порт f2
+Этаж2/3: Blade → router ← dns-lite; down через fN/fw; f3 без up
 ```
 
 ### Зачем роутер на каждом этаже
@@ -148,12 +144,14 @@ flowchart TB
 | Edge блока | `@c1/b1` | **ЦОД** — сюда «вниз» с этажа 1 |
 | **Firewall блока** | `@c1/b1/fw` | **ЦОД**, разрыв edge → ядро |
 | Money VOIP/Git | `@c1/svc/voip`, `…/git` | **ЦОД** |
+| **Корневой DNS** | `@c1/dns` | **ЦОД** · dns-server + padu_v1 |
+| **DHCP ЦОД** | `@c1/dhcp` | **ЦОД** · dnsmasq · prefix `@c1/` |
 | Ядро | `@c1` | **ЦОД** |
 | Этажный роутер | `@c1/b1/f1`…`f3` | На своём этаже |
-| **Firewall этажа** | `@c1/b1/fN/fw` | На **каждом** этаже, в разрыв **down**-линка |
+| **Firewall этажа** | `@c1/b1/fN/fw` | На **каждом** этаже, в разрыв **down** |
 | Switch | `@c1/b1/fN/s1` | На своём этаже |
-| **DNS + DHCP блока** | `@c1/b1/dns`, `@c1/b1/dhcp` | **Этаж 1 блока** |
-| **DNS этажа** | `@c1/b1/f2/dns`, `@c1/b1/f3/dns` | **Этажи 2 и 3** |
+| **DNS + DHCP блока** | `@c1/b1/dns`, `@c1/b1/dhcp` | **Этаж 1** · dns-lite + dnsmasq |
+| **DNS этажа** | `@c1/b1/f2/dns`, `@c1/b1/f3/dns` | **Этажи 2–3** · dns-lite |
 
 На каждом FW (этаж + ЦОД) хотя бы `fcmal`. **Datawiper** обязателен. Up-линк между этажами обычно **без** второго FW (фильтр на down достаточно); при паранойе можно врезать FW и на up.
 
@@ -174,24 +172,25 @@ flowchart TB
 
 ```text
 @c1                 ядро ЦОД
-@c1/b1              edge блока в ЦОД
+@c1/b1              edge блока
 @c1/b1/fw           firewall блока
+@c1/dns             корневой DNS ЦОД (dns-server + padu_v1)
+@c1/dhcp            DHCP ЦОД (dnsmasq, prefix @c1/)
 @c1/svc             сервисный роутер money
-@c1/svc/voip        VOIP (ЦОД)
-@c1/svc/git         GitCoffee (ЦОД)
+@c1/svc/voip        VOIP
+@c1/svc/git         GitCoffee
 @c1/b1/f1           этажный роутер этажа 1
-@c1/b1/f1/fw        firewall этажа 1 (на down)
-@c1/b1/dns          DNS блока — на этаже 1
-@c1/b1/dhcp         DHCP блока — на этаже 1
+@c1/b1/f1/fw        firewall этажа 1
+@c1/b1/dns          DNS блока (dns-lite) на этаже 1
+@c1/b1/dhcp         DHCP блока (dnsmasq) на этаже 1
 @c1/b1/f2           этажный роутер этажа 2
-@c1/b1/f2/fw        firewall этажа 2 (на down)
-@c1/b1/f2/dns       DNS этажа 2
+@c1/b1/f2/fw        firewall этажа 2
+@c1/b1/f2/dns       DNS этажа 2 (dns-lite)
 @c1/b1/f3           этажный роутер этажа 3
-@c1/b1/f3/fw        firewall этажа 3 (на down)
-@c1/b1/f3/dns       DNS этажа 3
-@c1/b1/f1/s1        switch этажа 1
+@c1/b1/f3/fw        firewall этажа 3
+@c1/b1/f3/dns       DNS этажа 3 (dns-lite)
+@c1/b1/f1/s1        switch
 @c1/b1/f1/c1        клиент
-@c1/b1/f2/p1        продюсер
 ```
 
 Позже: `@c1/b2/dns` + `@c1/b2/dhcp` на первом этаже b2, `@c1/b2/f2/dns`… на остальных. **Не** называй DNS просто `@dns`.
@@ -220,58 +219,103 @@ flowchart TB
 
 ## Список покупок на старт
 
+DNS/DHCP есть **и в ЦОД, и на этажах**: корень в ЦОД; блок/этаж — свои DNS; DHCP ЦОД для имён в @c1/…, DHCP блока на f1 для жильцов.
+
+### Программы DNS/DHCP — что ставить (по твоему `program list`)
+
+| Программа | Куда | Почему |
+|-----------|------|--------|
+| **`dns-server`** + **`padu_v1`** | ЦОД `@c1/dns` | Корневой DNS: **20** reply/tick; **нужен** store-text → рядом/`on` том же сервере `padu_v1`. Сюда money-map (`voip.none`…) и имена железа ЦОД |
+| **`dns-lite`** | DNS блоков/этажей `@c1/b1/dns`, `@c1/b1/f2/dns`, `@c1/b1/f3/dns` | Лёгкий: **3** reply/tick, **без** padu. Хватает на этаж; локальные map продюсеров |
+| **`dnsmasq`** | ЦОД `@c1/dhcp` **и** блок `@c1/b1/dhcp` | Единственный DHCP в стартовом списке. ЦОД: `prefix @c1/`, dns → `@c1/dns`. Блок: `prefix @c1/b1/`, dns → **сначала** `@c1/b1/dns`, **потом** `@c1/dns` |
+
+**Иерархия запросов:** клиенты блока через DHCP получают  
+`dhcp option dns @c1/b1/dns @c1/dns`  
+— сначала DNS блока (локальные имена), если не справился / перегружен — **корневой DNS ЦОД** (money и адреса ядра).  
+Аналогично на f2/f3 можно: `… @c1/b1/f2/dns @c1/dns`.
+
+**Не ставь** `dns-server` на каждый этаж в день 1: жрёт CPU/MEM и требует padu на каждом.  
+`kea` / `sun-dns` — когда откроешь в Secretariat (сейчас в list нет).
+
+Автозапуск **выкл** — после install всегда:
+
+```text
+program start dns-server on @c1/dns
+program start padu_v1 on @c1/dns
+program start dnsmasq on @c1/dhcp
+program start dns-lite on @c1/b1/dns
+program start dnsmasq on @c1/b1/dhcp
+```
+
+(или `program view running on @…`)
+
+### Роли DNS/DHCP (где железо)
+
+| Роль | Имя | Где | ПО |
+|------|-----|-----|-----|
+| Корневой DNS | `@c1/dns` | **ЦОД** | dns-server + padu_v1 |
+| DHCP ЦОД | `@c1/dhcp` | **ЦОД** | dnsmasq · prefix `@c1/` · dns `@c1/dns` |
+| DNS блока | `@c1/b1/dns` | **этаж 1 блока** | dns-lite |
+| DHCP блока | `@c1/b1/dhcp` | **этаж 1 блока** | dnsmasq · prefix `@c1/b1/` · dns `@c1/b1/dns` `@c1/dns` |
+| DNS этажа | `@c1/b1/f2/dns`, `f3/dns` | этажи 2–3 | dns-lite |
+
+Money voip/git по-прежнему в ЦОД; **map money** держи на `@c1/dns` обязательно; на DNS блока/этажа — либо те же map, либо полагайся на второй DNS в option.
+
+
+### Сводная корзина
+
+| Кол-во | Что | Куда | Имя |
+|--------|-----|------|-----|
+| 1 | Disco Micro | ЦОД | @c1 |
+| 2 | Disco Milli | ЦОД | @c1/b1, @c1/svc |
+| **4** | Firewall | ЦОД + этажи 1–3 | @c1/b1/fw, f1…f3/fw |
+| **3** | Роутер этажа | этажи 1–3 | @c1/b1/f1…f3 |
+| 3 | Blade5 | этажи 1–3 | switches |
+| **2** | Boulder+ | **ЦОД** | **@c1/dns**, **@c1/dhcp** |
+| 2 | Boulder+ | ЦОД | voip, git |
+| **2** | Boulder+ | **этаж 1** | @c1/b1/dns, @c1/b1/dhcp |
+| **2** | Boulder / Boulder+ | этажи 2–3 | f2/dns, f3/dns |
+| 1 | Debugger + Datawiper | — | — |
+| пачка | UK plug + Ethernet | везде | меряй T |
+
+Опционально: Socketeer, Padu отдельно (если не на @c1/dns), NAS.
+
 ### Железо в ЦОД
 
 | Кол-во | Что | Имя | Зачем |
 |--------|-----|-----|--------|
-| 1 | Disco **Micro** | `@c1` | Ядро |
-| 1 | Disco **Milli** | `@c1/b1` | Edge блока |
-| 1 | **Firewall** | `@c1/b1/fw` | Разрыв b1→c1 |
-| 1 | Disco **Milli** | `@c1/svc` | Перед money |
-| 1 | Boulder+ | `@c1/svc/voip` | voip-server |
-| 1 | Boulder+ | `@c1/svc/git` | gitcoffee |
-| 1 | Debugger | `@me` | netshell |
-| 1 | **Datawiper USB** | — | Сброс FW |
-
-DNS и DHCP **не** в ЦОД — они на этаже 1 блока. Отложить: второй FW перед svc, NAS, отдельный Padu.
+| 1 | Disco Micro | @c1 | Ядро |
+| 1 | Disco Milli | @c1/b1 | Edge блока |
+| 1 | Firewall | @c1/b1/fw | Ствол блока→ядро |
+| 1 | Disco Milli | @c1/svc | Перед money |
+| 1 | Boulder+ | **@c1/dns** | **Корневой DNS** (dns-server + padu_v1) |
+| 1 | Boulder+ | **@c1/dhcp** | **DHCP ЦОД** (dnsmasq, имена @c1/…) |
+| 1 | Boulder+ | @c1/svc/voip | voip-server |
+| 1 | Boulder+ | @c1/svc/git | gitcoffee |
+| 1 | Debugger | @me | netshell |
+| 1 | Datawiper | — | сброс FW |
+| ≥8–12 | UK plug | — | питание |
 
 ### Железо на этажах блока
 
-| Этаж | Что | Имя | Зачем |
-|------|-----|-----|--------|
-| **каждый** | Blade5 | `@c1/b1/fN/s1` | Клиенты |
-| **каждый** | Роутер | `@c1/b1/fN` | Цепочка up/down |
-| **каждый** | **Firewall** | `@c1/b1/fN/fw` | В разрыв **down** |
-| **f1** | Boulder+ | `@c1/b1/dns` | DNS блока |
-| **f1** | Boulder+ | `@c1/b1/dhcp` | DHCP на весь блок |
-| **f2** | Boulder / Boulder+ | `@c1/b1/f2/dns` | DNS этажа |
-| **f3** | Boulder / Boulder+ | `@c1/b1/f3/dns` | DNS этажа |
-| f3 | — | — | без DHCP и без up |
-
-Итого FW: **1 в ЦОД** + **1 на каждый этаж блока** (на старте 1+3). Питание на Blade, роутер, FW и серверы. На f3 не покупай вертикаль «вверх».
+| Этаж | Что | Имя | ПО |
+|------|-----|-----|-----|
+| каждый ×3 | Blade + роутер + FW | fN, fN/fw, fN/s1 | — |
+| **f1** | Boulder+ | @c1/b1/dns | **dns-lite** |
+| **f1** | Boulder+ | @c1/b1/dhcp | **dnsmasq** (весь блок) |
+| **f2** | Boulder | @c1/b1/f2/dns | **dns-lite** |
+| **f3** | Boulder | @c1/b1/f3/dns | **dns-lite** |
 
 ### Кабели (ориентир)
 
 | Цвет | Длина | Куда |
 |------|-------|------|
-| Оранжевый | 200 | ЦОД: b1↔fw↔c1↔svc; этажи: **up** f1→f2, f2→f3 |
-| Жёлтый | 500–2000 | **down**: роутер → **этажный FW** → riser (f1→ЦОД, f2→f1, f3→f2) |
-| Красный | 200–500 | ЦОД: voip/git; **этаж 1:** dns+dhcp к роутеру f1; **f2/f3:** dns к роутеру этажа |
-| Белый | 200–500 | Blade → этажный роутер |
+| Оранжевый | 200 | ЦОД: b1↔fw↔c1↔svc; up между этажами |
+| Жёлтый | 500–2000 | down через этажный FW |
+| Красный | 200–500 | ЦОД: dns, dhcp, voip, git к svc/c1; этаж1: dns+dhcp к f1; f2/f3: dns к роутеру |
+| Белый | 200–500 | Blade → роутер |
 | Синий / зелёный | по T | клиенты / phone |
 | Фиолетовый | 1000–1500 | debugger |
-
-### Программы (что ставить)
-
-| Программа | Куда | Зачем | Когда |
-|-----------|------|-------|--------|
-| `dns-server` | `@c1/b1/dns` **и** `@c1/b1/f2/dns`, `@c1/b1/f3/dns` | Резолв | **День 1** |
-| `dnsmasq` или `kea` | `@c1/b1/dhcp` (только f1) | Адреса всего блока | **День 1** (пресет без auto-DHCP) |
-| `voip-server` | `@c1/svc/voip` | STREAM-VOICE | День 1 |
-| `gitcoffee` | `@c1/svc/git` | UPDATE-SOFTWARE | День 1 |
-| `padu_v1` | на git и/или отдельный | Store | День 1–2 |
-
-На каждом DNS (f1/f2/f3) одни и те же money-map (`voip.none`, `git.none`); локальных продюсеров map’ь на DNS того этажа (или на `@c1/b1/dns`). Автозапуска нет — проверяй `watch`.
 
 ### Приложения на телефоне (Rocket Store)
 
@@ -318,52 +362,51 @@ FW стоит **на пути** пакетов (кабель через него
 
 #### 0. Питание
 
-`@c1`, `@c1/b1`, `@c1/b1/fw`, `@c1/svc`, voip, git → розетки ЦОД.  
-(DNS/DHCP питаются **на этаже 1**.)
+`@c1`, `@c1/b1`, `@c1/b1/fw`, `@c1/svc`, **`@c1/dns`**, **`@c1/dhcp`**, voip, git → розетки ЦОД.  
+(Плюс на этаже 1 — свои dns-lite + dnsmasq блока.)
 
 #### 1. Ствол с firewall (оранжевый ~200)
 
 | # | От | Port | К | Port |
 |---|----|------|---|------|
-| 1 | `@c1/b1` | **7** | `@c1/b1/fw` | **0** (вход со стороны блока) |
-| 2 | `@c1/b1/fw` | **1** | `@c1` | **0** (выход к ядру) |
+| 1 | `@c1/b1` | **7** | `@c1/b1/fw` | **0** |
+| 2 | `@c1/b1/fw` | **1** | `@c1` | **0** |
 | 3 | `@c1` | **1** | `@c1/svc` | **7** |
 
+#### 2. Серверы ЦОД (красный) — к `@c1` или `@c1/svc`
+
+| # | От | Port | К | ПО |
+|---|----|------|---|-----|
+| 4 | `@c1` | **2** | `@c1/dns` | dns-server + padu_v1 |
+| 5 | `@c1` | **3** | `@c1/dhcp` | dnsmasq |
+| 6 | `@c1/svc` | **0** | `@c1/svc/voip` | voip-server |
+| 7 | `@c1/svc` | **1** | `@c1/svc/git` | gitcoffee |
+
 ```text
-@c1/b1 port7 ===== FW ===== @c1 port0 / port1 ===== @c1/svc port7
-                 (в разрыве)
+@c1     port2/3 ──красный── @c1/dns , @c1/dhcp
+@c1/svc port0/1 ──красный── voip , git
 ```
 
-Магазинный FW ведёт себя как «фильтрующий switch»: отдельные `route` на нём обычно не нужны. Важно только: трафик **реально проходит** через него.
-
-#### 2. Money-серверы (красный)
-
-| # | От `@c1/svc` | К |
-|---|--------------|---|
-| 4 | port**0** | `@c1/svc/voip` |
-| 5 | port**1** | `@c1/svc/git` |
-
-(DNS больше не в ЦОД.)
-
-#### 3. Одна розетка под ствол блока (не три!)
+#### 3. Одна розетка под ствол блока
 
 | # | Розетка ЦОД | К | Port edge |
 |---|-------------|---|-----------|
-| 6 | под линк с этажа 1 | `@c1/b1` | **0** |
+| 8 | под линк с этажа 1 | `@c1/b1` | **0** |
 
 #### 4. Debugger
 
-Фиолетовый → свободный порт `@c1` (не 0/1). Пока крутишь FW — debugger лучше **за** FW (со стороны ядра).
+Фиолетовый → свободный порт `@c1`.
 
 #### Схема портов ЦОД (заполни)
 
 ```text
-@c1/b1      0   ← TL down с @c1/b1/f1     serial ____
-@c1/b1      7   → оранжевый → FW port0
-@c1/b1/fw   0   ← от b1
-@c1/b1/fw   1   → оранжевый → @c1 port0
-@c1         0   ← от FW
-@c1         1   → @c1/svc port7
+@c1/b1      0   ← TL с f1
+@c1/b1      7   → FW
+@c1/b1/fw   0/1 → @c1
+@c1         0   ← FW
+@c1         1   → @c1/svc
+@c1         2   → @c1/dns
+@c1         3   → @c1/dhcp
 @c1/svc     7   ← @c1
 @c1/svc     0/1 → voip / git
 ```
@@ -436,10 +479,12 @@ rcat udp/67 3 @c1/b1/f1
 rcb @c1/b1/f1
 rca @c1/b1/f2 1 @c1/b1/f1
 rcd 7 @c1/b1/f1
-pidns2 @c1/b1/dns
+pidns1 @c1/b1/dns
+program start dns-lite on @c1/b1/dns
 pidhcp1 @c1/b1/dhcp
+program start dnsmasq on @c1/b1/dhcp
 dhprefix @c1/b1/ @c1/b1/dhcp
-dhdns @c1/b1/dns @c1/b1/dhcp
+dhcp option dns @c1/b1/dns @c1/dns on @c1/b1/dhcp
 ```
 
 На edge в ЦОД: `rca @c1/b1/f1 0 @c1/b1`.  
@@ -472,7 +517,8 @@ rca @c1/b1/f2/dns 2 @c1/b1/f2
 rca @c1/b1/f3 1 @c1/b1/f2
 rcat udp/67 7 @c1/b1/f2
 rcd 7 @c1/b1/f2
-pidns2 @c1/b1/f2/dns
+pidns1 @c1/b1/f2/dns
+program start dns-lite on @c1/b1/f2/dns
 dmap voip.none @c1/svc/voip @c1/b1/f2/dns
 dmap git.none @c1/svc/git @c1/b1/f2/dns
 ```
@@ -500,7 +546,8 @@ rca @c1/b1/f3/s1 0 @c1/b1/f3
 rca @c1/b1/f3/dns 2 @c1/b1/f3
 rcat udp/67 7 @c1/b1/f3
 rcd 7 @c1/b1/f3
-pidns2 @c1/b1/f3/dns
+pidns1 @c1/b1/f3/dns
+program start dns-lite on @c1/b1/f3/dns
 dmap voip.none @c1/svc/voip @c1/b1/f3/dns
 dmap git.none @c1/svc/git @c1/b1/f3/dns
 ```
@@ -570,11 +617,12 @@ dmap git.none @c1/svc/git @c1/b1/f3/dns
 
 ## Шаг 1. Расставь железо в ЦОД и запатчь по схеме
 
-1. Micro → `@c1`, Milli → `@c1/b1`, **FW** → `@c1/b1/fw`, Milli → `@c1/svc`, Boulder+ ×2 → voip/git.  
-2. Питание. Оранжевый: `b1` → `fw` → `c1` → `svc`. Красный: svc → voip/git.  
-3. Одна розетка ЦОД → `b1 port0`. Debugger в `@c1`. Datawiper в инвентаре.  
+1. Micro `@c1`, Milli `@c1/b1`, FW `@c1/b1/fw`, Milli `@c1/svc`.  
+2. Boulder+: **`@c1/dns`**, **`@c1/dhcp`**, voip, git.  
+3. Питание; оранжевый ствол; красный к dns/dhcp/voip/git.  
+4. Розетка под down с f1; debugger; Datawiper.  
 
-DNS/DHCP и этажные роутеры — на этажах (шаг 7–8).
+Этажи — шаг 7–8.
 
 ## Шаг 2. Открой netshell и заведи алиасы
 
@@ -590,43 +638,55 @@ always using 12345
 
 4. Скопируй блок **«Старт: обязательные алиасы»** из [конца файла](#алиасы-скопируй-в-netshell) (или весь [`alias-pack.txt`](./alias-pack.txt)).
 
-## Шаг 3. Имена устройств в ЦОД
-
-Пока DNS этажа 1 ещё не поднят — можно временно указать любой будущий DNS или сначала поднять этаж 1 (шаг 7), потом вернуться. Удобный порядок: **сначала этаж 1 (DNS+DHCP)**, потом имена ЦОД на `@c1/b1/dns`.
+## Шаг 3. Имена в ЦОД (DNS = `@c1/dns`)
 
 ```text
-ncall @c1 @c1/b1/dns HARDWARE_ID_ЯДРА
-ncall @c1/b1 @c1/b1/dns HARDWARE_ID_EDGE
-ncall @c1/b1/fw @c1/b1/dns HARDWARE_ID_FW
-ncall @c1/svc @c1/b1/dns HARDWARE_ID_SVC
-ncall @c1/svc/voip @c1/b1/dns HARDWARE_ID_VOIP
-ncall @c1/svc/git @c1/b1/dns HARDWARE_ID_GIT
+ncall @c1 @c1/dns HW
+ncall @c1/b1 @c1/dns HW
+ncall @c1/b1/fw @c1/dns HW
+ncall @c1/svc @c1/dns HW
+ncall @c1/dns @c1/dns HW_DNS
+ncall @c1/dhcp @c1/dns HW_DHCP
+ncall @c1/svc/voip @c1/dns HW
+ncall @c1/svc/git @c1/dns HW
 ```
 
-## Шаг 4. Программы money в ЦОД
+## Шаг 4. Программы в ЦОД
 
 ```text
+pip1 @c1/dns
+pidns2 @c1/dns
+program start padu_v1 on @c1/dns
+program start dns-server on @c1/dns
+pidhcp1 @c1/dhcp
+program start dnsmasq on @c1/dhcp
+dhprefix @c1/ @c1/dhcp
+dhdns @c1/dns @c1/dhcp
 pivoip @c1/svc/voip
 pigitc @c1/svc/git
-pip1 @c1/svc/git
+program start voip-server on @c1/svc/voip
+program start gitcoffee on @c1/svc/git
 ```
 
-DNS/DHCP ставятся на этажах (шаг 7–8). Автозапуска нет — `watch`.
+`dns-server` **без** running `padu_v1` не кормится store-text — проверь `program view running on @c1/dns`.
 
 ## Шаг 5. Маршруты в ЦОД
 
 ```text
 rca @c1/b1 0 @c1
 rca @c1/svc 1 @c1
+rca @c1/dns 2 @c1
+rca @c1/dhcp 3 @c1
 rca @c1 7 @c1/b1
 rcd 7 @c1/b1
 rca @c1 7 @c1/svc
 rcd 7 @c1/svc
 rca @c1/svc/voip 0 @c1/svc
 rca @c1/svc/git 1 @c1/svc
+rcat udp/67 3 @c1
 ```
 
-После линка с этажа 1: `rca @c1/b1/f1 0 @c1/b1`.
+После линка с f1: `rca @c1/b1/f1 0 @c1/b1`.
 
 ## Шаг 5b. Firewall против Morris (не откладывай на неделю)
 
@@ -666,6 +726,8 @@ fcsafe @c1/b1/fw
 4. В netshell на **каждом** DNS этажа:
 
 ```text
+dmap voip.none @c1/svc/voip @c1/dns
+dmap git.none @c1/svc/git @c1/dns
 dmap voip.none @c1/svc/voip @c1/b1/dns
 dmap git.none @c1/svc/git @c1/b1/dns
 dmap voip.none @c1/svc/voip @c1/b1/f2/dns
@@ -674,9 +736,7 @@ dmap voip.none @c1/svc/voip @c1/b1/f3/dns
 dmap git.none @c1/svc/git @c1/b1/f3/dns
 ```
 
-(Если DNS f2/f3 ещё не подняты — map после шага 8.)
-
-Без этого шага (авто-DNS выкл) домен в Registry пустой.
+Money **обязательно** на `@c1/dns`. На DNS блока/этажа — дубль map **или** клиенты возьмут второй DNS из DHCP (`@c1/dns`).
 
 ## Шаг 7. Этаж 1 — роутер + FW + DNS + DHCP
 
@@ -694,11 +754,15 @@ ncall @c1/b1/dns @c1/b1/dns DNS_HW
 ncall @c1/b1/dhcp @c1/b1/dns DHCP_HW
 ncall @c1/b1/f1/s1 @c1/b1/dns SWITCH_HW
 fcmal @c1/b1/f1/fw
-pidns2 @c1/b1/dns
+pidns1 @c1/b1/dns
+program start dns-lite on @c1/b1/dns
 pidhcp1 @c1/b1/dhcp
+program start dnsmasq on @c1/b1/dhcp
 dhprefix @c1/b1/ @c1/b1/dhcp
-dhdns @c1/b1/dns @c1/b1/dhcp
+dhdns2 @c1/b1/dns @c1/dns @c1/b1/dhcp
 ```
+
+`dhdns2` = два DNS: сначала блок, потом корень ЦОД (если алиаса нет: `dhcp option dns @c1/b1/dns @c1/dns on @c1/b1/dhcp`).
 
 5. Маршруты — как в схеме f1.  
 6. `dmap` money на `@c1/b1/dns`.  
@@ -715,13 +779,14 @@ ncall @c1/b1/f2 @c1/b1/f2/dns R2_HW
 ncall @c1/b1/f2/fw @c1/b1/f2/dns FW2_HW
 ncall @c1/b1/f2/dns @c1/b1/f2/dns DNS2_HW
 fcmal @c1/b1/f2/fw
-pidns2 @c1/b1/f2/dns
+pidns1 @c1/b1/f2/dns
+program start dns-lite on @c1/b1/f2/dns
 dmap voip.none @c1/svc/voip @c1/b1/f2/dns
 dmap git.none @c1/svc/git @c1/b1/f2/dns
 rcat udp/67 7 @c1/b1/f2
 ```
 
-**Этаж 3:** то же + **f3/fw**, только down, без DHCP и без up.
+**Этаж 3:** то же с `f3` / **dns-lite** / `f3/fw`, только down.
 
 Клиенты f2/f3: адрес с DHCP f1; DNS — option `@c1/b1/dns` или `ncall` на `@c1/b1/fN/dns`.
 
@@ -743,14 +808,12 @@ rcat udp/5060 PORT_VOIP @c1/svc
 
 ## Шаг 10. День 1 готов, если
 
-- [ ] В ЦОД: edge + **b1/fw** + svc + voip/git  
-- [ ] На **f1**: роутер + **f1/fw** + DNS + DHCP  
-- [ ] На **f2/f3**: роутер + **fN/fw** + DNS  
-- [ ] `fcmal` на ЦОД-FW и на **каждом** этажном FW  
-- [ ] TL: ЦОД↔f1, f1↔f2, f2↔f3; у f3 нет up  
-- [ ] `udp/67` до DHCP на f1  
-- [ ] `dmap` на всех DNS  
-- [ ] `ping` / `trace` до voip  
+- [ ] ЦОД: edge + fw + svc + **@c1/dns + @c1/dhcp** + voip/git  
+- [ ] f1: router + fw + **dns-lite + dnsmasq** (dns option: блок + `@c1/dns`)  
+- [ ] f2/f3: router + fw + **dns-lite**  
+- [ ] `program start` на dns/dhcp/voip/git; padu running с dns-server  
+- [ ] `fcmal` на всех FW  
+- [ ] dmap money на `@c1/dns` (+ дубли на этажах по желанию)   
 
 **Не делай:** up f3→4; FW мимо down; DHCP на f2/f3; whitelist без tcp/23.
 
@@ -760,11 +823,16 @@ rcat udp/5060 PORT_VOIP @c1/svc
 
 | Тема | Зачем | Когда |
 |------|-------|--------|
-| **Firewall на каждом этаже** | В разрыв **down**; плюс FW блока в ЦОД | День 1 |
-| **Firewall + Datawiper** | Morris/scraper; иначе жрут ПС | День 1 |
+| **Корневой DNS/DHCP в ЦОД** | `@c1/dns` + `@c1/dhcp`; блоки ходят вторым DNS | День 1 |
+| **dns-server нужен padu** | Без `padu_v1` running dns-server голодает | День 1 |
+| **dns-lite на этажах** | 3 reply/tick; не ставь dns-server на каждый этаж зря | День 1 |
+| **program start** | Автозапуск выкл | После каждого install |
+| **DHCP dns ×2** | `dhcp option dns @c1/b1/dns @c1/dns` | Блок f1 |
+| **Питание (UK plug)** | На каждое устройство в ЦОД и на этажах; свет платный | День 1 |
+| **4× Firewall** | 1 ЦОД + 3 этажа; Datawiper | День 1 |
 | **Автозапуск программ выкл** | После `program install` проверь `watch` / список — сервис может «лежать» | После install |
 | **DHCP только на f1** | На f2/f3 DHCP не дублировать; `udp/67` тянуть к f1 | День 1 |
-| **DNS на каждом этаже блока** | f1 = блок DNS; f2/f3 = свой dns-server + те же money map | День 1 |
+| **DNS на каждом этаже блока** | f1 = dns-lite блока; f2/f3 = dns-lite; money на `@c1/dns` | День 1 |
 | **Публичный телефон** | Без него Accept-VOIP часто не капает | Шаг 9 |
 | **Карта продюсера в DNS** | Surveyor → имя → `dmap` на `@…/p1` | Когда producer онлайн |
 | **Запись портов/serial/цветов** | Авария / замена железа без фото = ад | С первого патча |
@@ -867,26 +935,27 @@ Whitelist вместо «всё кроме Morris»; отдельный FW пе�
 
 ---
 
-## 3. DHCP в блоке (уже на f1 — тонкости)
-
-### Зачем
-Один DHCP на **первом этаже блока** кормит все три этажа. На f2/f3 DHCP **не** ставь.
-
-### Настройка (напоминание)
+### DHCP блока (f1)
 
 ```text
-pidhcp1 @c1/b1/dhcp
 dhprefix @c1/b1/ @c1/b1/dhcp
-dhdns @c1/b1/dns @c1/b1/dhcp
+dhcp option dns @c1/b1/dns @c1/dns on @c1/b1/dhcp
 dhbind PRODUCER_HW @c1/b1/f2/p1 @c1/b1/dhcp
 rcat udp/67 3 @c1/b1/f1
 rcat udp/67 7 @c1/b1/f2
 rcat udp/67 7 @c1/b1/f3
-rcb @c1/b1/f1
 ```
 
-Авто-DNS доменов Registry **всё равно нет** — `dmap` руками на `@c1/b1/dns` и на DNS f2/f3.  
-Если клиенту этажа 2 нужен именно `@c1/b1/f2/dns`: `ncall` / bind с этим DNS, либо второй dns option если билд умеет.
+Второй DNS `@c1/dns` — корень ЦОД (money / имена ядра), если блок перегружен.
+
+### DHCP ЦОД
+
+```text
+dhprefix @c1/ @c1/dhcp
+dhdns @c1/dns @c1/dhcp
+```
+
+Раздаёт имена железу ЦОД (`@c1/…`). Авто-DNS доменов Registry всё равно нет — `dmap` на `@c1/dns`.
 
 ---
 
@@ -1103,7 +1172,11 @@ alias dsh echo usage: dsh DNS; dns show on $1
 alias pdev echo usage: pdev ADDR; ping $1
 alias trc echo usage: trc DEST from SRC; trace $1 from $2
 alias wdev echo usage: wdev ADDR; watch $1
-alias pidns2 echo usage: pidns2 SERVER; program install dns-server on $1
+alias pidns1 echo usage: pidns1 SERVER - dns-lite; program install dns-lite on $1
+alias pidns2 echo usage: pidns2 SERVER - dns-server needs padu; program install dns-server on $1
+alias pstart echo usage: pstart PROG ADDR; program start $1 on $2
+alias pview echo usage: pview installed/running ADDR; program view $1 on $2
+alias dhdns2 echo usage: dhdns2 DNS1 DNS2 DHCP; dhcp option dns $1 $2 on $3
 alias pivoip echo usage: pivoip SERVER; program install voip-server on $1
 alias pigitc echo usage: pigitc SERVER; program install gitcoffee on $1
 alias pip1 echo usage: pip1 SERVER; program install padu_v1 on $1
@@ -1174,12 +1247,12 @@ alias rcbh echo usage: rcbh TRAFFIC EMPTY_PORTNUM ROUTER; route add traffic $1 v
 
 ## День 1
 
-- [ ] ЦОД: edge + b1/fw + svc + voip/git + Datawiper  
-- [ ] f1: router + **f1/fw** + dns + dhcp  
-- [ ] f2/f3: router + **fN/fw** + dns  
-- [ ] Цепочка TL; `fcmal` на всех FW  
-- [ ] dhcp prefix; udp/67 по цепочке; dmap на всех DNS  
-- [ ] Порты записаны; ping/trace ок      
+- [ ] ЦОД: edge + fw + svc + **dns (dns-server+padu) + dhcp** + voip/git  
+- [ ] f1: router + fw + **dns-lite + dnsmasq** (dns: блок + `@c1/dns`)  
+- [ ] f2/f3: router + fw + dns-lite  
+- [ ] `program start` везде; `fcmal` на всех FW  
+- [ ] dmap money на `@c1/dns`  
+- [ ] ping/trace ок       
 
 ## Первая неделя расширения
 
