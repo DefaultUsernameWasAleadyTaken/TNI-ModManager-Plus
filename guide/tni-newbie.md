@@ -134,7 +134,8 @@ flowchart TB
 ### Порядок сейчас
 
 1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.  
-2. Этаж 1 — парная optical + Tower Link.
+2. **Сейчас:** патч этажа 1 + TL.  
+3. Этаж 2 — потом.
 
 ---
 
@@ -159,13 +160,13 @@ flowchart TB
 | Стойка | Железо (минимум на старт) | Программы |
 |--------|--------------------------|-----------|
 | **ЦОД** | **Micro=edge** (оптика) + **Milli=ядро** + FW + DNS/DHCP | dns-server + padu; dnsmasq |
-| **Этаж 1** | (позже) Blade, роутер, FW, DNS+DHCP блока | dns-lite; dnsmasq |
+| **Этаж 1** | **Micro** + Blade5 + FW-24e + Boulder+×2 (+ питание) | dns-lite; dnsmasq · имена `@c1/b1/f1/…` |
 | **Этаж 2** | (позже) Blade, роутер, FW, DNS | dns-lite |
 
 Линки:
 
-1. Этаж 1 **down** → через `f1/fw` → TL → `@c1/b1` (в стойке ЦОД).  
-2. Этаж 2 **down** → через `f2/fw` → TL → **up** этажа 1.  
+1. Этаж 1 **down** → **fiber** с `@c1/b1/f1` → TL → `@c1/b1` Micro port9 (этажный FW **не** в optical hop).  
+2. Этаж 2 **down** → через `f2/fw` → TL → **up** этажа 1 — позже.  
 3. У этажа 2 **нет** up дальше (в полном гайде тут был бы f3).
 
 Имена и ПО как в [`tni-day1-starter.md`](./tni-day1-starter.md), только блок урезан до **2 этажей**.
@@ -176,11 +177,18 @@ flowchart TB
 - [x] Три стойки назначены (ЦОД / f1 / f2)  
 - [x] В ЦОД: Micro, **Milli**, FW-24e, Boulder+ ×2, Tenabolt, Ultrabolt  
 - [x] Micro port**9** → optical; port**0** → FW; Debugger на **Milli**  
-
 - [x] Патч ЦОД + `@debug` (HW 98662, `always using`)  
 - [x] `init_dc` — ядро + edge (имена, DNS/DHCP, routes, fcmal)  
-- [ ] Железо на этажах + TL  
-- [ ] ping / trace с этажа  
+- [x] `init_f1` — имена `@c1/b1/f1/…`, dns-lite, dnsmasq, routes, Morris-deny  
+- [x] Оптика Micro f1 → розетка  
+- [x] `ripup` на `@c1/b1/f1`, `@c1/b1`, `@c1` — ping ЦОД OK  
+- [ ] Этаж 2 / клиенты  
+
+### Следующий шаг
+
+1. ~~Uplink~~ — этаж видит `@c1/dns`.  
+2. Этаж 2 или клиент на Blade.  
+3. При необходимости: `dhcp option prefix @c1/b1/f1/u- on @c1/b1/f1/dhcp`.
 
 ### Факт со стойки ЦОД (со скрина)
 
@@ -194,13 +202,37 @@ flowchart TB
 | **Tenabolt** 800 W | сверху, Load ~551 W | — |
 | Debugger | рядом с ИБП | `@debug` |
 
-На Micro «занятые» на раннем скрине были **провода питания**, не Ethernet.  
-Этажи 2–3: Tenabolt + Ultrabolt пока **без** роутеров — ок, не трогаем.
+### Факт — стойка этаж 1 (средняя)
+
+| Железо | HW | Имя (назначить) |
+|--------|-----|-----------------|
+| Debugger | **98662** | `@debug` (уже) |
+| Disco **Micro** | **7209** | `@c1/b1/f1` |
+| **FW-24e** / FireWatch | **56171** | `@c1/b1/f1/fw` |
+| **Blade5** | **21731** | `@c1/b1/f1/s1` |
+| **Boulder+** DNS | **35304** | `@c1/b1/f1/dns` |
+| **Boulder+** DHCP | **9124** | `@c1/b1/f1/dhcp` |
+| Tenabolt / Ultrabolt | — | питание |
+
+`scan` с дебаггера на f1: Micro hop1, FW hop2, Blade hop3. DNS/DHCP HW кликом.
+
+**Патч медь (факт):**
+
+| От | Port | К | Port |
+|----|------|---|------|
+| `@c1/b1/f1/dns` | **0** | Micro f1 | **1** |
+| `@c1/b1/f1/dhcp` | **0** | Micro f1 | **2** |
+| FW | **0** | Micro f1 | **0** |
+| Blade | **0** | FW | **1** |
+
+Цепочка клиентов: `Blade :0 → FW :1 · FW :0 → Micro :0`.  
+Оптика на Micro f1 — **позже** (после netshell). Розетки этаж↔ЦОД уже связаны Tower Link.  
+Debugger на настройку этажа: фиолет → Micro f1 свободная медь (**3** или **4**; 0–2 заняты).
 
 ### Следующий шаг
 
-1. ~~Патч + `adebug` + `init_dc`~~ — ЦОД готов.  
-2. Этаж 1: железо + optical TL на Micro port9.
+1. Патч этажа 1 + Tower Link на ЦОД Micro port9.  
+2. Netshell: имена / DHCP блока / routes.
 
 ---
 
@@ -342,6 +374,109 @@ init_dc 85182 2 1 0 26997 57440 10054 43060 @c1
 Проверка: `ping @c1/dns` · `net show on @c1/b1` · `route show on @c1`.
 
 Дальше — этаж 1 (TL с Micro port9).
+
+---
+
+## Этаж 1 — патч (сейчас)
+
+Железо + питание + **медный патч** — есть. Оптика на роутер этажа — **после** netshell. Розетки уже на TL.
+
+FW порты у тебя: **0→Micro**, **1←Blade** (не как в старом предложении — ок, так и оставляем).
+
+### Имена (потом, netshell)
+
+| Железо | Имя |
+|--------|-----|
+| Micro этажа | `@c1/b1/f1` |
+| Blade5 | `@c1/b1/f1/s1` |
+| FW-24e | `@c1/b1/f1/fw` |
+| Boulder+ DNS | `@c1/b1/f1/dns` |
+| Boulder+ DHCP | `@c1/b1/f1/dhcp` |
+
+### Провода — факт
+
+```text
+Клиенты ──► Blade :0 ──► FW :1
+                           FW :0 ──► @c1/b1/f1 Micro :0
+                                        ├── :1 ──красный──► @c1/b1/f1/dns :0
+                                        └── :2 ──красный──► @c1/b1/f1/dhcp :0
+
+fiber Micro f1 :9 ──► розетка этажа ══TL══► ЦОД Micro :9
+```
+
+| # | Среда | От | Port | К | Port | Статус |
+|---|-------|----|------|---|------|--------|
+| 1 | Медь | DNS | **0** | Micro f1 | **1** | **есть** |
+| 2 | Медь | DHCP | **0** | Micro f1 | **2** | **есть** |
+| 3 | Медь | FW | **0** | Micro f1 | **0** | **есть** |
+| 4 | Медь | Blade | **0** | FW | **1** | **есть** |
+| 5 | Tower Link | розетка этажа | — | розетка ЦОД | — | **есть** |
+| 6 | Оптика ЦОД | розетка ЦОД | — | `@c1/b1` Micro | **9** | **есть** |
+| 7 | Оптика этаж | Micro f1 | **9** | розетка этажа | — | **есть** |
+
+### Uplink в ЦОД — RIP (канон этого сейва)
+
+Ручной `route default via port9` **не нужен**, если на всех роутерах RIP.
+
+```text
+ripup @c1/b1/f1
+ripup @c1/b1
+ripup @c1
+```
+
+(`ripup` = advertise + listen. Алиас: `alias ripup echo usage: ripup router; rip advertise on $1; rip listen on $1`)
+
+**Прогон — успех.** На f1 появились `@c1`, `@c1/dns`, `@c1/dhcp` → port9; на edge/ядре — `@c1/b1/f1/…`.  
+`ping @c1` · `ping @c1/dns` · `ping @c1/b1/f1/dns` — OK.
+
+Локальные endpoint’ы (dns/dhcp/fw/s1) по-прежнему руками/`init_f1`; mid-hop тянет RIP.
+
+Опционально без RIP: `route default via port9 on @c1/b1/f1` + `route add @c1/b1/f1 via port9 on @c1/b1` + `route add @c1/b1/f1/u- via port0 on @c1/b1/f1`.
+
+### Порядок сейчас (этаж 1)
+
+1. ~~Медный патч~~ · ~~TL~~ · ~~`init_f1`~~ · ~~оптика~~ · ~~`ripup` ×3~~.  
+2. Этаж 2 / клиенты — потом.  
+3. Опционально: `dhcp option prefix @c1/b1/f1/u- on @c1/b1/f1/dhcp`.
+
+### Netshell этажа — `init_f1` (справка, уже прогнано)
+
+Без оптики: локальные имена / dns-lite / dnsmasq / routes / Morris-deny на FW.  
+Uplink — блок выше.
+
+```text
+alias init_f1 echo usage: init_f1 HW_R PORT_DHCP PORT_DNS PORT_FW HW_DHCP HW_DNS HW_FW HW_BLADE PREFIX - example init_f1 7209 2 1 0 9124 35304 56171 21731 @c1/b1/f1; route enable broadcast on $1; try ping $1 else echo fail router; route add traffic udp/53 via port$3 on $1; route add traffic udp/67 via port$2 on $1; route default via port$2 on $1; try ping $5 else echo fail dhcp; try program install dnsmasq on $5 else echo skip dhcp install; program start dnsmasq on $5; dhcp option bind $5 as $9/dhcp on $5; dhcp option bind $6 as $9/dns on $5; dhcp option bind $1 as $9 on $5; dhcp option bind $7 as $9/fw on $5; dhcp option bind $8 as $9/s1 on $5; dhcp option dns $9/dns @c1/dns on $5; dhcp option prefix $9/u- on $5; net dhcp request on $1; net dhcp request on $5; route default via port$3 on $1; try ping $6 else echo fail dns; net dhcp request on $6; try program install dns-lite on $6 else echo skip dns; program start dns-lite on $6; route default via port$4 on $1; try ping $7 else echo fail fw; net dhcp request on $7; try ping $8 else echo fail blade; net dhcp request on $8; route default drop on $1; route add $9/dns via port$3 on $1; route add $9/dhcp via port$2 on $1; route add $9/fw via port$4 on $1; route add $9/s1 via port$4 on $1; try net dns set $9/dns on $9/fw else echo skip dns fw; try net dns set $9/dns on $9/s1 else echo skip dns blade; try net dns set $9/dns on @debug else echo skip dns debug; try firewall deny tcp/8034 on $9/fw else echo skip fw; try firewall deny tcp/510 on $9/fw else echo skip; try firewall deny tcp/511 on $9/fw else echo skip; try firewall deny tcp/512 on $9/fw else echo skip; try firewall deny tcp/513 on $9/fw else echo skip; try firewall deny tcp/514 on $9/fw else echo skip; try firewall deny tcp/515 on $9/fw else echo skip; try firewall deny tcp/516 on $9/fw else echo skip; try firewall deny tcp/517 on $9/fw else echo skip; try firewall deny tcp/518 on $9/fw else echo skip; try firewall deny tcp/519 on $9/fw else echo skip; route show on $1
+```
+
+Запуск (этот сейв):
+
+```text
+init_f1 7209 2 1 0 9124 35304 56171 21731 @c1/b1/f1
+```
+
+| $ | Смысл | Этот сейв |
+|---|--------|-----------|
+| $1 | HW Micro f1 | 7209 |
+| $2 | порт → DHCP | 2 |
+| $3 | порт → DNS | 1 |
+| $4 | порт → FW | 0 |
+| $5 | HW DHCP | 9124 |
+| $6 | HW DNS | 35304 |
+| $7 | HW FW | 56171 |
+| $8 | HW Blade | 21731 |
+| $9 | префикс **этажа** | @c1/b1/f1 |
+
+Имена: роутер `$9` → `@c1/b1/f1`; DNS/DHCP/FW/Blade → `$9/dns`, `$9/dhcp`, `$9/fw`, `$9/s1`.
+
+Проверка: `ping @c1/b1/f1/dns` · `net show on @c1/b1/f1` · `route show on @c1/b1/f1`.
+
+Потом: оптика Micro f1 → розетка → routes на ЦОД (`@c1` / `@c1/b1` на edge).
+
+### Порядок сейчас (этаж 1)
+
+1. ~~Медный патч~~ · ~~TL розеток~~ · ~~HW сняты~~ · ~~`init_f1`~~.  
+2. Оптика Micro f1 → розетка + routes в ЦОД.  
+3. `ping @c1/dns` с этажа.
 
 ---
 
