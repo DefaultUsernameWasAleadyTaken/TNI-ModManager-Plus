@@ -64,7 +64,7 @@ Tower Networking Inc. Песочница для обучения сети.
 | `@c1/b1/f2`           | стойка «этаж 2» | Роутер этажа 2 — **позже**                      |
 
 
-Пока настраиваем только ЦОД — используем `@c1`, `@c1/b1`, `@c1/b1/fw`. Префикс `…/f1` появится, когда соберёшь среднюю стойку.
+Пока настраиваем ЦОД + этаж 1: `@c1`, `@c1/b1`, `@c1/b1/f1/…`. Префикс этажа — **`@c1/b1/f1`** (DNS/DHCP/clients/producers этажа), не `@c1/b1`.
 
 ### Роли
 
@@ -99,8 +99,8 @@ Debugger ──фиолет──► Milli (для init_dc)
 | Port  | Куда                                     |
 | ----- | ---------------------------------------- |
 | **0** | → `@c1/b1/fw` port**0** (медь)           |
-| **4** | Debugger                                 |
 | **9** | Оптическая розетка → этаж 1 (Tower Link) |
+| медь свободная | Debugger на edge (опц.; для `init_dc` лучше Milli) |
 
 
 ### Порты FW `@c1/b1/fw` (факт)
@@ -149,9 +149,62 @@ flowchart TB
 
 ### Порядок сейчас
 
-1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.
-2. **Сейчас:** патч этажа 1 + TL.
+1. ~~ЦОД: патч + `adebug` + `init_dc`~~  
+2. ~~Этаж 1: патч + `init_f1` + оптика + `ripup` + клиенты/`p-mail`~~  
 3. Этаж 2 — потом.
+
+---
+
+## Канон прогона Lab (чеклист одной страницей)
+
+Порядок, которым реально собрали сейв:
+
+```text
+# 0. Алиасы (adebug, init_dc, init_f1, ripup, dhup, dhprod) — из alias-pack / ниже
+# 1. ЦОД: патч → debugger на Milli
+adebug 98662
+init_dc 85182 2 1 0 26997 57440 10054 43060 c1
+# PREFIX без @: c1 → имена @$9 (= @c1/…)
+
+# 2. Этаж 1: медь + TL розеток (оптику на Micro f1 — после init или сразу)
+#    Debugger на Micro f1
+init_f1 7209 2 1 0 9124 35304 56171 21731 c1/b1/f1
+# PREFIX без @: c1/b1/f1 → @$9/dns, @$9/u-, @$9/p-, …
+
+# 3. Оптика Micro f1 :9 → розетка (если ещё не)
+# 4. Uplink — RIP на трёх роутерах (не ручной default, если RIP есть)
+ripup @c1/b1/f1
+ripup @c1/b1
+ripup @c1
+ping @c1/dns
+
+# 5. Клиенты: debugger → Blade
+scan u
+dhup HW          # boot + request; Lab default DHCP = выкл
+# route u-/p- уже из init_f1; иначе:
+# route add @c1/b1/f1/u- via port0 on @c1/b1/f1
+# route add @c1/b1/f1/p- via port0 on @c1/b1/f1
+
+# 6. Producer (mail-hub): имя под p-, не u-
+dhprod 55808 @c1/b1/f1/p-mail @c1/b1/f1/dhcp
+# dhprod с Blade; с Micro за FW — timeout на request
+ping @c1/b1/f1/p-mail
+```
+
+### Грабли (обязательно помнить)
+
+| Грабль | Суть |
+|--------|------|
+| PREFIX в `init_*` | Аргумент **без** `@` (`c1`, `c1/b1/f1`); в алиасе имена через `@$9` |
+| `dhcp option prefix` в логе | Часто показывает `c1/…/u-` **без** `@` — норма игры |
+| RIP | Только **разносит** уже существующие routes; DHCP-имя само в таблицу не попадает |
+| `u-` / `p-` | Локальные prefix-routes на port FW; иначе default drop |
+| Producer ≠ `u-` | `@…/p-mail`, не `@…/mail` и не случайный `u-` |
+| `dhup` / `dhprod` request | Дебаггер на **Blade**; с Micro timeout |
+| `scan u` | Юзеры + часть producers; спящие не видны; с роутера часто пусто |
+| `scan devices` | tcp/23 — клиенты обычно не светятся |
+| `dhcp show` | В основном **bind’ы**; динамические лизы смотри в `scan u` |
+| Переименование bind | `dhcp option unbind HW` → новый `dhprod` → `dhup`/`request` с Blade |
 
 ---
 
@@ -163,7 +216,7 @@ flowchart TB
 | Стойка (слева →) | Роль             | Имена сейчас                                               |
 | ---------------- | ---------------- | ---------------------------------------------------------- |
 | **1 (лево)**     | **ЦОД**          | `@c1` (ядро), `@c1/b1` (edge блока), `@c1/b1/fw`, dns/dhcp |
-| **2 (середина)** | **Этаж 1** блока | позже `@c1/b1/f1/…`                                        |
+| **2 (середина)** | **Этаж 1** блока | `@c1/b1/f1/…`, dns/dhcp, `u-`/`p-` |
 | **3 (право)**    | **Этаж 2** блока | позже `@c1/b1/f2/…`                                        |
 
 
@@ -441,8 +494,9 @@ Debugger ──фиолет──► Milli (для init_dc)
 
 ### Порядок сейчас
 
-1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.
-2. Этажи — потом.
+1. ~~Патч ЦОД~~ · ~~`adebug` + `init_dc`~~.  
+2. ~~Этаж 1~~ (см. [канон прогона](#канон-прогона-lab-чеклист-одной-страницей)).  
+3. Этаж 2 — потом.
 
 ### Netshell — канон после патча
 
@@ -510,17 +564,17 @@ init_dc 85182 2 1 0 26997 57440 10054 43060 c1
 
 Проверка: `ping @c1/dns` · `net show on @c1/b1` · `route show on @c1`.
 
-Дальше — этаж 1 (TL с Micro port9).
+Дальше — [этаж 1](#этаж-1--патч--netshell-факт) / [канон прогона](#канон-прогона-lab-чеклист-одной-страницей).
 
 ---
 
-## Этаж 1 — патч (сейчас)
+## Этаж 1 — патч + netshell (факт)
 
-Железо + питание + **медный патч** — есть. Оптика на роутер этажа — **после** netshell. Розетки уже на TL.
+Железо + питание + медь + **оптика** + TL + `init_f1` + RIP + клиенты/`p-mail` — **готово**.
 
-FW порты у тебя: **0→Micro**, **1←Blade** (не как в старом предложении — ок, так и оставляем).
+FW порты: **0→Micro**, **1←Blade**.
 
-### Имена (потом, netshell)
+### Имена
 
 
 | Железо        | Имя              |
@@ -552,7 +606,7 @@ fiber Micro f1 :9 ──► розетка этажа ══TL══► ЦОД M
 | 4   | Медь       | Blade         | **0** | FW             | **1** | **есть** |
 | 5   | Tower Link | розетка этажа | —     | розетка ЦОД    | —     | **есть** |
 | 6   | Оптика ЦОД | розетка ЦОД   | —     | `@c1/b1` Micro | **9** | **есть** |
-| 7   |            | Micro f1      | **9** | розетка этажа  | —     | **есть** |
+| 7   | Оптика этаж | Micro f1      | **9** | розетка этажа  | —     | **есть** |
 
 
 ### Uplink в ЦОД — RIP (канон этого сейва)
@@ -560,36 +614,26 @@ fiber Micro f1 :9 ──► розетка этажа ══TL══► ЦОД M
 Ручной `route default via port9` **не нужен**, если на всех роутерах RIP.
 
 ```text
+alias ripup echo usage: ripup router; rip advertise on $1; rip listen on $1
 ripup @c1/b1/f1
 ripup @c1/b1
 ripup @c1
 ```
 
-
-|             |
-| ----------- |
-| Оптика этаж |
-
-
-(`ripup` = advertise + listen. Алиас: `alias ripup echo usage: ripup router; rip advertise on $1; rip listen on $1`)
-
-**Прогон — успех.** На f1 появились `@c1`, `@c1/dns`, `@c1/dhcp` → port9; на edge/ядре — `@c1/b1/f1/…`.  
+**Прогон — успех.** На f1: `@c1`, `@c1/dns`, `@c1/dhcp` → port9; на edge/ядре — `@c1/b1/f1/…`.  
 `ping @c1` · `ping @c1/dns` · `ping @c1/b1/f1/dns` — OK.
 
-Локальные endpoint’ы (dns/dhcp/fw/s1) по-прежнему руками/`init_f1`; mid-hop тянет RIP.
+Локальные endpoint’ы (dns/dhcp/fw/s1/`u-`/`p-`) задаёт `init_f1` (+ `dhprod` для имён); mid-hop тянет RIP.  
+RIP **не** создаёт route на `@…/p-mail` сам по себе — нужен prefix-route `p-` (или точечный).
 
-Опционально без RIP: `route default via port9 on @c1/b1/f1` + `route add @c1/b1/f1 via port9 on @c1/b1` + `route add @c1/b1/f1/u- via port0 on @c1/b1/f1`.
+Опционально без RIP: `route default via port9 on @c1/b1/f1` + `route add @c1/b1/f1 via port9 on @c1/b1`.
 
 ### Порядок сейчас (этаж 1)
 
-1. ~~Медный патч~~ · ~~TL~~ · ~~`init_f1`~~ · ~~оптика~~ · ~~`ripup` ×3~~.
+1. ~~Патч~~ · ~~`init_f1`~~ · ~~оптика~~ · ~~`ripup`~~ · ~~клиенты / `p-mail`~~.  
 2. Этаж 2 — потом.
-3. Опционально: `dhcp option prefix @c1/b1/f1/u- on @c1/b1/f1/dhcp`.
 
-### Netshell этажа — `init_f1` (справка, уже прогнано)
-
-Без оптики: локальные имена / dns-lite / dnsmasq / routes / Morris-deny на FW.  
-Uplink — блок выше.
+### Netshell этажа — `init_f1` (справка)
 
 ```text
 alias init_f1 echo usage: init_f1 HW_R PORT_DHCP PORT_DNS PORT_FW HW_DHCP HW_DNS HW_FW HW_BLADE PREFIX - PREFIX without @ - example init_f1 7209 2 1 0 9124 35304 56171 21731 c1/b1/f1; route enable broadcast on $1; try ping $1 else echo fail router; route add traffic udp/53 via port$3 on $1; route add traffic udp/67 via port$2 on $1; route default via port$2 on $1; try ping $5 else echo fail dhcp; try program install dnsmasq on $5 else echo skip dhcp install; program start dnsmasq on $5; dhcp option bind $5 as @$9/dhcp on $5; dhcp option bind $6 as @$9/dns on $5; dhcp option bind $1 as @$9 on $5; dhcp option bind $7 as @$9/fw on $5; dhcp option bind $8 as @$9/s1 on $5; dhcp option dns @$9/dns @c1/dns on $5; dhcp option prefix @$9/u- on $5; net dhcp request on $1; net dhcp request on $5; route default via port$3 on $1; try ping $6 else echo fail dns; net dhcp request on $6; try program install dns-lite on $6 else echo skip dns; program start dns-lite on $6; route default via port$4 on $1; try ping $7 else echo fail fw; net dhcp request on $7; try ping $8 else echo fail blade; net dhcp request on $8; route default drop on $1; route add @$9/dns via port$3 on $1; route add @$9/dhcp via port$2 on $1; route add @$9/fw via port$4 on $1; route add @$9/s1 via port$4 on $1; route add @$9/u- via port$4 on $1; route add @$9/p- via port$4 on $1; try net dns set @$9/dns on @$9/fw else echo skip dns fw; try net dns set @$9/dns on @$9/s1 else echo skip dns blade; try net dns set @$9/dns on @debug else echo skip dns debug; try firewall deny tcp/8034 on @$9/fw else echo skip fw; try firewall deny tcp/510 on @$9/fw else echo skip; try firewall deny tcp/511 on @$9/fw else echo skip; try firewall deny tcp/512 on @$9/fw else echo skip; try firewall deny tcp/513 on @$9/fw else echo skip; try firewall deny tcp/514 on @$9/fw else echo skip; try firewall deny tcp/515 on @$9/fw else echo skip; try firewall deny tcp/516 on @$9/fw else echo skip; try firewall deny tcp/517 on @$9/fw else echo skip; try firewall deny tcp/518 on @$9/fw else echo skip; try firewall deny tcp/519 on @$9/fw else echo skip; route show on $1
@@ -617,23 +661,22 @@ init_f1 7209 2 1 0 9124 35304 56171 21731 c1/b1/f1
 
 Имена: `@$9` → `@c1/b1/f1`; DNS/DHCP/FW/Blade → `@$9/dns` и т.д. PREFIX в аргументе **без** `@`.
 
-Проверка: `ping @c1/b1/f1/dns` · `net show on @c1/b1/f1` · `route show on @c1/b1/f1`.
+Проверка: `ping @c1/b1/f1/dns` · `route show on @c1/b1/f1` (должны быть `u-` и `p-` на port0).
 
-Потом: оптика Micro f1 → розетка → routes на ЦОД (`@c1` / `@c1/b1` на edge).
+Дальше по канону: оптика (если нет) → `ripup` ×3 → клиенты на Blade.
 
-### Порядок сейчас (этаж 1)
+### Статус этажа 1
 
-1. ~~Медный патч~~ · ~~TL розеток~~ · ~~HW сняты~~ · ~~`init_f1`~~.
-2. Оптика Micro f1 → розетка + routes в ЦОД.
-3. `ping @c1/dns` с этажа.
+1. ~~Медный патч~~ · ~~TL~~ · ~~`init_f1`~~ · ~~оптика~~ · ~~RIP~~ · ~~`u-`/`p-` + клиенты/mail~~.  
+2. Этаж 2 — потом.
 
 ---
 
 Связанные файлы:
 
-- день 1 пошагово: `[tni-day1-starter.md](./tni-day1-starter.md)`
-- справочник: `[tni-floor-connectivity.md](./tni-floor-connectivity.md)`
-- алиасы: `[alias-pack.txt](./alias-pack.txt)`
+- день 1 пошагово: [`tni-day1-starter.md`](./tni-day1-starter.md)
+- справочник: [`tni-floor-connectivity.md`](./tni-floor-connectivity.md)
+- алиасы: [`alias-pack.txt`](./alias-pack.txt)
 
 ### Внешние справочники (железо / данные игры)
 
