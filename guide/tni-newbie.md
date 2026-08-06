@@ -233,13 +233,13 @@ ping @c1/b1/f1/p-mail
 | ---------- | -------------------------------------------------------- | --------------------------------------- |
 | **ЦОД**    | **Micro=edge** (оптика) + **Milli=ядро** + FW + DNS/DHCP | dns-server + padu; dnsmasq              |
 | **Этаж 1** | **Micro** + Blade5 + FW-24e + Boulder+×2 (+ питание)     | dns-server + padu; dnsmasq · имена `@c1/b1/f1/…` |
-| **Этаж 2** | (позже) Blade, роутер, FW, DNS                           | dns-lite                                |
+| **Этаж 2** | Micro + Blade5 + FW-24e + Boulder+ DNS (+ питание)     | **dns-lite** · **без** DHCP · `@c1/b1/f2/…` |
 
 
 Линки:
 
 1. Этаж 1 **down** → **fiber** с `@c1/b1/f1` → TL → `@c1/b1` Micro port9 (этажный FW **не** в optical hop).
-2. Этаж 2 **down** → через `f2/fw` → TL → **up** этажа 1 — позже.
+2. Этаж 2 **down** → TL → **up** этажа 1 (fiber Micro f2 → Micro f1; клиентский FW **не** в optical hop).
 3. У этажа 2 **нет** up дальше (в полном гайде тут был бы f3).
 
 Имена и ПО как в `[tni-day1-starter.md](./tni-day1-starter.md)`, только блок урезан до **2 этажей**.
@@ -257,7 +257,8 @@ ping @c1/b1/f1/p-mail
 - [x] `ripup` на `@c1/b1/f1`, `@c1/b1`, `@c1` — ping ЦОД OK  
 - [x] Клиенты на Blade: `scan u` + `dhup` → `@c1/b1/f1/u-…`  
 - [x] mail-hub: `@c1/b1/f1/p-mail` + route `p-` · ping OK  
-- [ ] Этаж 2 / DNS map продюсера / money  
+- [ ] Этаж 2: `init_f2` + `ripup` + клиенты (DHCP с f1 или статика)
+- [ ] DNS map продюсера / money  
 
 ### Клиенты — DHCP (Lab) — факт прогона
 
@@ -669,7 +670,50 @@ init_f1 7209 2 1 0 9124 35304 56171 21731 c1/b1/f1
 ### Статус этажа 1
 
 1. ~~Медный патч~~ · ~~TL~~ · ~~`init_f1`~~ · ~~оптика~~ · ~~RIP~~ · ~~`u-`/`p-` + клиенты/mail~~.  
-2. Этаж 2 — потом.
+2. Этаж 2 — см. ниже.
+
+---
+
+## Этаж 2 — патч + netshell (Lab)
+
+**Без** локального DHCP. DNS: **`dns-lite`** (этажи выше f1; полный `dns-server`+padu — только ЦОД и f1). Upstream: `@c1/b1/f1/dns`. Uplink: fiber → TL → up f1 → ЦОД.
+
+### Патч медь (факт)
+
+```text
+Blade :0 ──► FW :2
+               FW :1 ──► Micro f2 :2
+                            └── :3 ──► DNS :0
+Micro f2 :9 ──оптика──► розетка f2 ══TL══► up f1 ──► Micro f1 (свободный fiber)
+```
+
+| От | Port | К | Port |
+|----|------|---|------|
+| Blade | **0** | FW | **2** |
+| FW | **1** | Micro | **2** |
+| DNS | **0** | Micro | **3** |
+
+### `init_f2`
+
+Debugger → медь Micro f2. PREFIX **без** `@`.
+
+```text
+alias init_f2 echo usage: init_f2 HW_R PORT_DNS PORT_FW HW_DNS HW_FW HW_BLADE PREFIX - no local DHCP - PREFIX without @ - example init_f2 111 3 2 222 333 444 c1/b1/f2; route enable broadcast on $1; try ping $1 else echo fail router; net address set @$7 on $1; net dhcp disable on $1; route default via port$2 on $1; try ping $4 else echo fail dns; net address set @$7/dns on $4; net dhcp disable on $4; try program install dns-lite on $4 else echo skip dns; program start dns-lite on $4; route default via port$3 on $1; try ping $5 else echo fail fw; net address set @$7/fw on $5; net dhcp disable on $5; try ping $6 else echo fail blade; net address set @$7/s1 on $6; net dhcp disable on $6; route default drop on $1; route add @$7/dns via port$2 on $1; route add @$7/fw via port$3 on $1; route add @$7/s1 via port$3 on $1; route add @$7/u- via port$3 on $1; route add @$7/p- via port$3 on $1; try net dns set @c1/b1/f1/dns on @$7/dns else echo skip dns up; try net dns set @$7/dns on $1 else echo skip dns r; try net dns set @$7/dns on @$7/fw else echo skip dns fw; try net dns set @$7/dns on @$7/s1 else echo skip dns blade; try net dns set @$7/dns on @debug else echo skip dns debug; try firewall deny tcp/8034 on @$7/fw else echo skip fw; try firewall deny tcp/510 on @$7/fw else echo skip; try firewall deny tcp/511 on @$7/fw else echo skip; try firewall deny tcp/512 on @$7/fw else echo skip; try firewall deny tcp/513 on @$7/fw else echo skip; try firewall deny tcp/514 on @$7/fw else echo skip; try firewall deny tcp/515 on @$7/fw else echo skip; try firewall deny tcp/516 on @$7/fw else echo skip; try firewall deny tcp/517 on @$7/fw else echo skip; try firewall deny tcp/518 on @$7/fw else echo skip; try firewall deny tcp/519 on @$7/fw else echo skip; route show on $1
+```
+
+Запуск:
+
+```text
+init_f2 <Micro> 3 2 <DNS> <FW> <Blade> c1/b1/f2
+ripup @c1/b1/f2
+ripup @c1/b1/f1
+ripup @c1/b1
+ripup @c1
+ping @c1/b1/f1/dns
+ping @c1/dns
+```
+
+Клиенты f2: без локального DHCP — статика/`nca`, либо `udp/67` на `@c1/b1/f1/dhcp` + prefix/binds на f1 (отдельно).
 
 ---
 
